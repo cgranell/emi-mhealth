@@ -17,12 +17,17 @@ library(googledrive)
 #' Retrieve bibtext file of selected papers from the Shared folder in GDrive
 gdata_url <- "https://drive.google.com/open?id=1XgPt4uFNwOmxGNjILYsW8VKq9ifQdU7q"
 gdata_path <- drive_get(as_id(gdata_url))
-gdata_file <- drive_ls(path = gdata_path$name, type = "application/x-bibtex")
+
+
+gdata_file <- drive_ls(path = gdata_path$name, pattern = "selected_papers.bib") #type = "application/x-bibtex")
 drive_deauth()
 
-data_path <- here::here("data-raw", gdata_path$name, gdata_file$name) # local file
+data_path <- here::here("data-raw", gdata_file$name) # local file
 drive_download(file = gdata_file$id, path = data_path, overwrite = TRUE, verbose = TRUE)
 
+
+file_name = "selected_papers.bib";
+data_path <- here::here("data-raw", file_name) # local file
 # Import the local bibtex file and convert it to a tibble
 papers_raw <- RefManageR::ReadBib(data_path, check = "warn", .Encoding = "UTF-8") %>%
   as.data.frame() %>% as_tibble()
@@ -73,5 +78,5 @@ papers_final %>% str()
 file_name <- "papers.csv"
 data_path <- here::here("data-raw", file_name)
 write_csv(papers_final, data_path)
-#'devtools::use_data(papers, overwrite = TRUE)
+devtools::use_data(papers, overwrite = TRUE)
 
