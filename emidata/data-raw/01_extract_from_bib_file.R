@@ -72,7 +72,6 @@ papers_final %>% str()
 #' Save for now
 file_name <- "papers.csv"
 data_path <- here::here("data-raw", file_name)
-
-write_csv(papers_final, data_path)
-devtools::use_data(papers, overwrite = TRUE)
+write_csv(papers_raw, data_path)
+#'devtools::use_data(papers, overwrite = TRUE)
 
