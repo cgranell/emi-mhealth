@@ -17,7 +17,7 @@ library(googledrive)
 #' Retrieve bibtext file of selected papers from the Shared folder in GDrive
 gdata_url <- "https://drive.google.com/open?id=1XgPt4uFNwOmxGNjILYsW8VKq9ifQdU7q"
 gdata_path <- drive_get(as_id(gdata_url))
-gdata_file <- drive_ls(path = gdata_path$name, type = "application/xbibtex")
+gdata_file <- drive_ls(path = gdata_path$name, type = "application/x-bibtex")
 drive_deauth()
 
 data_path <- here::here("data-raw", gdata_path$name, gdata_file$name) # local file
