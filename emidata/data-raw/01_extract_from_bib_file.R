@@ -6,35 +6,44 @@
 #' ---
 
 
+#'install.packages(c("here", "RefManageR", "tidyverse", "googledrive"))
 library(here)
 library(RefManageR)
 library(tidyverse)
 library(googledrive)
 
 
-file_name <- "selected_papers.bib"
-data_path <- here::here("data-raw", file_name)
+#' First file
+#' Retrieve bibtext file of selected papers from the Shared folder in GDrive
+gdata_url <- "https://drive.google.com/open?id=1Uiv6AoWu3yFB3mcSh_IHziVqT0ah9Xxl"
+gdata_path <- drive_get(as_id(gdata_url))
+gdata_file <- drive_ls(path = gdata_path$name, type = "bib")
+drive_deauth()
 
-# Import the bibtex file and convert to data.frame
-papers <- RefManageR::ReadBib(data_path, check = "warn", .Encoding = "UTF-8") %>% as.data.frame()
+data_path <- here::here("data-raw", gdata_path$name, gdata_file$name) # local file
+drive_download(file = gdata_file$id, path = data_path, overwrite = TRUE, verbose = TRUE)
 
+# Import the local bibtex file and convert it to a tibble
+papers_raw <- RefManageR::ReadBib(data_path, check = "warn", .Encoding = "UTF-8") %>%
+  as.data.frame() %>% as_tibble()
 
-papers_tbl <- as_tibble(papers)
-papers_tbl <- rownames_to_column(papers_tbl, "bibtextId")
+# for the time being, turn rownames into a column
+papers_raw <- rownames_to_column(papers_raw, "bibtextId")
 
-papers_tbl %>% str()
+papers_raw %>% str()
 
 #' Get rid of vars I will not use, rename vars I keep
-papers_raw <- papers_tbl %>%
+papers <- papers_raw %>%
   select(type = bibtype, title, abstract, journal, author, year, keywords)
 
-#' Get rid of curly brackets and extra " in titles
-papers_raw$title <- stringr::str_replace_all(papers_raw$title, "[\"|{|}]", "")
+#' Get rid of curly brackets and extra quotation marks in titles
+papers$title <- stringr::str_replace_all(papers$title, "[\"|{|}]", "")
 
-papers_raw <- papers_raw %>%
+papers <- papers %>%
   arrange(title)
 
 
+#' Second file
 #' Retrieve filenames from shared folder in Gdrive to get the "id"
 #' credentials must be entered during first run, can be stored in file .httr-oauth
 gdata_url <- "https://drive.google.com/open?id=1XqfD-JOrKLGdVtAq_wNIRYYUqSdamxo2"
@@ -46,21 +55,24 @@ gdata_files <- gdata_files %>%
   select(filename = name) %>%
   mutate(id = stringr::str_sub(filename, 1, 3))
 
-#' Same order than the papers_raw
-gdata_files <-  gdata_files %>% arrange(filename)
+#' Same order than the papers
+papers_ids <-  gdata_files %>% arrange(filename)
 
-#' merge
-papers_raw <- bind_cols(gdata_files, papers_raw)
+#' Final file
+#' merge two previous files into the final version of papers
+papers_final <- bind_cols(papers_ids, papers)
 
 
-#' Force year to be Date
-papers_raw <- papers_raw %>%
+#' Force year to be Integer
+papers_final <- papers_final %>%
   mutate(year = year %>% as.integer())
 
-papers_raw %>% str()
+papers_final %>% str()
 
 #' Save for now
 file_name <- "papers.csv"
 data_path <- here::here("data-raw", file_name)
-write_csv(papers, data_path)
-#'devtools::use_data(papers, overwrite = TRUE)
+
+write_csv(papers_final, data_path)
+devtools::use_data(papers, overwrite = TRUE)
+
