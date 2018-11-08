@@ -74,6 +74,6 @@ papers %>% str()
 file_name <- "papers.csv"
 data_path <- here::here("data-raw", file_name)
 write_csv(papers, data_path)
-devtools::use_data(papers, overwrite = TRUE)  # To check!!!
+devtools::use_data(papers, overwrite = TRUE)
 
-# usethis::use_package_doc()
+#usethis::use_package_doc()
