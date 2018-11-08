@@ -18,16 +18,12 @@ library(googledrive)
 gdata_url <- "https://drive.google.com/open?id=1XgPt4uFNwOmxGNjILYsW8VKq9ifQdU7q"
 gdata_path <- drive_get(as_id(gdata_url))
 
-
-gdata_file <- drive_ls(path = gdata_path$name, pattern = "selected_papers.bib") #type = "application/x-bibtex")
-drive_deauth()
+gdata_file <- drive_ls(path = gdata_path$name, pattern = "selected_papers.bib")
 
 data_path <- here::here("data-raw", gdata_file$name) # local file
-drive_download(file = gdata_file$id, path = data_path, overwrite = TRUE, verbose = TRUE)
+drive_download(file = as_id(gdata_file$id), path = data_path, overwrite = TRUE, verbose = TRUE)
+drive_deauth()
 
-
-file_name = "selected_papers.bib";
-data_path <- here::here("data-raw", file_name) # local file
 # Import the local bibtex file and convert it to a tibble
 papers_raw <- RefManageR::ReadBib(data_path, check = "warn", .Encoding = "UTF-8") %>%
   as.data.frame() %>% as_tibble()
@@ -56,12 +52,12 @@ gdata_path <- drive_get(as_id(gdata_url))
 gdata_files <- drive_ls(path = gdata_path$name, type = "pdf")
 drive_deauth()
 
-gdata_files <- gdata_files %>%
+papers_ids <- gdata_files %>%
   select(filename = name) %>%
   mutate(id = stringr::str_sub(filename, 1, 3))
 
 #' Same order than the papers
-papers_ids <-  gdata_files %>% arrange(filename)
+papers_ids <-  papers_ids %>% arrange(filename)
 
 #' Final file
 #' merge two previous files into the final version of papers
@@ -78,5 +74,5 @@ papers_final %>% str()
 file_name <- "papers.csv"
 data_path <- here::here("data-raw", file_name)
 write_csv(papers_final, data_path)
-devtools::use_data(papers, overwrite = TRUE)
+devtools::use_data(papers, overwrite = TRUE)  # To check!!!
 
