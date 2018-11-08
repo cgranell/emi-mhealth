@@ -34,13 +34,13 @@ papers_raw <- rownames_to_column(papers_raw, "bibtextId")
 papers_raw %>% str()
 
 #' Get rid of vars I will not use, rename vars I keep
-papers <- papers_raw %>%
+papers_raw <- papers_raw %>%
   select(type = bibtype, title, abstract, journal, author, year, keywords)
 
 #' Get rid of curly brackets and extra quotation marks in titles
-papers$title <- stringr::str_replace_all(papers$title, "[\"|{|}]", "")
+papers_raw$title <- stringr::str_replace_all(papers_raw$title, "[\"|{|}]", "")
 
-papers <- papers %>%
+papers_raw <- papers_raw %>%
   arrange(title)
 
 
@@ -61,18 +61,19 @@ papers_ids <-  papers_ids %>% arrange(filename)
 
 #' Final file
 #' merge two previous files into the final version of papers
-papers_final <- bind_cols(papers_ids, papers)
+papers <- bind_cols(papers_ids, papers_raw)
 
 
 #' Force year to be Integer
-papers_final <- papers_final %>%
+papers <- papers %>%
   mutate(year = year %>% as.integer())
 
-papers_final %>% str()
+papers %>% str()
 
 #' Save for now
 file_name <- "papers.csv"
 data_path <- here::here("data-raw", file_name)
-write_csv(papers_final, data_path)
+write_csv(papers, data_path)
 devtools::use_data(papers, overwrite = TRUE)  # To check!!!
 
+# usethis::use_package_doc()
