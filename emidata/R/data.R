@@ -3,10 +3,10 @@
 #'
 #' List of selected papers included in the review (N=136).
 #'
-#' @source scientific databases such as Scopus, Web of Science, and PubMed.
+#' @source References retrieved from scientific databases such as Scopus, Web of Science, and PubMed.
 #' @format A data frame with nine variables:
 #' \describe{
-#'   \item{\code{filename}{Full filename of the paper.}
+#'   \item{\code{filename}}{Full filename of the paper.}
 #'   \item{\code{id}}{A unique identifier.}
 #'   \item{\code{type}}{Article or InProceedings , same syntax as bibtex.}
 #'   \item{\code{title}}{Title of the paper.}
