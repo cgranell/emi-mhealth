@@ -99,10 +99,20 @@ kable(no_stop_words %>%
 ```
 
 
-## Next steps: Search keywords in the abstracts
+## Search keywords in the abstract
 
-_How often do the Psycological relatedsearch keywords appear in each abstract paper?_
-_How often do the Computers siciecne relatedsearch keywords appear in each abstract paper?_
+### Psychological terms
+
+_How often do Psychological related search keywords appear in each abstract paper?_
+
+
+### Technical terms
+
+_How often do Computer science related search keywords appear in each abstract paper?_
+
+
+## Freqeuncy analysis onf top words in the abstracts
+
 _Word cloud of abstracts_ 
 _Word cloud of top words_
 
