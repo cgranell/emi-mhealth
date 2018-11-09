@@ -11,6 +11,7 @@ Required libraries and runtime environment description.
 library(emidata)
 library(tidyverse)
 library(tidytext)
+library(kableExtra)
 ```
 
 
@@ -24,26 +25,75 @@ This document is an EDA notebook to explore descriptive and informative figures 
 
 The data for the analysis is in the *papers* dataset that has `` `r nrow(papers)` `` references.
 
-```{r data_source, echo=TRUE}
+```{r data_source, echo=FALSE}
 papers %>% str()
 ```
 
-AS part o the text analysis of papers, i.e. wordcloud and terms frequency analysis, read the abstracts from the apper and and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words).
+As part o the text analysis of papers, i.e. wordcloud and terms frequency analysis, read the abstracts from the apper and and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words).
 
-```{r}
+```{r stopwords}
 tidy_abstracts <- papers %>%
   select(id, filename, abstract) %>%
   arrange(id)
   
   
 papers_words <- tidy_abstracts %>%
-    select(abstract) %>%
+    select(id, abstract) %>%
     unnest_tokens(word, abstract)
-```
 
+my_stop_words <- tibble(
+  word = c(
+    "et",
+    "al",
+    "fig",
+    "e.g",
+    "i.e",
+    "http",
+    "ing",
+    "pp",
+    "figure",
+    "based"
+    ),
+  lexicon = "jmir")
+
+
+all_stop_words <- stop_words %>%
+  bind_rows(my_stop_words)
+
+# Get rid of numeric values (as words) from abstracts
+suppressWarnings({
+  no_numbers <- papers_words %>%
+    filter(is.na(as.numeric(word)))
+})
+
+# Get list of paper words without stopwords 
+no_stop_words <- no_numbers %>%
+  anti_join(all_stop_words, by = "word") #%>%
+  #mutate(id = str_extract(file, "[0-9]+"))
+
+```
 
 
 ```{r calculate_stopword_stats, echo=FALSE}
 total_words = nrow(papers_words)
-#after_cleanup = nrow(no_stop_words)
+after_cleanup = nrow(no_stop_words)
+```
+
+About `r round(after_cleanup/total_words * 100)` % of the words are considered stop words.
+
+_How many non-stop words does each abstract have?_
+
+```{r stop_words}
+
+non_stop_words_per_paper <- no_stop_words %>%
+  group_by(id) %>%
+  summarise(num_words = n()) %>%
+  arrange(desc(num_words))
+
+ggplot(non_stop_words_per_paper, aes(id, num_words)) + geom_col() 
+
+kable(no_stop_words %>%
+  group_by(id) %>%
+  summarise(num_words = n()) %>%
+  arrange(desc(num_words)))
 ```
