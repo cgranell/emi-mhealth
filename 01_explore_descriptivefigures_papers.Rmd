@@ -67,7 +67,7 @@ suppressWarnings({
     filter(is.na(as.numeric(word)))
 })
 
-# Get list of paper words without stopwords 
+# Get list of words from abstracts without stopwords 
 no_stop_words <- no_numbers %>%
   anti_join(all_stop_words, by = "word") 
 
@@ -137,8 +137,8 @@ term_counts <- tibble(
   affection = stringr::str_count(tidy_abstracts_lower, "\\baffection\\b"),
   `depressi..` = str_count(tidy_abstracts_lower, "\\bdepressi.*\\b"),
   anxiety = stringr::str_count(tidy_abstracts_lower, "\\banxiety\\b"))
-
- # emi = stringr::str_count(tidy_abstracts_lower, "\\becological\ momentary\ intervention\\b)"))
+  # emi = stringr::str_count(tidy_abstracts_lower, "\\becological momentary intervention\\b)"))
+ # TODO; I cannot serach by several words separated by blanck spaces
   
 ```
 
