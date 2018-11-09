@@ -10,6 +10,7 @@ Required libraries and runtime environment description.
 ```{r load_libraries, echo=TRUE, message=FALSE, warning=FALSE}
 library(emidata)
 library(tidyverse)
+library(tidytext)
 ```
 
 
@@ -21,9 +22,28 @@ This document is an EDA notebook to explore descriptive and informative figures 
 
 ## Data 
 
-The data for the analysis is in the *papers* dataset that has ``nrow(papers)`` references.
+The data for the analysis is in the *papers* dataset that has `` `r nrow(papers)` `` references.
 
 ```{r data_source, echo=TRUE}
 papers %>% str()
 ```
 
+AS part o the text analysis of papers, i.e. wordcloud and terms frequency analysis, read the abstracts from the apper and and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words).
+
+```{r}
+tidy_abstracts <- papers %>%
+  select(id, filename, abstract) %>%
+  arrange(id)
+  
+  
+papers_words <- tidy_abstracts %>%
+    select(abstract) %>%
+    unnest_tokens(word, abstract)
+```
+
+
+
+```{r calculate_stopword_stats, echo=FALSE}
+total_words = nrow(papers_words)
+#after_cleanup = nrow(no_stop_words)
+```

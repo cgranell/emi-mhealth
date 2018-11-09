@@ -181,10 +181,13 @@ $(document).ready(function () {
 <p>Required libraries and runtime environment description.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShlbWlkYXRhKVxubGlicmFyeSh0aWR5dmVyc2UpXG5gYGAifQ== -->
-<pre class="r"><code>library(emidata)
-library(tidyverse)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeSh0aWR5dGV4dClcblxuYGBgIn0= -->
+<pre class="r"><code>library(tidytext)
+</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gbGlicmFyeSh0aWR5dGV4dCkgOiB0aGVyZSBpcyBubyBwYWNrYWdlIGNhbGxlZCDigJh0aWR5dGV4dOKAmVxuIn0= -->
+<pre><code>Error in library(tidytext) : there is no package called ‘tidytext’</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
@@ -198,18 +201,48 @@ library(tidyverse)</code></pre>
 </div>
 <div id="data" class="section level2">
 <h2>Data</h2>
-<p>The data for the analysis is in the <em>papers</em> dataset that has <code>nrow(papers)</code> references.</p>
+<p>The data for the analysis is in the <em>papers</em> dataset that has <code>136</code> references.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFwZXJzICU+JSBzdHIoKVxuYGBgIn0= -->
 <pre class="r"><code>papers %&gt;% str()</code></pre>
 <!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiQ2xhc3NlcyDigJh0YmxfZGbigJksIOKAmHRibOKAmSBhbmQgJ2RhdGEuZnJhbWUnOlx0MTM2IG9icy4gb2YgIDkgdmFyaWFibGVzOlxuICQgZmlsZW5hbWU6IGNociAgXCIwMDQgLSBBIERpZ2l0YWwgVG9vbCB0byBQcm9tb3RlIEFsY29ob2wucGRmXCIgXCIwMDcgLSBBIEd1aWRlZCBPbmxpbmUgYW5kIE1vYmlsZSBTZWxmLUhlbHAucGRmXCIgXCIwMDggLSBBIE1pbmRmdWxuZXNzIEludGVydmVudGlvbiBmb3IucGRmXCIgXCIwMTAgLSBBIG5vdmVsIGFwcHJvYWNoIHRvIGNoYWxsZW5naW5nIE9DRC5wZGZcIiAuLi5cbiAkIGlkICAgICAgOiBjaHIgIFwiMDA0XCIgXCIwMDdcIiBcIjAwOFwiIFwiMDEwXCIgLi4uXG4gJCB0eXBlICAgIDogY2hyICBcIkFydGljbGVcIiBcIkFydGljbGVcIiBcIkFydGljbGVcIiBcIkFydGljbGVcIiAuLi5cbiAkIHRpdGxlICAgOiBjaHIgIFwiQSBEaWdpdGFsIFRvb2wgdG8gUHJvbW90ZSBBbGNvaG9sIGFuZCBEcnVnIFVzZSBTY3JlZW5pbmcsIEJyaWVmIEludGVydmVudGlvbiwgYW5kIFJlZmVycmFsIHRvIFRyZWF0bWVudCBTa2lsbCBUXCJ8IF9fdHJ1bmNhdGVkX18gXCJBIEd1aWRlZCBPbmxpbmUgYW5kIE1vYmlsZSBTZWxmLUhlbHAgUHJvZ3JhbSBmb3IgSW5kaXZpZHVhbHMgV2l0aCBFYXRpbmcgRGlzb3JkZXJzOiBBbiBJdGVyYXRpdmUgRW5nYWdlbWVudCBhbmRcInwgX190cnVuY2F0ZWRfXyBcIkEgTWluZGZ1bG5lc3MgSW50ZXJ2ZW50aW9uIGZvciBSZXNpZGVudHM6IFJlbGV2YW5jZSBmb3IgUGVkaWF0cmljaWFuc1wiIFwiQSBub3ZlbCBhcHByb2FjaCB0byBjaGFsbGVuZ2luZyBPQ0QgcmVsYXRlZCBiZWxpZWZzIHVzaW5nIGEgbW9iaWxlLWFwcDogQW4gZXhwbG9yYXRvcnkgc3R1ZHlcIiAuLi5cbiAkIGFic3RyYWN0OiBjaHIgIFwiQmFja2dyb3VuZDogVHJhbnNsYXRpb24gb2Yga25vd2xlZGdlIGFuZCBza2lsbHMgZnJvbSBjbGFzc3Jvb20gc2V0dGluZ3MgdG8gY2xpbmljYWwgcHJhY3RpY2UgaXMgYSBtYWpvciBjaGFsbGVuXCJ8IF9fdHJ1bmNhdGVkX18gXCJCQUNLR1JPVU5EOiBOdW1lcm91cyBkaWdpdGFsIGhlYWx0aCBpbnRlcnZlbnRpb25zIGhhdmUgYmVlbiBkZXZlbG9wZWQgZm9yIG1lbnRhbCBoZWFsdGggcHJvbW90aW9uIGFuZCBpbnRlcnZlbnRcInwgX190cnVuY2F0ZWRfXyBcIlBoeXNpY2lhbiBidXJub3V0IGlzIGEgdG9waWMgb2YgZ3Jvd2luZyBpbXBvcnRhbmNlIGluIHRvZGF5J3MgaGVhbHRoIGNhcmUgc3lzdGVtLiBUYW5naWJsZSBpbnRlcnZlbnRpb25zIGFpbWVkIFwifCBfX3RydW5jYXRlZF9fIFwiQmFja2dyb3VuZCBhbmQgb2JqZWN0aXZlczogQWNjb3JkaW5nIHRvIGNvZ25pdGl2ZSBtb2RlbHMsIG9ic2Vzc2l2ZSBjb21wdWxzaXZlIHN5bXB0b21zIHJlc3VsdCBmcm9tIGNhdGFzdHJvcGhpXCJ8IF9fdHJ1bmNhdGVkX18gLi4uXG4gJCBqb3VybmFsIDogY2hyICBcIkpNSVIgUkVTRUFSQ0ggUFJPVE9DT0xTXCIgXCJKb3VybmFsIG9mIG1lZGljYWwgSW50ZXJuZXQgcmVzZWFyY2hcIiBcIlBFRElBVFJJQyBBTk5BTFNcIiBcIkpvdXJuYWwgb2YgQmVoYXZpb3IgVGhlcmFweSBhbmQgRXhwZXJpbWVudGFsIFBzeWNoaWF0cnlcIiAuLi5cbiAkIGF1dGhvciAgOiBjaHIgIFwiRGVyZWsgRC4gU2F0cmUgYW5kIEtoYW5oIEx5IGFuZCBNYXJpYSBXYW1zbGV5IGFuZCBBbGV4YSBDdXJ0aXMgYW5kIEphc29uIFNhdHRlcmZpZWxkXCIgXCJNLiBOaXRzY2ggYW5kIEMuTi4gRGltb3BvdWxvcyBhbmQgRS4gRmxhc2NoYmVyZ2VyIGFuZCBLLiBTYWZmcmFuIGFuZCBKLkYuIEtydWdlciBhbmQgTC4gR2FybG9jayBhbmQgRC5FLiBXaWxmbGVcInwgX190cnVuY2F0ZWRfXyBcIk1hbGxvcnkgVGF5bG9yIGFuZCBKb3NlcGggUi4gSGFnZW1hbiBhbmQgTWVsYW5pZSBCcm93blwiIFwiTS4gUm9uY2VybyBhbmQgQS4gQmVsbG9jaCBhbmQgRy4gRG9yb25cIiAuLi5cbiAkIHllYXIgICAgOiBpbnQgIDIwMTcgMjAxNiAyMDE2IDIwMTggMjAxNyAyMDE1IDIwMTYgMjAxNyAyMDE4IDIwMTcgLi4uXG4gJCBrZXl3b3JkczogY2hyICBcImRlcHJlc3Npb24sIGFueGlldHksIGFsY29ob2wsIGRydWcsIHRyYWluaW5nLCBtb2JpbGUgYXBwLCBkaWdpdGFsIGhlYWx0aCwgaW1wbGVtZW50YXRpb24sIFNCSVJUXCIgXCJodW1hbiwgbW9iaWxlIGFwcGxpY2F0aW9uLCB0ZWxlbWVkaWNpbmUsIHF1ZXN0aW9ubmFpcmUsIEludGVybmV0LCBUZWxlbWVkaWNpbmUsIHBzeWNob2xvZ3ksIGludGVydmlldywgSHVtYW5zLCBcInwgX190cnVuY2F0ZWRfXyBOQSBcImFkdWx0LCBhbnhpZXR5IGFzc2Vzc21lbnQsIEFydGljbGUsIGNsaW5pY2FsIGVmZmVjdGl2ZW5lc3MsIGNsaW5pY2FsIGV2YWx1YXRpb24sIGNvZ25pdGlvbiwgY29nbml0aXZlIGJlaGF2aW9yYVwifCBfX3RydW5jYXRlZF9fIC4uLlxuIn0= -->
+<pre><code>Classes ‘tbl_df’, ‘tbl’ and 'data.frame':   136 obs. of  9 variables:
+ $ filename: chr  &quot;004 - A Digital Tool to Promote Alcohol.pdf&quot; &quot;007 - A Guided Online and Mobile Self-Help.pdf&quot; &quot;008 - A Mindfulness Intervention for.pdf&quot; &quot;010 - A novel approach to challenging OCD.pdf&quot; ...
+ $ id      : chr  &quot;004&quot; &quot;007&quot; &quot;008&quot; &quot;010&quot; ...
+ $ type    : chr  &quot;Article&quot; &quot;Article&quot; &quot;Article&quot; &quot;Article&quot; ...
+ $ title   : chr  &quot;A Digital Tool to Promote Alcohol and Drug Use Screening, Brief Intervention, and Referral to Treatment Skill T&quot;| __truncated__ &quot;A Guided Online and Mobile Self-Help Program for Individuals With Eating Disorders: An Iterative Engagement and&quot;| __truncated__ &quot;A Mindfulness Intervention for Residents: Relevance for Pediatricians&quot; &quot;A novel approach to challenging OCD related beliefs using a mobile-app: An exploratory study&quot; ...
+ $ abstract: chr  &quot;Background: Translation of knowledge and skills from classroom settings to clinical practice is a major challen&quot;| __truncated__ &quot;BACKGROUND: Numerous digital health interventions have been developed for mental health promotion and intervent&quot;| __truncated__ &quot;Physician burnout is a topic of growing importance in today's health care system. Tangible interventions aimed &quot;| __truncated__ &quot;Background and objectives: According to cognitive models, obsessive compulsive symptoms result from catastrophi&quot;| __truncated__ ...
+ $ journal : chr  &quot;JMIR RESEARCH PROTOCOLS&quot; &quot;Journal of medical Internet research&quot; &quot;PEDIATRIC ANNALS&quot; &quot;Journal of Behavior Therapy and Experimental Psychiatry&quot; ...
+ $ author  : chr  &quot;Derek D. Satre and Khanh Ly and Maria Wamsley and Alexa Curtis and Jason Satterfield&quot; &quot;M. Nitsch and C.N. Dimopoulos and E. Flaschberger and K. Saffran and J.F. Kruger and L. Garlock and D.E. Wilfle&quot;| __truncated__ &quot;Mallory Taylor and Joseph R. Hageman and Melanie Brown&quot; &quot;M. Roncero and A. Belloch and G. Doron&quot; ...
+ $ year    : int  2017 2016 2016 2018 2017 2015 2016 2017 2018 2017 ...
+ $ keywords: chr  &quot;depression, anxiety, alcohol, drug, training, mobile app, digital health, implementation, SBIRT&quot; &quot;human, mobile application, telemedicine, questionnaire, Internet, Telemedicine, psychology, interview, Humans, &quot;| __truncated__ NA &quot;adult, anxiety assessment, Article, clinical effectiveness, clinical evaluation, cognition, cognitive behaviora&quot;| __truncated__ ...</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>AS part o the text analysis of papers, i.e. wordcloud and terms frequency analysis, read the abstracts from the apper and and process them to create a <a href="https://www.jstatsoft.org/article/view/v059i10">tidy</a> data structure without <a href="https://en.wikipedia.org/wiki/Stop_words">stop words</a>.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuICBcbnBhcGVyc193b3JkcyA8LSB0aWR5X2Fic3RyYWN0cyAlPiVcbiAgICBzZWxlY3QoYWJzdHJhY3QpICU+JVxuICAgIHVubmVzdF90b2tlbnMod29yZCwgYWJzdHJhY3QpXG5cbmBgYCJ9 -->
+<pre class="r"><code>  
+papers_words &lt;- tidy_abstracts %&gt;%
+    select(abstract) %&gt;%
+    unnest_tokens(word, abstract)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3IgaW4gdW5uZXN0X3Rva2VucyguLCB3b3JkLCBhYnN0cmFjdCkgOiBcbiAgY291bGQgbm90IGZpbmQgZnVuY3Rpb24gXCJ1bm5lc3RfdG9rZW5zXCJcbiJ9 -->
+<pre><code>Error in unnest_tokens(., word, abstract) : 
+  could not find function &quot;unnest_tokens&quot;</code></pre>
+<!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-chunk-end -->
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIyBNZXRhZGF0YQ0KDQpSZXF1aXJlZCBsaWJyYXJpZXMgYW5kIHJ1bnRpbWUgZW52aXJvbm1lbnQgZGVzY3JpcHRpb24uDQoNCmBgYHtyIGxvYWRfbGlicmFyaWVzLCBlY2hvPVRSVUUsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9DQpsaWJyYXJ5KGVtaWRhdGEpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmBgYA0KDQoNCmBgYHtyIHNlc3Npb25faW5mb30NCmRldnRvb2xzOjpzZXNzaW9uX2luZm8oaW5jbHVkZV9iYXNlID0gVFJVRSkNCmBgYA0KDQpUaGlzIGRvY3VtZW50IGlzIGFuIEVEQSBub3RlYm9vayB0byBleHBsb3JlIGRlc2NyaXB0aXZlIGFuZCBpbmZvcm1hdGl2ZSBmaWd1cmVzIG9mIHRoZSBkYXRhc2V0ICpwYXBlcnMqIGluIHRoZSAqZW1pZGF0YSogcGFja2FnZS4gVHlwZSBgP3BhcGVyc2AgZm9yIGluZm9ybWF0aW9uLiANCg0KIyMgRGF0YSANCg0KVGhlIGRhdGEgZm9yIHRoZSBhbmFseXNpcyBpcyBpbiB0aGUgKnBhcGVycyogZGF0YXNldCB0aGF0IGhhcyBgYG5yb3cocGFwZXJzKWBgIHJlZmVyZW5jZXMuDQoNCmBgYHtyIGRhdGFfc291cmNlLCBlY2hvPVRSVUV9DQpwYXBlcnMgJT4lIHN0cigpDQpgYGANCg0K</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIyBNZXRhZGF0YQ0KDQpSZXF1aXJlZCBsaWJyYXJpZXMgYW5kIHJ1bnRpbWUgZW52aXJvbm1lbnQgZGVzY3JpcHRpb24uDQoNCmBgYHtyIGxvYWRfbGlicmFyaWVzLCBlY2hvPVRSVUUsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9DQpsaWJyYXJ5KGVtaWRhdGEpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmxpYnJhcnkodGlkeXRleHQpDQpgYGANCg0KDQpgYGB7ciBzZXNzaW9uX2luZm99DQpkZXZ0b29sczo6c2Vzc2lvbl9pbmZvKGluY2x1ZGVfYmFzZSA9IFRSVUUpDQpgYGANCg0KVGhpcyBkb2N1bWVudCBpcyBhbiBFREEgbm90ZWJvb2sgdG8gZXhwbG9yZSBkZXNjcmlwdGl2ZSBhbmQgaW5mb3JtYXRpdmUgZmlndXJlcyBvZiB0aGUgZGF0YXNldCAqcGFwZXJzKiBpbiB0aGUgKmVtaWRhdGEqIHBhY2thZ2UuIFR5cGUgYD9wYXBlcnNgIGZvciBpbmZvcm1hdGlvbi4gDQoNCiMjIERhdGEgDQoNClRoZSBkYXRhIGZvciB0aGUgYW5hbHlzaXMgaXMgaW4gdGhlICpwYXBlcnMqIGRhdGFzZXQgdGhhdCBoYXMgYGAgYHIgbnJvdyhwYXBlcnMpYCBgYCByZWZlcmVuY2VzLg0KDQpgYGB7ciBkYXRhX3NvdXJjZSwgZWNobz1UUlVFfQ0KcGFwZXJzICU+JSBzdHIoKQ0KYGBgDQoNCkFTIHBhcnQgbyB0aGUgdGV4dCBhbmFseXNpcyBvZiBwYXBlcnMsIGkuZS4gd29yZGNsb3VkIGFuZCB0ZXJtcyBmcmVxdWVuY3kgYW5hbHlzaXMsIHJlYWQgdGhlIGFic3RyYWN0cyBmcm9tIHRoZSBhcHBlciBhbmQgYW5kIHByb2Nlc3MgdGhlbSB0byBjcmVhdGUgYSBbdGlkeV0oaHR0cHM6Ly93d3cuanN0YXRzb2Z0Lm9yZy9hcnRpY2xlL3ZpZXcvdjA1OWkxMCkgZGF0YSBzdHJ1Y3R1cmUgd2l0aG91dCBbc3RvcCB3b3Jkc10oaHR0cHM6Ly9lbi53aWtpcGVkaWEub3JnL3dpa2kvU3RvcF93b3JkcykuDQoNCmBgYHtyfQ0KdGlkeV9hYnN0cmFjdHMgPC0gcGFwZXJzICU+JQ0KICBzZWxlY3QoaWQsIGZpbGVuYW1lLCBhYnN0cmFjdCkgJT4lDQogIGFycmFuZ2UoaWQpDQogIA0KICANCnBhcGVyc193b3JkcyA8LSB0aWR5X2Fic3RyYWN0cyAlPiUNCiAgICBzZWxlY3QoYWJzdHJhY3QpICU+JQ0KICAgIHVubmVzdF90b2tlbnMod29yZCwgYWJzdHJhY3QpDQpgYGANCg0KDQoNCmBgYHtyIGNhbGN1bGF0ZV9zdG9wd29yZF9zdGF0cywgZWNobz1GQUxTRX0NCnRvdGFsX3dvcmRzID0gbnJvdyhwYXBlcnNfd29yZHMpDQojYWZ0ZXJfY2xlYW51cCA9IG5yb3cobm9fc3RvcF93b3JkcykNCmBgYA0K</div>
 
 
 
