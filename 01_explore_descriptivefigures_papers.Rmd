@@ -12,6 +12,7 @@ library(emidata)
 library(tidyverse)
 library(tidytext)
 library(kableExtra)
+library(stringr)
 ```
 
 
@@ -68,8 +69,7 @@ suppressWarnings({
 
 # Get list of paper words without stopwords 
 no_stop_words <- no_numbers %>%
-  anti_join(all_stop_words, by = "word") #%>%
-  #mutate(id = str_extract(file, "[0-9]+"))
+  anti_join(all_stop_words, by = "word") 
 
 ```
 
@@ -99,14 +99,58 @@ kable(no_stop_words %>%
 ```
 
 
-## Search keywords in the abstract
+## Search terms in the abstract
 
 ### Psychological terms
+
+The detection matches full words using regex option `\b`.
+
+- mental (and also e-mental)
+- psycholog (`psycholog.*`, i.e. psychology, psychological)
+- psychiatric
+- emotional
+- health (and also e-health, u-health)
+- treatment(s) (and also pretreatment, post-treatment)
+- disorder(s) 
+- intervention(s) 
+- therapy(ies)
+- distress,
+- affection
+- depressi (`depressi.*`, i.e. depression, depressive)
+- anxiety,
+- ecological momentary intervention
+
+```{r search_terms_per_abstract}
+tidy_abstracts_lower <- stringr::str_to_lower(tidy_abstracts$abstract)
+term_counts <- tibble(
+  id = tidy_abstracts$id,
+  mental = stringr::str_count(tidy_abstracts_lower, "\\bmental\\b"),
+  `psycholog..` = str_count(tidy_abstracts_lower, "\\bpsycholog.*\\b"),
+  psychiatric = stringr::str_count(tidy_abstracts_lower, "\\bpsychiatric\\b"),
+  emotional = stringr::str_count(tidy_abstracts_lower, "\\bemotional\\b"),
+  health = stringr::str_count(tidy_abstracts_lower, "\\bhealth\\b"),
+  `treatment(s)` = stringr::str_count(tidy_abstracts_lower, "\\btreatments?\\b|\\bpretreatment?\\b"),
+  `disorder(s)` = stringr::str_count(tidy_abstracts_lower, "\\bdisorder?\\b"),
+  `intervention(s)` = stringr::str_count(tidy_abstracts_lower, "\\bintervention?\\b"),
+  `therapy/ies` = stringr::str_count(tidy_abstracts_lower, "\\btherap(y|ies)\\b"),
+  distress = stringr::str_count(tidy_abstracts_lower, "\\bdistress\\b"),
+  affection = stringr::str_count(tidy_abstracts_lower, "\\baffection\\b"),
+  `depressi..` = str_count(tidy_abstracts_lower, "\\bdepressi.*\\b"),
+  anxiety = stringr::str_count(tidy_abstracts_lower, "\\banxiety\\b"))
+
+ # emi = stringr::str_count(tidy_abstracts_lower, "\\becological\ momentary\ intervention\\b)"))
+  
+```
 
 _How often do Psychological related search keywords appear in each abstract paper?_
 
 
+
+
 ### Technical terms
+
+*Search terms*: cell, mobile smartphone, smart, portable, phone*, device*, app, apps, applicat*, mhealth, uhealth, ehealth, emental, android, iphone
+
 
 _How often do Computer science related search keywords appear in each abstract paper?_
 

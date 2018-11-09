@@ -1,3 +1,4 @@
 install.packages("tidyverse")
-install.packages("tidttext")
+install.packages("tidytext")
 install.packages("kableExtra")
+install.packages("stringr")
