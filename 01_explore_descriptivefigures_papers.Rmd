@@ -97,3 +97,12 @@ kable(no_stop_words %>%
   summarise(num_words = n()) %>%
   arrange(desc(num_words)))
 ```
+
+
+## Next steps: Search keywords in the abstracts
+
+_How often do the Psycological relatedsearch keywords appear in each abstract paper?_
+_How often do the Computers siciecne relatedsearch keywords appear in each abstract paper?_
+_Word cloud of abstracts_ 
+_Word cloud of top words_
+
