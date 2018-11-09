@@ -176,21 +176,40 @@ $(document).ready(function () {
 
 
 <!-- rnb-text-begin -->
-<p>This is an EDA notebook to explore explicaticate figure fo trhe datasets <em>papers</em> in the <em>emidata</em> package. Fo help, <code>?papers</code>.</p>
+<div id="metadata" class="section level2">
+<h2>Metadata</h2>
+<p>Required libraries and runtime environment description.</p>
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShlbWlkYXRhKVxucGFwZXJzXG5gYGAifQ== -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShlbWlkYXRhKVxubGlicmFyeSh0aWR5dmVyc2UpXG5gYGAifQ== -->
 <pre class="r"><code>library(emidata)
-papers</code></pre>
+library(tidyverse)</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
-<p>Add a new chunk by clicking the <em>Insert Chunk</em> button on the toolbar or by pressing <em>Ctrl+Alt+I</em>.</p>
-<p>When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the <em>Preview</em> button or press <em>Ctrl+Shift+K</em> to preview the HTML file).</p>
-<p>The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike <em>Knit</em>, <em>Preview</em> does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.</p>
 <!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGV2dG9vbHM6OnNlc3Npb25faW5mbyhpbmNsdWRlX2Jhc2UgPSBUUlVFKVxuYGBgIn0= -->
+<pre class="r"><code>devtools::session_info(include_base = TRUE)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p>This document is an EDA notebook to explore descriptive and informative figures of the dataset <em>papers</em> in the <em>emidata</em> package. Type <code>?papers</code> for information.</p>
+</div>
+<div id="data" class="section level2">
+<h2>Data</h2>
+<p>The data for the analysis is in the <em>papers</em> dataset that has <code>nrow(papers)</code> references.</p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFwZXJzICU+JSBzdHIoKVxuYGBgIn0= -->
+<pre class="r"><code>papers %&gt;% str()</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+</div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQpUaGlzIGlzIGFuIEVEQSBub3RlYm9vayB0byBleHBsb3JlIGV4cGxpY2F0aWNhdGUgZmlndXJlIGZvIHRyaGUgZGF0YXNldHMgKnBhcGVycyogaW4gdGhlICplbWlkYXRhKiBwYWNrYWdlLiBGbyBoZWxwLCBgP3BhcGVyc2AuIA0KDQoNCg0KYGBge3IgbG9hZH0NCmxpYnJhcnkoZW1pZGF0YSkNCnBhcGVycw0KYGBgDQoNCkFkZCBhIG5ldyBjaHVuayBieSBjbGlja2luZyB0aGUgKkluc2VydCBDaHVuayogYnV0dG9uIG9uIHRoZSB0b29sYmFyIG9yIGJ5IHByZXNzaW5nICpDdHJsK0FsdCtJKi4NCg0KV2hlbiB5b3Ugc2F2ZSB0aGUgbm90ZWJvb2ssIGFuIEhUTUwgZmlsZSBjb250YWluaW5nIHRoZSBjb2RlIGFuZCBvdXRwdXQgd2lsbCBiZSBzYXZlZCBhbG9uZ3NpZGUgaXQgKGNsaWNrIHRoZSAqUHJldmlldyogYnV0dG9uIG9yIHByZXNzICpDdHJsK1NoaWZ0K0sqIHRvIHByZXZpZXcgdGhlIEhUTUwgZmlsZSkuDQoNClRoZSBwcmV2aWV3IHNob3dzIHlvdSBhIHJlbmRlcmVkIEhUTUwgY29weSBvZiB0aGUgY29udGVudHMgb2YgdGhlIGVkaXRvci4gQ29uc2VxdWVudGx5LCB1bmxpa2UgKktuaXQqLCAqUHJldmlldyogZG9lcyBub3QgcnVuIGFueSBSIGNvZGUgY2h1bmtzLiBJbnN0ZWFkLCB0aGUgb3V0cHV0IG9mIHRoZSBjaHVuayB3aGVuIGl0IHdhcyBsYXN0IHJ1biBpbiB0aGUgZWRpdG9yIGlzIGRpc3BsYXllZC4NCg==</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlIgTm90ZWJvb2siDQpvdXRwdXQ6IGh0bWxfbm90ZWJvb2sNCi0tLQ0KDQojIyBNZXRhZGF0YQ0KDQpSZXF1aXJlZCBsaWJyYXJpZXMgYW5kIHJ1bnRpbWUgZW52aXJvbm1lbnQgZGVzY3JpcHRpb24uDQoNCmBgYHtyIGxvYWRfbGlicmFyaWVzLCBlY2hvPVRSVUUsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9DQpsaWJyYXJ5KGVtaWRhdGEpDQpsaWJyYXJ5KHRpZHl2ZXJzZSkNCmBgYA0KDQoNCmBgYHtyIHNlc3Npb25faW5mb30NCmRldnRvb2xzOjpzZXNzaW9uX2luZm8oaW5jbHVkZV9iYXNlID0gVFJVRSkNCmBgYA0KDQpUaGlzIGRvY3VtZW50IGlzIGFuIEVEQSBub3RlYm9vayB0byBleHBsb3JlIGRlc2NyaXB0aXZlIGFuZCBpbmZvcm1hdGl2ZSBmaWd1cmVzIG9mIHRoZSBkYXRhc2V0ICpwYXBlcnMqIGluIHRoZSAqZW1pZGF0YSogcGFja2FnZS4gVHlwZSBgP3BhcGVyc2AgZm9yIGluZm9ybWF0aW9uLiANCg0KIyMgRGF0YSANCg0KVGhlIGRhdGEgZm9yIHRoZSBhbmFseXNpcyBpcyBpbiB0aGUgKnBhcGVycyogZGF0YXNldCB0aGF0IGhhcyBgYG5yb3cocGFwZXJzKWBgIHJlZmVyZW5jZXMuDQoNCmBgYHtyIGRhdGFfc291cmNlLCBlY2hvPVRSVUV9DQpwYXBlcnMgJT4lIHN0cigpDQpgYGANCg0K</div>
 
 
 
