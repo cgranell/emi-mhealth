@@ -122,7 +122,7 @@ The detection matches full words using regex option `\b`.
 
 ```{r search_terms_per_abstract}
 tidy_abstracts_lower <- stringr::str_to_lower(tidy_abstracts$abstract)
-term_counts <- tibble(
+psy_terms_count <- tibble(
   id = tidy_abstracts$id,
   mental = stringr::str_count(tidy_abstracts_lower, "\\bmental\\b"),
   `psycholog..` = str_count(tidy_abstracts_lower, "\\bpsycholog.*\\b"),
@@ -138,12 +138,38 @@ term_counts <- tibble(
   `depressi..` = str_count(tidy_abstracts_lower, "\\bdepressi.*\\b"),
   anxiety = stringr::str_count(tidy_abstracts_lower, "\\banxiety\\b"))
   # emi = stringr::str_count(tidy_abstracts_lower, "\\becological momentary intervention\\b)"))
- # TODO; I cannot serach by several words separated by blanck spaces
+  # TODO; I cannot search by several words separated by blanck spaces (EMI case)
+
+# sum a bunch of columns row-wise
+# https://stackoverflow.com/a/32827260/261210
+sumColsInARow <- function(df, list_of_cols, new_col) {
+  df %>% 
+    mutate_(.dots = ~Reduce(`+`, .[list_of_cols])) %>% 
+    setNames(c(names(df), new_col))
+}
+
+
+psy_terms_count_sum <- sumColsInARow(
+  psy_terms_count, names(psy_terms_count)[names(psy_terms_count) != "id"], "all") %>%
+  arrange(desc(all))
+
+psy_terms_count_sum_total <- psy_terms_count_sum %>% 
+  summarise_if(is.numeric, funs(sum)) %>%
+  add_column(id = "Total", .before = 0)
   
+psy_terms_count_sum <- rbind(psy_terms_count_sum, psy_terms_count_sum_total)
 ```
 
-_How often do Psychological related search keywords appear in each abstract paper?_
+_How often do psychological related search terms appear in each abstract?_
 
+```{r}
+kable(psy_terms_count_sum)
+kable(psy_terms_count_sum,
+      caption = paste0("Psychological-related search terms in the corpus,",
+                       " ordered by sum of matches per asbtract"),
+      format = "html", booktabs = TRUE) %>%
+  kableExtra::landscape()
+```
 
 
 
@@ -152,10 +178,10 @@ _How often do Psychological related search keywords appear in each abstract pape
 *Search terms*: cell, mobile smartphone, smart, portable, phone*, device*, app, apps, applicat*, mhealth, uhealth, ehealth, emental, android, iphone
 
 
-_How often do Computer science related search keywords appear in each abstract paper?_
+_How often do Computer science related search terms appear in each abstract?_
 
 
-## Freqeuncy analysis onf top words in the abstracts
+## Frequency analysis onf top words in the abstracts
 
 _Word cloud of abstracts_ 
 _Word cloud of top words_
