@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 ## Metadata
@@ -26,11 +28,11 @@ This document is an EDA notebook to explore descriptive and informative figures 
 
 The data for the analysis is in the *papers* dataset that has `` `r nrow(papers)` `` references.
 
-```{r data_source, echo=FALSE}
+```{r data_source, echo=TRUE}
 papers %>% str()
 ```
 
-As part o the text analysis of papers, i.e. wordcloud and terms frequency analysis, read the abstracts from the apper and and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words).
+As part of the text analysis of papers, including wordcloud and terms frequency analysis, read the full list of abstracts from the `papers` and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words).
 
 ```{r stopwords}
 tidy_abstracts <- papers %>%
