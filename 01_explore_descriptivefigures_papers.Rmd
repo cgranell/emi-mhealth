@@ -15,6 +15,7 @@ library(tidyverse)
 library(tidytext)
 library(kableExtra)
 library(stringr)
+library(wordcloud)
 ```
 
 
@@ -87,17 +88,14 @@ _How many non-stop words does each abstract have?_
 
 ```{r stop_words, echo=FALSE}
 
-non_stop_words_per_paper <- no_stop_words %>%
+non_stop_words_per_abstract <- no_stop_words %>%
   group_by(id) %>%
   summarise(num_words = n()) %>%
   arrange(desc(num_words))
 
-#ggplot(non_stop_words_per_paper, aes(id, num_words)) + geom_col() 
+ggplot(non_stop_words_per_paper, aes(id, num_words)) + geom_col() 
 
-kable(no_stop_words %>%
-  group_by(id) %>%
-  summarise(num_words = n()) %>%
-  arrange(desc(num_words)),
+kable(non_stop_words_per_abstract,
   caption = "Abstracts ordered by number of (significant) words after deleting stopwords.")
 ```
 
@@ -176,8 +174,6 @@ kable(psy_terms_count_sum,
   kableExtra::landscape()
 ```
 
-
-
 ### Technical terms
 
 The detection matches full words using regex option `\b`.
@@ -203,6 +199,68 @@ _How often do Computer science related search terms appear in each abstract?_
 
 ## Frequency analysis of top words (most frequent) in the abstracts
 
-_Word cloud of abstracts_ 
+
+### Figure: Word cloud of asbtracts (A), psyschology top words, and technical top words
+
+
+```{r top:wrods, echo=TRUE}
+
+countPapersUsingWord <- function(the_word) {
+  sapply(the_word, function(w) {
+    no_stop_words %>%
+      filter(word == w) %>%
+      group_by(id) %>%
+      count %>%
+      nrow
+  })
+}
+
+top_20_words <- no_stop_words %>%
+  group_by(word) %>%
+  tally %>%
+  arrange(desc(n)) %>%
+  head(20) %>%
+  mutate(`# abstracts` = countPapersUsingWord(word)) %>%
+  add_column(place = c(1:nrow(.)), .before = 0)
+
+```
+
+```{r Fig_Word_cloud,dpi=600,fig.width=7,fig.asp=0.85}
+set.seed(1)
+if (max(top_20_words$n) < 100) {
+  minimum_occurence <- round(mean(top_20_words$n))
+} else {
+  minimum_occurence <-  min(top_20_words$n) # Or arbritary number like 100 
+}
+
+cloud_words <- no_stop_words %>%
+  group_by(word) %>%
+  tally %>%
+  filter(n >= minimum_occurence) %>% 
+  arrange(desc(n))
+
+if (nrow(cloud_words) > 0) {  
+  plot.new()
+  text(0.5, 0.5, "Top20 word cloud", font = 2)
+
+  wordcloud(cloud_words$word, cloud_words$n,
+            max.words = Inf,
+            random.order = FALSE,
+            fixed.asp = FALSE,
+            rot.per = 0,
+            color = brewer.pal(8,"Dark2"))
+  
+
+} else {
+  warning("No input data for wordcloud.")
+}
+
+
+
+```
+
+
+
+_Word cloud of 20 top wrods in abstracts_ 
 _Word cloud of top words_
 
