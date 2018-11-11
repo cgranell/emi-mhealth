@@ -261,7 +261,7 @@ if (nrow(cloud_words) > 0) {
 
 _Word cloud of 20 top words in abstracts_ 
 
-This word cloud is based on `r length(unique(cloud_words$word))` unique words occuring each at least `r minimum_occurence` times, all in all occuring `r sum(cloud_words$n)` times which comprises `r round(sum(cloud_words$n)/ nrow(no_stop_words) * 100)` % of non-stop words.
+This word cloud is based on `r length(unique(cloud_words$word))` unique words occuring each at least `r minimum_occurence` times, all in all occuring `r sum(cloud_words$n)` times which is roughly `r round(sum(cloud_words$n)/ nrow(no_stop_words) * 100)` % of the all non-stop words.
 
 
 ```{r  top_words_table, echo=TRUE}
