@@ -16,9 +16,9 @@ library(tidytext)
 library(kableExtra)
 library(stringr)
 library(wordcloud)
-library(grid)
-library(gridBase)
-library(gridExtra)
+#library(grid)
+#library(gridBase)
+#library(gridExtra)
 ```
 
 
@@ -99,7 +99,8 @@ non_stop_words_per_abstract <- no_stop_words %>%
 #ggplot(non_stop_words_per_abstract, aes(id, num_words)) + geom_col() 
 
 kable(non_stop_words_per_abstract,
-  caption = "Abstracts ordered by number of (significant) words after deleting stopwords.")
+  caption = "Abstracts ordered by number of (significant) words after deleting stopwords.", 
+  format = "html", booktabs = TRUE)
 ```
 
 
@@ -268,9 +269,11 @@ This word cloud is based on `r length(unique(cloud_words$word))` unique words oc
 # kable(top_20_words)
 kable(top_20_words,
       caption = "Top20 words in the corpus",
-      format = "html", booktabs = TRUE) %>%
-  kableExtra::landscape()
+      format = "html", booktabs = TRUE)
+
+#TODO: some top words and non-stop-words should be taken out (eg. background, conclusion, a)  
 ```
 
+ 
 _Word cloud of top words_
 
