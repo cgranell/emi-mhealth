@@ -180,8 +180,23 @@ kable(psy_terms_count_sum,
 
 ### Technical terms
 
-*Search terms*: cell, mobile smartphone, smart, portable, phone*, device*, app, apps, applicat*, mhealth, uhealth, ehealth, emental, android, iphone
+The detection matches full words using regex option `\b`.
 
+- cell (and cell-phone, cellphone)
+- mobile
+- smart (and smartphone)
+- portable
+- phone(s) 
+- device(s)
+- app(s)
+- applicat (`applicat.*`, i.e. application)
+- emotional
+- mhealth
+- uhealth
+- ehealth
+- emntal
+- android
+- iphone
 
 _How often do Computer science related search terms appear in each abstract?_
 
