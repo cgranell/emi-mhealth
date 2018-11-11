@@ -16,6 +16,9 @@ library(tidytext)
 library(kableExtra)
 library(stringr)
 library(wordcloud)
+library(grid)
+library(gridBase)
+library(gridExtra)
 ```
 
 
@@ -93,7 +96,7 @@ non_stop_words_per_abstract <- no_stop_words %>%
   summarise(num_words = n()) %>%
   arrange(desc(num_words))
 
-ggplot(non_stop_words_per_paper, aes(id, num_words)) + geom_col() 
+#ggplot(non_stop_words_per_abstract, aes(id, num_words)) + geom_col() 
 
 kable(non_stop_words_per_abstract,
   caption = "Abstracts ordered by number of (significant) words after deleting stopwords.")
@@ -203,7 +206,7 @@ _How often do Computer science related search terms appear in each abstract?_
 ### Figure: Word cloud of asbtracts (A), psyschology top words, and technical top words
 
 
-```{r top:wrods, echo=TRUE}
+```{r top_words, echo=TRUE}
 
 countPapersUsingWord <- function(the_word) {
   sapply(the_word, function(w) {
@@ -241,16 +244,12 @@ cloud_words <- no_stop_words %>%
 
 if (nrow(cloud_words) > 0) {  
   plot.new()
-  text(0.5, 0.5, "Top20 word cloud", font = 2)
-
   wordcloud(cloud_words$word, cloud_words$n,
             max.words = Inf,
             random.order = FALSE,
             fixed.asp = FALSE,
             rot.per = 0,
             color = brewer.pal(8,"Dark2"))
-  
-
 } else {
   warning("No input data for wordcloud.")
 }
@@ -259,8 +258,19 @@ if (nrow(cloud_words) > 0) {
 
 ```
 
+_Word cloud of 20 top words in abstracts_ 
+
+This word cloud is based on `r length(unique(cloud_words$word))` unique words occuring each at least `r minimum_occurence` times, all in all occuring `r sum(cloud_words$n)` times which comprises `r round(sum(cloud_words$n)/ nrow(no_stop_words) * 100)` % of non-stop words.
 
 
-_Word cloud of 20 top wrods in abstracts_ 
+```{r  top_words_table, echo=TRUE}
+# for testing
+# kable(top_20_words)
+kable(top_20_words,
+      caption = "Top20 words in the corpus",
+      format = "html", booktabs = TRUE) %>%
+  kableExtra::landscape()
+```
+
 _Word cloud of top words_
 
