@@ -65,8 +65,8 @@ my_stop_words <- tibble(
     "background", # used to structure an abstract
     "objective",
     "methods",
-    "resutls",
-    "conclusiones"
+    "results",
+    "conclusions"
     ),
   lexicon = "jmir")
 
@@ -92,7 +92,7 @@ total_words = nrow(papers_words)
 after_cleanup = nrow(no_stop_words)
 ```
 
-About `r round(after_cleanup/total_words * 100)` % (`after_cleanup`) of the words in all abstracts are considered stop words.
+About `r round(after_cleanup/total_words * 100)` % (`r after_cleanup`) of the words in all abstracts are considered stop words.
 
 _How many non-stop words does each abstract have?_
 
@@ -258,7 +258,8 @@ if (nrow(cloud_words) > 0) {
             random.order = FALSE,
             fixed.asp = FALSE,
             rot.per = 0,
-            color = brewer.pal(8,"Dark2"))
+            #color = brewer.pal(8,"Dark2"))
+            color = brewer.pal(9,"BuGn"))
 } else {
   warning("No input data for wordcloud.")
 }
