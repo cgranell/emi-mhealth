@@ -48,6 +48,8 @@ papers_words <- tidy_abstracts %>%
     select(id, abstract) %>%
     unnest_tokens(word, abstract)
 
+
+#TODO: Add here part of asbtract: background, objective, methods, resutls, conclusions. Check out cloud tag for non-sense words
 my_stop_words <- tibble(
   word = c(
     "et",
