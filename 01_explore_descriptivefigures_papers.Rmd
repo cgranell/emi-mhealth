@@ -32,7 +32,7 @@ This document is an EDA notebook to explore descriptive and informative figures 
 
 The data for the analysis is in the *papers* dataset that has `` `r nrow(papers)` `` references.
 
-```{r data_source, echo=TRUE}
+```{r data_source, echo=FALSE}
 papers %>% str()
 ```
 
@@ -45,11 +45,10 @@ tidy_abstracts <- papers %>%
   
   
 papers_words <- tidy_abstracts %>%
-    select(id, abstract) %>%
+    select(id, filename, abstract) %>%
     unnest_tokens(word, abstract)
 
 
-#TODO: Add here part of asbtract: background, objective, methods, resutls, conclusions. Check out cloud tag for non-sense words
 my_stop_words <- tibble(
   word = c(
     "et",
@@ -61,7 +60,13 @@ my_stop_words <- tibble(
     "ing",
     "pp",
     "figure",
-    "based"
+    "based",
+    "â",
+    "background", # used to structure an abstract
+    "objective",
+    "methods",
+    "resutls",
+    "conclusiones"
     ),
   lexicon = "jmir")
 
@@ -94,7 +99,7 @@ _How many non-stop words does each abstract have?_
 ```{r stop_words, echo=FALSE}
 
 non_stop_words_per_abstract <- no_stop_words %>%
-  group_by(id) %>%
+  group_by(id, filename) %>%
   summarise(num_words = n()) %>%
   arrange(desc(num_words))
 
@@ -221,11 +226,12 @@ countPapersUsingWord <- function(the_word) {
   })
 }
 
-top_20_words <- no_stop_words %>%
+# top25 words
+top_words <- no_stop_words %>%
   group_by(word) %>%
   tally %>%
   arrange(desc(n)) %>%
-  head(20) %>%
+  head(25) %>%
   mutate(`# abstracts` = countPapersUsingWord(word)) %>%
   add_column(place = c(1:nrow(.)), .before = 0)
 
@@ -233,10 +239,10 @@ top_20_words <- no_stop_words %>%
 
 ```{r Fig_Word_cloud,dpi=600,fig.width=7,fig.asp=0.85}
 set.seed(1)
-if (max(top_20_words$n) < 100) {
-  minimum_occurence <- round(mean(top_20_words$n))
+if (max(top_words$n) < 100) {
+  minimum_occurence <- round(mean(top_words$n))
 } else {
-  minimum_occurence <-  min(top_20_words$n) # Or arbritary number like 100 
+  minimum_occurence <-  min(top_words$n) # Or arbritary number like 100 
 }
 
 cloud_words <- no_stop_words %>%
@@ -268,9 +274,9 @@ This word cloud is based on `r length(unique(cloud_words$word))` unique words oc
 
 ```{r  top_words_table, echo=TRUE}
 # for testing
-# kable(top_20_words)
-kable(top_20_words,
-      caption = "Top20 words in the corpus",
+# kable(top_words)
+kable(top_words,
+      caption = "Top25 words in the corpus",
       format = "html", booktabs = TRUE)
 
 #TODO: some top words and non-stop-words should be taken out (eg. background, conclusion, a)  
