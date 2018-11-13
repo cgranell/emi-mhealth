@@ -284,5 +284,12 @@ kable(top_words,
 
 ```
 
+```{r next_steps}
+#TODO: How do top words and search terms correlate?
+#TODO: Visualise talbe of occurrances of top words
+#TODO: How do the top words correlated with the top keywords in the corpus?
+#TODO: How do the top words correlated with the top keywords in each abstract?
+
+```
  
 
