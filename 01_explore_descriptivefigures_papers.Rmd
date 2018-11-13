@@ -99,7 +99,7 @@ _How many non-stop words does each abstract have?_
 ```{r stop_words, echo=FALSE}
 
 non_stop_words_per_abstract <- no_stop_words %>%
-  group_by(id, filename) %>%
+  group_by(filename) %>%
   summarise(num_words = n()) %>%
   arrange(desc(num_words))
 
@@ -175,8 +175,8 @@ psy_terms_count_sum <- rbind(psy_terms_count_sum, psy_terms_count_sum_total)
 
 _How often do psychological related search terms appear in each abstract?_
 
-```{r  psy_search_terms_table, echo=TRUE}
-# testing
+```{r  psy_search_terms_table, echo=FALSE}
+# for testing
 # kable(psy_terms_count_sum)
 kable(psy_terms_count_sum,
       caption = paste0("Psychological-related search terms in the corpus,",
