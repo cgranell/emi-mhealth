@@ -16,9 +16,8 @@ library(tidytext)
 library(kableExtra)
 library(stringr)
 library(wordcloud)
-#library(grid)
-#library(gridBase)
-#library(gridExtra)
+library(skimr)
+
 ```
 
 
@@ -33,7 +32,8 @@ This document is an EDA notebook to explore descriptive and informative figures 
 The data for the analysis is in the *papers* dataset that has `` `r nrow(papers)` `` references.
 
 ```{r data_source, echo=FALSE}
-papers %>% str()
+papers %>% glimpse()
+papers %>% skimr::skim()
 ```
 
 As part of the text analysis of papers, including wordcloud and terms frequency analysis, read the full list of abstracts from the `papers` and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words).
