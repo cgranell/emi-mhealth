@@ -214,7 +214,7 @@ _How often do Computer science related search terms appear in each abstract?_
 ### Figure: Word cloud of asbtracts (A), psyschology top words, and technical top words
 
 
-```{r top_words, echo=TRUE}
+```{r top_words, echo=FALSE}
 
 countPapersUsingWord <- function(the_word) {
   sapply(the_word, function(w) {
@@ -227,17 +227,20 @@ countPapersUsingWord <- function(the_word) {
 }
 
 # top25 words
+no_top_words <- 25
 top_words <- no_stop_words %>%
   group_by(word) %>%
   tally %>%
   arrange(desc(n)) %>%
-  head(25) %>%
+  head(no_top_words) %>%
   mutate(`# abstracts` = countPapersUsingWord(word)) %>%
   add_column(place = c(1:nrow(.)), .before = 0)
 
 ```
 
-```{r Fig_Word_cloud,dpi=600,fig.width=7,fig.asp=0.85}
+_Word cloud of `r no_top_words` top words in abstracts_ 
+
+```{r Fig_Word_cloud,dpi=600,fig.width=8,fig.asp=0.85, echo=FALSE}
 set.seed(1)
 if (max(top_words$n) < 100) {
   minimum_occurence <- round(mean(top_words$n))
@@ -268,21 +271,18 @@ if (nrow(cloud_words) > 0) {
 
 ```
 
-_Word cloud of 20 top words in abstracts_ 
 
 This word cloud is based on `r length(unique(cloud_words$word))` unique words occuring each at least `r minimum_occurence` times, all in all occuring `r sum(cloud_words$n)` times which is roughly `r round(sum(cloud_words$n)/ nrow(no_stop_words) * 100)` % of the all non-stop words.
 
 
-```{r  top_words_table, echo=TRUE}
+```{r  top_words_table, echo=FALSE}
 # for testing
 # kable(top_words)
 kable(top_words,
-      caption = "Top25 words in the corpus",
+      caption = paste0("Occurrences of top",no_top_words," words in the corpus"),
       format = "html", booktabs = TRUE)
 
-#TODO: some top words and non-stop-words should be taken out (eg. background, conclusion, a)  
 ```
 
  
-_Word cloud of top words_
 
