@@ -116,24 +116,26 @@ non_stop_words_per_abstract <- no_stop_words %>%
   select(id, filename, num_words, year) %>%
   arrange(desc(num_words))
 
-
 non_stop_words_per_abstract$id <- factor(non_stop_words_per_abstract$id, 
                                                levels = non_stop_words_per_abstract$id[order(non_stop_words_per_abstract$num_words)])
+```
 
-ggplot(slice(non_stop_words_per_abstract, 1:60), aes(id, num_words, fill=year)) + 
+
+
+```{r echo=FALSE}
+
+ggplot(slice(non_stop_words_per_abstract, 1:50), aes(id, num_words, fill=year)) + 
   geom_col(show.legend = FALSE) +
-  labs(x = NULL, y = "# words", title="Top60 abstracts by # words, by year") +
+  labs(x = NULL, y = "# words", title="Top50 abstracts by # words, by year") +
   facet_wrap(~year, ncol = 2, scales = "free")+
   coord_flip() 
-
-############ EDA
 
 
 kable(slice(non_stop_words_per_abstract, 1:20),
   caption = "Top20 abstracts ordered by number of (significant) words after deleting stopwords.", 
   format = "html", booktabs = TRUE)
-```
 
+```
 
 ## Search terms in the abstract
 
