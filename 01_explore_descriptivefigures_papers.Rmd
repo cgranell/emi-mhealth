@@ -110,7 +110,7 @@ _How many non-stop words does each abstract have?_
 non_stop_words_per_abstract <- no_stop_words %>%
   group_by(id) %>%
   summarise(num_words = n()) %>%
-  left_join(papers) %>%
+  left_join(papers, by=c("id")) %>%
   select(id, filename, num_words, year) %>%
   arrange(desc(num_words))
 
