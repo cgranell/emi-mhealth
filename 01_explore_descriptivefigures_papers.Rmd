@@ -38,16 +38,27 @@ papers %>% skimr::skim()
 
 As part of the text analysis of papers, including wordcloud and terms frequency analysis, read the full list of abstracts from the `papers` and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words).
 
-```{r stopwords, echo=FALSE}
+Reference book to text mining in tidy format: [Text Mining with R](https://www.tidytextmining.com/tfidf.html)
+
+```{r stopwords_abstract, echo=FALSE}
 tidy_abstracts <- papers %>%
-  select(id, filename, abstract) %>%
+  select(id, abstract) %>%
   arrange(id)
   
-  
 papers_words <- tidy_abstracts %>%
-    select(id, filename, abstract) %>%
+    select(id, abstract) %>%
     unnest_tokens(word, abstract)
 
+###### EDA ##########
+eda_papers_words <- tidy_abstracts %>%
+    unnest_tokens(word, abstract) %>%
+    count(id, word, sort = TRUE) %>%
+    ungroup()
+
+eda_total_papers_words <- eda_papers_words %>% 
+  group_by(id) %>% 
+  summarize(total = sum(n))
+###### EDA ##########
 
 my_stop_words <- tibble(
   word = c(
@@ -96,17 +107,26 @@ About `r round(after_cleanup/total_words * 100)` % (`r after_cleanup`) of the wo
 
 _How many non-stop words does each abstract have?_
 
-```{r stop_words, echo=FALSE}
+```{r non_stopwords_abstract, echo=FALSE}
 
 non_stop_words_per_abstract <- no_stop_words %>%
-  group_by(filename) %>%
+  group_by(id) %>%
   summarise(num_words = n()) %>%
+  left_join(papers) %>%
+  select(id, filename, num_words, year) %>%
   arrange(desc(num_words))
 
-#ggplot(non_stop_words_per_abstract, aes(id, num_words)) + geom_col() 
+ggplot(slice(non_stop_words_per_abstract, 1:50), aes(id, num_words, fill=year)) + 
+  geom_col(show.legend = FALSE) +
+  labs(x = NULL, y = "# words", title="Top50 abstracts by # words, by year") +
+  facet_wrap(~year, ncol = 2, scales = "free")+
+  coord_flip()
 
-kable(non_stop_words_per_abstract,
-  caption = "Abstracts ordered by number of (significant) words after deleting stopwords.", 
+############ EDA
+
+
+kable(slice(non_stop_words_per_abstract, 1:20),
+  caption = "Top20 abstracts ordered by number of (significant) words after deleting stopwords.", 
   format = "html", booktabs = TRUE)
 ```
 
