@@ -36,9 +36,7 @@ papers %>% glimpse()
 papers %>% skimr::skim()
 ```
 
-As part of the text analysis of papers, including wordcloud and terms frequency analysis, read the full list of abstracts from the `papers` and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words).
-
-Reference book to text mining in tidy format: [Text Mining with R](https://www.tidytextmining.com/tfidf.html)
+As part of the text analysis of papers, including wordcloud and terms frequency analysis, read the full list of abstracts from the `papers` and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words). Reference book to text mining in tidy format: [Text Mining with R](https://www.tidytextmining.com/tfidf.html)
 
 ```{r stopwords_abstract, echo=FALSE}
 tidy_abstracts <- papers %>%
@@ -103,7 +101,7 @@ total_words = nrow(papers_words)
 after_cleanup = nrow(no_stop_words)
 ```
 
-About `r round(after_cleanup/total_words * 100)` % (`r after_cleanup`) of the words in all abstracts are considered stop words.
+About `r round(after_cleanup/total_words * 100)` % (`r after_cleanup`) of the total words (`r total_words`) are considered stop words.
 
 _How many non-stop words does each abstract have?_
 
@@ -132,7 +130,7 @@ ggplot(slice(non_stop_words_per_abstract, 1:50), aes(id, num_words, fill=year)) 
 
 
 kable(slice(non_stop_words_per_abstract, 1:20),
-  caption = "Top20 abstracts ordered by number of (significant) words after deleting stopwords.", 
+  caption = "Top20 abstracts ordered by # words after deleting stopwords.", 
   format = "html", booktabs = TRUE)
 
 ```
