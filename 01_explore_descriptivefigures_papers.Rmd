@@ -287,7 +287,7 @@ kable(top_words,
 ```{r next_steps}
 #TODO: How do top words and search terms correlate?
 # Do it manually or automated. Which of the top words are also search terms? Are search terms in the top of the list? Are there standing top words that were nt search terms?
-#TODO: Visualise talbe of occurrances of top words
+#TODO: Visualise table of occurrances of top words
 #TODO: How do the top words correlated with the top keywords in the corpus?
 #TODO: How do the top words correlated with the top keywords in each abstract?
 
