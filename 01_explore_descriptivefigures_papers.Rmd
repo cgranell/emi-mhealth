@@ -225,7 +225,7 @@ The detection matches full words using regex option `\b`.
 - mhealth
 - uhealth
 - ehealth
-- emntal
+- emental
 - android
 - iphone
 
