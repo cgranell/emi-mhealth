@@ -36,7 +36,7 @@ papers %>% glimpse()
 papers %>% skimr::skim()
 ```
 
-As part of the text analysis of papers, including wordcloud and terms frequency analysis, read the full list of abstracts from the `papers` and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words). Reference book to text mining in tidy format: [Text Mining with R](https://www.tidytextmining.com/tfidf.html)
+As part of the text analysis of papers, including wordcloud and terms frequency analysis, read the full list of abstracts from the `papers` and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words). Reference book to text mining in tidy format: [Text Mining with R](https://www.tidytextmining.com/)
 
 ```{r stopwords_abstract, echo=FALSE}
 tidy_abstracts <- papers %>%
@@ -46,17 +46,6 @@ tidy_abstracts <- papers %>%
 papers_words <- tidy_abstracts %>%
     select(id, abstract) %>%
     unnest_tokens(word, abstract)
-
-###### EDA ##########
-eda_papers_words <- tidy_abstracts %>%
-    unnest_tokens(word, abstract) %>%
-    count(id, word, sort = TRUE) %>%
-    ungroup()
-
-eda_total_papers_words <- eda_papers_words %>% 
-  group_by(id) %>% 
-  summarize(total = sum(n))
-###### EDA ##########
 
 my_stop_words <- tibble(
   word = c(
@@ -92,6 +81,20 @@ suppressWarnings({
 # Get list of words from abstracts without stopwords 
 no_stop_words <- no_numbers %>%
   anti_join(all_stop_words, by = "word") 
+
+```
+
+```{r stopwords_abstract_EDA, echo=FALSE}
+
+papers_words %>%
+    count(word, sort = TRUE) %>%
+    filter(n > 200) %>%
+    mutate(word = reorder(word, n)) %>%
+    ggplot(aes(word, n)) +
+    geom_col() +
+    xlab(NULL) +
+    coord_flip()
+
 
 ```
 
@@ -200,6 +203,7 @@ psy_terms_count_sum <- rbind(psy_terms_count_sum, psy_terms_count_sum_total)
 _How often do psychological related search terms appear in each abstract?_
 
 ```{r  psy_search_terms_table, echo=FALSE}
+
 # for testing
 # kable(psy_terms_count_sum)
 kable(psy_terms_count_sum,
@@ -228,6 +232,40 @@ The detection matches full words using regex option `\b`.
 - emental
 - android
 - iphone
+
+```{r cs_search_terms_per_abstract, echo=FALSE}
+
+cs_terms_count <- tibble(
+  id = tidy_abstracts$id,
+  cell = stringr::str_count(tidy_abstracts_lower, "\\bcell\\b"),
+  mobile = stringr::str_count(tidy_abstracts_lower, "\\bpmobile\\b"),
+  smart = stringr::str_count(tidy_abstracts_lower, "\\bsmart\\b"),
+  portable = stringr::str_count(tidy_abstracts_lower, "\\bportable\\b"),
+  `phone(s)` = stringr::str_count(tidy_abstracts_lower, "\\bphone?\\b"),
+  `device(s)` = stringr::str_count(tidy_abstracts_lower, "\\bdevice?\\b"),
+  `app(s)` = stringr::str_count(tidy_abstracts_lower, "\\bapp?\\b"),
+  `applicat..` = str_count(tidy_abstracts_lower, "\\bapplicat.*\\b"),
+  mhealth = stringr::str_count(tidy_abstracts_lower, "\\bmhealth\\b"),
+  uhealth = stringr::str_count(tidy_abstracts_lower, "\\buhealth\\b"),
+  ehealth = stringr::str_count(tidy_abstracts_lower, "\\behealth\\b"),
+  emental = stringr::str_count(tidy_abstracts_lower, "\\bemental\\b"),
+  android = stringr::str_count(tidy_abstracts_lower, "\\bandroid\\b"),
+  iphone = stringr::str_count(tidy_abstracts_lower, "\\biphone\\b"))
+  
+
+# Sum all occurences of cs search terms row-wise (i.e. per abstract) and put result in a new column "all"
+cs_terms_count_sum <- sumColsInARow(
+  cs_terms_count, names(cs_terms_count)[names(cs_terms_count) != "id"], "all") %>%
+  arrange(desc(all))
+
+# Compute totals per column, i.e per each psy search term and "all"
+cs_terms_count_sum_total <- cs_terms_count_sum %>% 
+  summarise_if(is.numeric, funs(sum)) %>%
+  add_column(id = "Total", .before = 0)
+  
+cs_terms_count_sum <- rbind(cs_terms_count_sum, cs_terms_count_sum_total)
+```
+
 
 _How often do Computer science related search terms appear in each abstract?_
 
