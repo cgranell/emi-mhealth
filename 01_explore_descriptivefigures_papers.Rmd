@@ -25,13 +25,14 @@ library(skimr)
 devtools::session_info(include_base = TRUE)
 ```
 
-This document is an EDA notebook to explore descriptive and informative figures of the dataset *papers* in the *emidata* package. Type `?papers` for information. 
+This document is an EDA notebook to explore descriptive and informative figures of the dataset *ipapers2018* in the *emidata* package. Type `?ipapers2018` for information. 
 
 ## Data 
 
-The data for the analysis is in the *papers* dataset that has `` `r nrow(papers)` `` references.
+The data for the analysis is in the *ipapers2018* dataset that has `` `r nrow(ipapers2018)` `` references.
 
 ```{r data_source, echo=FALSE}
+papers <- ipapers2018
 papers %>% glimpse()
 papers %>% skimr::skim()
 ```
