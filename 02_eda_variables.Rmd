@@ -29,15 +29,22 @@ This document is an EDA notebook to explore descriptive and informative figures 
 
 ## Data 
 
-The data for the analysis is in the *ipapers2018* dataset that has `` `r nrow(ipapers2018)` `` references.
+We analyse two datasets: *ipapers2018_csdata* dataset that has `` `r nrow(ipapers2018_csdata)` `` records, and *ipapers2018_psydata* dataset that has `` `r nrow(ipapers2018_psydata)` `` records, and references.
 
 ```{r data_source, echo=FALSE}
-papers <- ipapers2018
-papers %>% glimpse()
-papers %>% skimr::skim()
+cs_data <- ipapers2018_csdata
+psy_data <- ipapers2018_psydata
+cs_data %>% glimpse()
+cs_data %>% skimr::skim()
+psy_data %>% glimpse()
+psy_data %>% skimr::skim()
+
+
 ```
 
-As part of the text analysis of papers, including wordcloud and terms frequency analysis, read the full list of abstracts from the `papers` and process them to create a [tidy](https://www.jstatsoft.org/article/view/v059i10) data structure without [stop words](https://en.wikipedia.org/wiki/Stop_words). Reference book to text mining in tidy format: [Text Mining with R](https://www.tidytextmining.com/)
+#### BELOW THIS LINES IS NOT VALID
+TODO: Merge `cs_data` and `psy_data` into all_data. Next, filter out thopse that are not invlcued oin both (psy_in, cs_in), and EDA (analysis, plots)
+
 
 ```{r stopwords_abstract, echo=FALSE}
 tidy_abstracts <- papers %>%
