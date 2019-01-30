@@ -25,11 +25,11 @@ library(skimr)
 devtools::session_info(include_base = TRUE)
 ```
 
-This document is an EDA notebook to explore descriptive and informative figures of the dataset *ipapers2018* in the *emidata* package. Type `?ipapers2018` for information. 
+This document is an EDA notebook to explore descriptive and informative figures of the datasets incldued in the *emidata* package.  
 
 ## Data 
 
-We analyse two datasets: *ipapers2018_csdata* dataset that has `` `r nrow(ipapers2018_csdata)` `` records, and *ipapers2018_psydata* dataset that has `` `r nrow(ipapers2018_psydata)` `` records, and references.
+We analyse three  datasets: *ipapers2018_csdata* dataset (psy-realted data items) has `` `r nrow(ipapers2018_csdata)` `` records, *ipapers2018_psydata* dataset (cs-related data items) that has `` `r nrow(ipapers2018_psydata)` `` records, and *ipapers2018*  dataset (analysed papers) with `` `r nrow(ipapers2018)` `` records.
 
 ```{r data_source, echo=FALSE}
 cs_data <- ipapers2018_csdata
@@ -39,58 +39,22 @@ cs_data %>% skimr::skim()
 psy_data %>% glimpse()
 psy_data %>% skimr::skim()
 
+```
+
+
+```{r join, echo=FALSE}
+
+all_data <- psy_data %>%
+    inner_join(cs_data, by="id")
+
+# Drop misused columns
+all_data <- all_data %>% select(-id_csin, -id_psyin)
 
 ```
+
+The definitive number of papers to analyse is `` `r nrow(all_data)` `` records.
 
 #### BELOW THIS LINES IS NOT VALID
-TODO: Merge `cs_data` and `psy_data` into all_data. Next, filter out thopse that are not invlcued oin both (psy_in, cs_in), and EDA (analysis, plots)
-
-
-```{r stopwords_abstract, echo=FALSE}
-tidy_abstracts <- papers %>%
-  select(id, abstract) %>%
-  arrange(id)
-  
-papers_words <- tidy_abstracts %>%
-    select(id, abstract) %>%
-    unnest_tokens(word, abstract)
-
-my_stop_words <- tibble(
-  word = c(
-    "et",
-    "al",
-    "fig",
-    "e.g",
-    "i.e",
-    "http",
-    "ing",
-    "pp",
-    "figure",
-    "based",
-    "â",
-    "background", # used to structure an abstract
-    "objective",
-    "methods",
-    "results",
-    "conclusions"
-    ),
-  lexicon = "jmir")
-
-
-all_stop_words <- stop_words %>%
-  bind_rows(my_stop_words)
-
-# Get rid of numeric values (as words) from abstracts
-suppressWarnings({
-  no_numbers <- papers_words %>%
-    filter(is.na(as.numeric(word)))
-})
-
-# Get list of words from abstracts without stopwords 
-no_stop_words <- no_numbers %>%
-  anti_join(all_stop_words, by = "word") 
-
-```
 
 ```{r stopwords_abstract_EDA, echo=FALSE}
 
