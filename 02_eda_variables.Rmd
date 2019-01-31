@@ -15,7 +15,6 @@ library(tidyverse)
 library(tidytext)
 library(kableExtra)
 library(stringr)
-library(wordcloud)
 library(skimr)
 
 ```
@@ -42,7 +41,7 @@ psy_data %>% skimr::skim()
 ```
 
 
-```{r join, echo=FALSE}
+```{r all_data, echo=FALSE}
 
 all_data <- psy_data %>%
     inner_join(cs_data, by="id")
@@ -50,316 +49,126 @@ all_data <- psy_data %>%
 # Drop misused columns
 all_data <- all_data %>% select(-id_csin, -id_psyin)
 
+total_papers = nrow(all_data)
 ```
 
-The definitive number of papers to analyse is `` `r nrow(all_data)` `` records.
+The final number of papers to analyse is `` `r total_papers` ``.
 
-#### BELOW THIS LINES IS NOT VALID
+## Exploratory analysis
 
-```{r stopwords_abstract_EDA, echo=FALSE}
+Next tables and figures are exploratory to figure out what's going on. The initial assumption of the apper is that the mental disorders field (*md*) drives the analysis. So we start exploring the variables related to mental disorders: 
 
-# papers_words %>%
-#     count(word, sort = TRUE) %>%
-#     filter(n > 200) %>%
-#     mutate(word = reorder(word, n)) %>%
-#     ggplot(aes(word, n)) +
-#     geom_col() +
-#     xlab(NULL) +
-#     coord_flip()
-
+```{r md_variables, echo=TRUE}
+all_data %>%
+    select(starts_with("md")) %>%
+    names()
 
 ```
 
+### Mental disorders (MDs) variable 
 
-```{r calculate_stopword_stats, echo=FALSE}
-total_words = nrow(papers_words)
-after_cleanup = nrow(no_stop_words)
+_How many ditinct MDs are there?_ 
+
+```{r md_variability, echo=FALSE}
+
+md_data <- 
+    all_data %>%
+    select(starts_with("md"))
+
+md_data$md <- factor(md_data$md, levels=names(sort(table(md_data$md), decreasing=T)))
+n_md <- nlevels(md_data$md)
+
+md_data <- 
+    md_data %>%
+    mutate(md_dsh5 = factor(if_else(md_id <= 22, "YES", "NO")))
+
+n_yes_dsh5 <- 
+    md_data %>%
+        filter(md_dsh5 == "YES") %>%
+        nrow()
+n_no_dsh5 <- 
+    md_data %>%
+        filter(md_dsh5 == "NO") %>%
+        nrow()
+
+md_data %>% str() 
+
+
 ```
 
-About `r round(after_cleanup/total_words * 100)` % (`r after_cleanup`) of the total words (`r total_words`) are considered stop words.
+There are `` `r n_md` `` distinct MDs (out of 25). About `r round(n_yes_dsh5/n_md * 100)` % (`r n_yes_dsh5`) are categorised according to DSH-5. 
+About `r round(n_no_dsh5/n_md * 100)` % (`r n_no_dsh5`) are Dual, Multiple or Suicidal Behavior Disorder/Nonsuicidal Self-Injury. 
 
-_How many non-stop words does each abstract have?_
 
-```{r non_stopwords_abstract, echo=FALSE}
+```{r plot_md_variability, echo=FALSE}
+# plot variety of mental disorders
 
-non_stop_words_per_abstract <- no_stop_words %>%
-  group_by(id) %>%
-  summarise(num_words = n()) %>%
-  left_join(papers, by=c("id")) %>%
-  select(id, filename, num_words, year) %>%
-  arrange(desc(num_words))
+md_data %>%
+  ggplot(mapping = aes(x = md, fill=md_dsh5)) +
+    geom_bar() +
+    coord_flip() +
+    geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, size = 2) +
+    theme_bw()
 
-non_stop_words_per_abstract$id <- factor(non_stop_words_per_abstract$id, 
-                                               levels = non_stop_words_per_abstract$id[order(non_stop_words_per_abstract$num_words)])
+```
+
+_top 3 MDs_? 
+
+```{r md_plot3, echo=FALSE}
+top3 <- levels(md_data$md)[1:3]
+
+n_top3 <- 
+    md_data %>%
+        filter(md %in% top3) %>%
+        nrow()
+
+md_data %>%
+  filter(md %in% top3) %>%
+  group_by(md) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n))
+
 ```
 
 
 
-```{r echo=FALSE}
 
-ggplot(slice(non_stop_words_per_abstract, 1:40), aes(id, num_words, fill=year)) + 
-  geom_col(show.legend = FALSE) +
-  labs(x = NULL, y = "# words", title="Top40 abstracts by # words, by year") +
-  facet_wrap(~year, ncol = 2, scales = "free")+
-  coord_flip() 
+```{r todo}
+
+md_data %>%
+ggplot(mapping = aes(x = md, y = n, fill = md_dsh5)) +
+    geom_bar(stat="identity") +
+    coord_flip() +
+    geom_text(aes(label = n), nudge_y = 0.5, size = 2) +
+    theme_bw()
 
 
-kable(slice(non_stop_words_per_abstract, 1:20),
-  caption = "Top20 abstracts ordered by # words after deleting stopwords.", 
-  format = "html", booktabs = TRUE)
+geom_text(stat = 'count' ,aes(label = ..count..),
+nudge_y = 1.5)
+
+
+md_data %>%
+  group_by(md) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n))  %>%
+  ggplot(mapping = aes(x = md, y = n)) +
+    geom_bar(stat="identity", fill="orange") +
+    coord_flip() +
+    geom_text(aes(label = n), nudge_y = 0.5, size = 2) +
+    theme_bw()
 
 ```
+
+
+### BELOW THIS LINE IS NOT VALID
+
+
 
 ## Search terms in the abstract
 
 ### Psychological terms
 
-The detection matches full words using regex option `\b`.
-
-- mental (and also e-mental)
-- psycholog (`psycholog.*`, i.e. psychology, psychological)
-- psychiatric
-- emotional
-- health (and also e-health, u-health)
-- treatment(s) (and also pretreatment, post-treatment)
-- disorder(s) 
-- intervention(s) 
-- therapy(ies)
-- distress,
-- affection
-- depressi (`depressi.*`, i.e. depression, depressive)
-- anxiety,
-- ecological momentary intervention
-
-```{r psy_search_terms_per_abstract, echo=FALSE}
-tidy_abstracts_lower <- stringr::str_to_lower(tidy_abstracts$abstract)
-psy_terms_count <- tibble(
-  id = tidy_abstracts$id,
-  mental = stringr::str_count(tidy_abstracts_lower, "\\bmental\\b"),
-  `psycholog..` = str_count(tidy_abstracts_lower, "\\bpsycholog.*\\b"),
-  psychiatric = stringr::str_count(tidy_abstracts_lower, "\\bpsychiatric\\b"),
-  emotional = stringr::str_count(tidy_abstracts_lower, "\\bemotional\\b"),
-  health = stringr::str_count(tidy_abstracts_lower, "\\bhealth\\b"),
-  `treatment(s)` = stringr::str_count(tidy_abstracts_lower, "\\btreatments?\\b|\\bpretreatment?\\b"),
-  `disorder(s)` = stringr::str_count(tidy_abstracts_lower, "\\bdisorder?\\b"),
-  `intervention(s)` = stringr::str_count(tidy_abstracts_lower, "\\bintervention?\\b"),
-  `therapy/ies` = stringr::str_count(tidy_abstracts_lower, "\\btherap(y|ies)\\b"),
-  distress = stringr::str_count(tidy_abstracts_lower, "\\bdistress\\b"),
-  affection = stringr::str_count(tidy_abstracts_lower, "\\baffection\\b"),
-  `depressi..` = str_count(tidy_abstracts_lower, "\\bdepressi.*\\b"),
-  anxiety = stringr::str_count(tidy_abstracts_lower, "\\banxiety\\b"))
-  # emi = stringr::str_count(tidy_abstracts_lower, "\\becological momentary intervention\\b)"))
-  # TODO; I cannot search by several words separated by blanck spaces (EMI case)
-
-# sum a bunch of columns row-wise
-# https://stackoverflow.com/a/32827260/261210
-sumColsInARow <- function(df, list_of_cols, new_col) {
-  df %>% 
-    mutate_(.dots = ~Reduce(`+`, .[list_of_cols])) %>% 
-    setNames(c(names(df), new_col))
-}
-
-# Sum all occurences of psy search terms row-wise (i.e. per abstract) and put result in a new column "all"
-psy_terms_count_sum <- sumColsInARow(
-  psy_terms_count, names(psy_terms_count)[names(psy_terms_count) != "id"], "psy_all") %>%
-  arrange(desc(psy_all))
-
-# Compute totals per column, i.e per each psy search term and "all"
-psy_terms_count_sum_total <- psy_terms_count_sum %>% 
-  summarise_if(is.numeric, funs(sum)) %>%
-  add_column(id = "Total", .before = 0)
-  
-psy_terms_count_sum <- rbind(psy_terms_count_sum, psy_terms_count_sum_total)
-```
 
 _How often do psychological related search terms appear in each abstract?_
 
-```{r  psy_search_terms_table, echo=FALSE}
-
-# for testing
-# kable(psy_terms_count_sum)
-kable(psy_terms_count_sum %>% top_n(20),
-      caption = paste0("Psychological-related search terms in the corpus,",
-                       " ordered by sum of matches per abstract (top20)"),
-      format = "html", booktabs = TRUE) %>%
-  kableExtra::landscape()
-```
-
-### Technical terms
-
-The detection matches full words using regex option `\b`.
-
-- cell (and cell-phone, cellphone)
-- mobile
-- smart (and smartphone)
-- portable
-- phone(s) 
-- device(s)
-- app(s)
-- applicat (`applicat.*`, i.e. application)
-- emotional
-- mhealth
-- uhealth
-- ehealth
-- emental
-- android
-- iphone
-
-```{r cs_search_terms_per_abstract, echo=FALSE}
-
-cs_terms_count <- tibble(
-  id = tidy_abstracts$id,
-  cell = stringr::str_count(tidy_abstracts_lower, "\\bcell\\b"),
-  mobile = stringr::str_count(tidy_abstracts_lower, "\\bpmobile\\b"),
-  smart = stringr::str_count(tidy_abstracts_lower, "\\bsmart\\b"),
-  portable = stringr::str_count(tidy_abstracts_lower, "\\bportable\\b"),
-  `phone(s)` = stringr::str_count(tidy_abstracts_lower, "\\bphone?\\b"),
-  `device(s)` = stringr::str_count(tidy_abstracts_lower, "\\bdevice?\\b"),
-  `app(s)` = stringr::str_count(tidy_abstracts_lower, "\\bapp?\\b"),
-  `applicat..` = str_count(tidy_abstracts_lower, "\\bapplicat.*\\b"),
-  mhealth = stringr::str_count(tidy_abstracts_lower, "\\bmhealth\\b"),
-  uhealth = stringr::str_count(tidy_abstracts_lower, "\\buhealth\\b"),
-  ehealth = stringr::str_count(tidy_abstracts_lower, "\\behealth\\b"),
-  emental = stringr::str_count(tidy_abstracts_lower, "\\bemental\\b"),
-  android = stringr::str_count(tidy_abstracts_lower, "\\bandroid\\b"),
-  iphone = stringr::str_count(tidy_abstracts_lower, "\\biphone\\b"))
-  
-
-# Sum all occurences of cs search terms row-wise (i.e. per abstract) and put result in a new column "all"
-cs_terms_count_sum <- sumColsInARow(
-  cs_terms_count, names(cs_terms_count)[names(cs_terms_count) != "id"], "cs_all") %>%
-  arrange(desc(cs_all))
-
-# Compute totals per column, i.e per each psy search term and "all"
-cs_terms_count_sum_total <- cs_terms_count_sum %>% 
-  summarise_if(is.numeric, funs(sum)) %>%
-  add_column(id = "Total", .before = 0)
-  
-cs_terms_count_sum <- rbind(cs_terms_count_sum, cs_terms_count_sum_total)
-```
-
-
-_How often do Computer science related search terms appear in each abstract?_
-
-```{r  cs_search_terms_table, echo=FALSE}
-
-# for testing
-#kable(cs_terms_count_sum)
-kable(cs_terms_count_sum  %>% top_n(20),
-      caption = paste0("Computer Sciece-related search terms in the corpus,",
-                       " ordered by sum of matches per abstract (top20)"),
-      format = "html", booktabs = TRUE) %>%
-  kableExtra::landscape()
-```
-
-
-### Combined psycological and technical terms
-
-```{r joint_search_terms, echo=FALSE}
-
-joint <- psy_terms_count_sum %>%
-  left_join(cs_terms_count_sum, by=c("id")) %>%
-  select(id, psy_all, cs_all) %>%
-  arrange(desc(psy_all)) %>%
-  slice(-1)  # get rid of Total row
-
-
-ggplot(joint, aes(x = cs_all, y = psy_all, color = cs_all - psy_all)) +
-  geom_abline(color = "gray40", lty = 3) +
-  geom_jitter(alpha = 0.1, size = 2.5, width = 0.3, height = 0.3) +
-  geom_text(aes(label = id), check_overlap = TRUE, vjust = 1.5) +
-  #scale_color_gradient(limits = c(0, 0.001), low = "darkslategray4", high = "gray75") +
-  #facet_wrap(~author, ncol = 2) +
-  #theme(legend.position="none") +
-  labs(y = "# of psy search terms", x = "# of CS search terms", title ="Abstracts according total number of search terms")
-```
-
-Paper 101 (dark blue) ranks first with 23 appearances of search terms related to psychology in the abstract. On the other end, paper 183 (light blue) ranks first with 14 appearances of search terms related to computer science in the abstract. Looking at the plot, papers with psychology terms outnumber papers with computer scince terms. Dark blue numbers dominate 
-
-
-## Frequency analysis of top words (most frequent) in the abstracts
-
-
-### Figure: Word cloud of asbtracts (A), psyschology top words, and technical top words
-
-
-```{r top_words, echo=FALSE}
-
-countPapersUsingWord <- function(the_word) {
-  sapply(the_word, function(w) {
-    no_stop_words %>%
-      filter(word == w) %>%
-      group_by(id) %>%
-      count %>%
-      nrow
-  })
-}
-
-# top25 words
-no_top_words <- 25
-top_words <- no_stop_words %>%
-  group_by(word) %>%
-  tally %>%
-  arrange(desc(n)) %>%
-  head(no_top_words) %>%
-  mutate(`# abstracts` = countPapersUsingWord(word)) %>%
-  add_column(place = c(1:nrow(.)), .before = 0)
-
-```
-
-_Word cloud of `r no_top_words` top words in abstracts_ 
-
-```{r Fig_Word_cloud,dpi=600,fig.width=8,fig.asp=0.85, echo=FALSE}
-set.seed(1)
-if (max(top_words$n) < 100) {
-  minimum_occurence <- round(mean(top_words$n))
-} else {
-  minimum_occurence <-  min(top_words$n) # Or arbritary number like 100 
-}
-
-cloud_words <- no_stop_words %>%
-  group_by(word) %>%
-  tally %>%
-  filter(n >= minimum_occurence) %>% 
-  arrange(desc(n))
-
-if (nrow(cloud_words) > 0) {  
-  plot.new()
-  wordcloud(cloud_words$word, cloud_words$n,
-            max.words = Inf,
-            random.order = FALSE,
-            fixed.asp = FALSE,
-            rot.per = 0,
-            #color = brewer.pal(8,"Dark2"))
-            color = brewer.pal(9,"BuGn"))
-} else {
-  warning("No input data for wordcloud.")
-}
-
-
-
-```
-
-
-This word cloud is based on `r length(unique(cloud_words$word))` unique words occuring each at least `r minimum_occurence` times, all in all occuring `r sum(cloud_words$n)` times which is roughly `r round(sum(cloud_words$n)/ nrow(no_stop_words) * 100)` % of the all non-stop words.
-
-
-```{r  top_words_table, echo=FALSE}
-# for testing
-# kable(top_words)
-kable(top_words,
-      caption = paste0("Occurrences of top",no_top_words," words in the corpus"),
-      format = "html", booktabs = TRUE)
-
-```
-
-```{r next_steps}
-#TODO: How do top words and search terms correlate?
-# Do it manually or automated. Which of the top words are also search terms? Are search terms in the top of the list? Are there standing top words that were nt search terms?
-#TODO: Visualise table of occurrances of top words
-#TODO: How do the top words correlated with the top keywords in the corpus?
-#TODO: How do the top words correlated with the top keywords in each abstract?
-
-```
- 
 
