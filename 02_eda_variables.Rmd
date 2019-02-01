@@ -104,8 +104,8 @@ n_no_dsh5 <-
 
 ```
 
-There are `` `r n_md` `` distinct MDs (out of 25). About `r round(n_yes_dsh5/n_papers * 100)` % (`r n_yes_dsh5`) are categorised according to DSH-5. 
-About `r round(n_no_dsh5/n_papers * 100)` % (`r n_no_dsh5`) are Dual, Multiple or Suicidal Behavior Disorder/Nonsuicidal Self-Injury. 
+There are `` `r n_md` `` distinct MDs (out of 25). About `r percent(n_yes_dsh5/n_papers)` % (N=`r n_yes_dsh5`) are categorised according to DSH-5. 
+About `r percent(n_no_dsh5/n_papers)` % (N=`r n_no_dsh5`) are Dual, Multiple or Suicidal Behavior Disorder/Nonsuicidal Self-Injury. 
 
 
 ```{r plot_md_variability, echo=FALSE}
@@ -187,7 +187,7 @@ md_top3 <-
 md_top3
 ```
 
-The *top3* MD are categorised in the DSH-5, and they all cover about `r percent(n_top3/n_papers)` (`r n_top3`).
+The *top3* MD are categorised in the DSH-5, and they all cover about `r percent(n_top3/n_papers)` (N=`r n_top3`).
 
 
 ```{r lollipop_top3, echo=FALSE}
@@ -216,7 +216,49 @@ md_top3 %>%
 
 ### Mental disorders and subtypes
 
-_What illnesses are specially mentioned in the paper per category of mental disorder?_
+_What illnesses are specially mentioned in the paper per category of mental disorder?_ 
+
+We look at MDs which are not categorised according to the DSH-5 (id equal to 23 or 24)
+
+```{r}
+
+# TODO http://stulp.gmw.rug.nl/ggplotworkshop/twodiscretevariables.html
+non_dsh5 <- 
+    all_data %>%
+        filter(md_dsh5 == "NO")
+
+md_23or24 <- 
+    all_data %>% 
+    filter(md_id==23 | md_id==24)
+
+md_23or24_ <- 
+    md_23or24 %>%
+        separate_rows(sep = ";", md_mul)
+
+md_23or24_$md_mul <- str_trim(md_23or24_$md_mul)
+
+#' TODO: ERRORES GRAMATICALES EN LA COLUMNA MD_MUL, OTRA VEZ!
+
+md_23or24_ %>% 
+  group_by(md_mul, md_id) %>% 
+  summarise(number_cases = n()) %>% 
+  ggplot(aes(x=md_mul, y=number_cases, fill=factor(md_id))) + 
+  geom_bar(stat="identity", position="stack") +
+  coord_flip()
+
+# md_23or24_stacked_bar <- mpg %>% 
+#   group_by(class, drv) %>% # First we'll create counts for each group
+#   summarise(number_cases = n()) %>% 
+#   group_by(class) %>% # Group new datafram by class
+#   mutate(total_cases = sum(number_cases),
+#          proportion = number_cases/total_cases) # Create total counts
+# mpg_stacked_bar
+
+
+```
+
+Reminder: About `r percent(n_no_dsh5/n_papers)` % (N=`r n_no_dsh5`) are 23-Dual, 24-Multiple or 25-Suicidal Behavior Disorder/Nonsuicidal Self-Injury. 
+
 
 _What illnesses are included in category 23 (Dual), 24 (Multiple) and  25 (Suicidal...)?_
 
