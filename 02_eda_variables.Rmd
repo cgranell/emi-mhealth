@@ -23,7 +23,7 @@ library(scales)
 
 
 ```{r session_info, echo=FALSE}
-devtools::session_info(include_base = TRUE)
+#devtools::session_info(include_base = TRUE)
 ```
 
 This document is an EDA notebook to explore descriptive and informative figures of the datasets incldued in the *emidata* package.  
@@ -35,10 +35,10 @@ We analyse three  datasets: *ipapers2018_csdata* dataset (psy-realted data items
 ```{r data_source, echo=FALSE}
 cs_data <- ipapers2018_csdata
 psy_data <- ipapers2018_psydata
-cs_data %>% glimpse()
-cs_data %>% skimr::skim()
-psy_data %>% glimpse()
-psy_data %>% skimr::skim()
+# cs_data %>% glimpse()
+# cs_data %>% skimr::skim()
+# psy_data %>% glimpse()
+# psy_data %>% skimr::skim()
 
 ```
 
@@ -62,7 +62,7 @@ all_data$md <- factor(all_data$md, levels=names(sort(table(all_data$md), decreas
 n_md <- nlevels(all_data$md)
 n_papers = nrow(all_data)
 
-all_data %>% str()
+#all_data %>% str()
 ```
 
 The final number of papers to analyse is `` `r n_papers` ``.
@@ -71,7 +71,7 @@ The final number of papers to analyse is `` `r n_papers` ``.
 
 Next exploratory tables and figures attempt to figure out what's going on. The initial assumption of the paper is that the field of mental disorders (*md*) drives the analysis. So we start exploring the variables related to mental disorder, which are: 
 
-```{r md_variables, echo=TRUE}
+```{r md_variables, echo=FALSE}
 all_data %>%
     select(starts_with("md")) %>%
     names() 
@@ -99,7 +99,7 @@ n_no_dsh5 <-
         filter(md_dsh5 == "NO") %>%
         nrow()
 
-all_data %>% str() 
+#all_data %>% str() 
 
 
 ```
@@ -190,7 +190,7 @@ md_top3
 The *top3* MD are categorised in the DSH-5, and they all cover about `r percent(n_top3/n_papers)` (`r n_top3`).
 
 
-```{r lollipop_top3. echo=FALSE}
+```{r lollipop_top3, echo=FALSE}
 
 md_top3 %>%
     ggplot(aes(y=reorder(md, n_per), x=n_per)) +
@@ -235,22 +235,21 @@ Let's start simple: _How many apps are related to the top1 MD (4-Depression)?_
 
 
 
-
 ### BELOW THIS LINE IS NOT VALID
 
 ```{r plot_dumbbell}
 
 
-df <- data.frame(trt=LETTERS[1:5], l=c(20, 40, 10, 30, 50), r=c(70, 50, 30, 60, 80))
-
-ggplot(df, aes(y=trt, x=l, xend=r)) + 
-  geom_dumbbell(size=3, color="#e3e2e1", 
-                colour_x = "#5b8124", colour_xend = "#bad744",
-                dot_guide=TRUE, dot_guide_size=0.25) +
-  labs(x=NULL, y=NULL, title="ggplot2 geom_dumbbell with dot guide") +
-  theme_minimal() +
-  theme(panel.grid.major.x=element_line(size=0.05)) +
-  theme(panel.grid.major.y=element_blank())
+# df <- data.frame(trt=LETTERS[1:5], l=c(20, 40, 10, 30, 50), r=c(70, 50, 30, 60, 80))
+# 
+# ggplot(df, aes(y=trt, x=l, xend=r)) + 
+#   geom_dumbbell(size=3, color="#e3e2e1", 
+#                 colour_x = "#5b8124", colour_xend = "#bad744",
+#                 dot_guide=TRUE, dot_guide_size=0.25) +
+#   labs(x=NULL, y=NULL, title="ggplot2 geom_dumbbell with dot guide") +
+#   theme_minimal() +
+#   theme(panel.grid.major.x=element_line(size=0.05)) +
+#   theme(panel.grid.major.y=element_blank())
 
 ```
 
@@ -258,40 +257,29 @@ ggplot(df, aes(y=trt, x=l, xend=r)) +
 
 
 ```{r}
-md_data %>%
-ggplot(mapping = aes(x = md, y = n, fill = md_dsh5)) +
-    geom_bar(stat="identity") +
-    coord_flip() +
-    geom_text(aes(label = n), nudge_y = 0.5, size = 2) +
-    theme_bw()
-
-
-geom_text(stat = 'count' ,aes(label = ..count..),
-nudge_y = 1.5)
-
-
-md_data %>%
-  group_by(md) %>%
-  summarise(n = n()) %>%
-  arrange(desc(n))  %>%
-  ggplot(mapping = aes(x = reorder(md, y = n)) +
-    geom_bar(stat="identity", fill="orange") +
-    coord_flip() +
-    geom_text(aes(label = n), nudge_y = 0.5, size = 2) +
-    theme_bw()
+# md_data %>%
+# ggplot(mapping = aes(x = md, y = n, fill = md_dsh5)) +
+#     geom_bar(stat="identity") +
+#     coord_flip() +
+#     geom_text(aes(label = n), nudge_y = 0.5, size = 2) +
+#     theme_bw()
+# 
+# 
+# geom_text(stat = 'count' ,aes(label = ..count..),
+# nudge_y = 1.5)
+# 
+# 
+# md_data %>%
+#   group_by(md) %>%
+#   summarise(n = n()) %>%
+#   arrange(desc(n))  %>%
+#   ggplot(mapping = aes(x = reorder(md, y = n)) +
+#     geom_bar(stat="identity", fill="orange") +
+#     coord_flip() +
+#     geom_text(aes(label = n), nudge_y = 0.5, size = 2) +
+#     theme_bw()
 ```
 
 
-
-
-
-
-
-## Search terms in the abstract
-
-### Psychological terms
-
-
-_How often do psychological related search terms appear in each abstract?_
 
 
