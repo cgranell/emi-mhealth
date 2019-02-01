@@ -69,12 +69,12 @@ The final number of papers to analyse is `` `r n_papers` ``.
 
 ## Exploratory analysis
 
-Next tables and figures are exploratory to figure out what's going on. The initial assumption of the apper is that the mental disorders field (*md*) drives the analysis. So we start exploring the variables related to mental disorders: 
+Next exploratory tables and figures attempt to figure out what's going on. The initial assumption of the paper is that the field of mental disorders (*md*) drives the analysis. So we start exploring the variables related to mental disorder, which are: 
 
 ```{r md_variables, echo=TRUE}
 all_data %>%
     select(starts_with("md")) %>%
-    names()
+    names() 
 
 ```
 
@@ -83,7 +83,6 @@ all_data %>%
 _How many distinct MDs are there?_ 
 
 ```{r md_variability, echo=FALSE}
-
 
 category_levels <- c("YES","NO")
 all_data <- 
@@ -117,8 +116,44 @@ all_data %>%
     geom_bar() +
     coord_flip() +
     geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, size = 2) +
+    labs(title="Distribution of MDs", subtitle = "Colored by categorisation to DSH-5") + 
     theme_bw()
 
+```
+
+```{r lollipop_md_variability, echo=FALSE}
+
+md_percent <- 
+    all_data %>%
+      group_by(md) %>%
+      summarise(n = n()) %>%
+      mutate(n_per = round(n/n_papers, 2)) %>%
+      arrange(desc(n))
+
+head(md_percent)
+
+md_percent %>%
+    ggplot(aes(y=reorder(md, n_per), x=n_per)) +
+    geom_lollipop(point.colour = 'steelblue', point.size = 2,horizontal = TRUE) +
+    scale_x_continuous(expand=c(0,0), labels=percent, breaks=seq(0, 0.21, by=0.03), limits=c(0, 0.21)) +
+    theme_minimal() +
+    labs(x=NULL, y=NULL, 
+         title="Distribution of MDs",
+         subtitle="Ranked by relative %",
+         caption="Data from ...") 
+    # theme(panel.grid.major.y=element_blank()) +
+    # theme(panel.grid.minor=element_blank()) +
+    # theme(axis.line.y=element_line(color="#2b2b2b", size=0.15)) +
+    # theme(axis.text.y=element_text(margin=margin(r=0, l=0))) +
+    # theme(plot.margin=unit(rep(30, 4), "pt")) +
+    # theme(plot.title=element_text(face="bold")) +
+    # theme(plot.subtitle=element_text(margin=margin(b=10)))
+
+```
+
+_Variability of MDs over time_?
+
+```{r md_years, echo=FALSE}
 
 all_data %>%
   ggplot(mapping = aes(x = md, fill=md_dsh5)) +
@@ -126,14 +161,14 @@ all_data %>%
         coord_flip() +
     geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, size = 2) +
     theme_bw() + 
+    labs(title="Distribution of MDs by year", subtitle = "Colored by categorisation to DSH-5") + 
     facet_wrap(~ year)
-
 
 ```
 
-_top 3 MDs_? 
+_Top3 MDs_? 
 
-```{r md_plot3, echo=FALSE}
+```{r md_top3, echo=FALSE}
 top3 <- levels(all_data$md)[1:3]
 
 n_top3 <- 
@@ -152,21 +187,20 @@ md_top3 <-
 md_top3
 ```
 
-The *top3* MD are categorised in the DSH-5, and they all cover about `r round(n_top3/n_md * 100)` % (`r n_top3`).
+The *top3* MD are categorised in the DSH-5, and they all cover about `r percent(n_top3/n_papers)` (`r n_top3`).
 
 
-```{r lollipop_top3}
+```{r lollipop_top3. echo=FALSE}
 
 md_top3 %>%
     ggplot(aes(y=reorder(md, n_per), x=n_per)) +
     geom_lollipop(point.colour = 'steelblue', point.size = 2,horizontal = TRUE) +
     scale_x_continuous(expand=c(0,0), labels=percent, breaks=seq(0, 1, by=0.2), limits=c(0, 1)) +
-    theme_minimal()
-    # theme_minimal() +
-    # labs(x=NULL, y=NULL, 
-    #     title="TOP mental disorders ",
-    #     subtitle="Ranked by counts",
-    #     caption="Data from ...") +
+    theme_minimal() +
+    labs(x=NULL, y=NULL, 
+        title="TOP3 mental disorders",
+        subtitle="Ranked by relative %",
+        caption="Data from ...")
     # theme(panel.grid.major.y=element_blank()) +
     # theme(panel.grid.minor=element_blank()) +
     # theme(axis.line.y=element_line(color="#2b2b2b", size=0.15)) +
@@ -179,28 +213,27 @@ md_top3 %>%
 
 ```
 
-_Variability of MDs over time_
-
-```{r md_years, echo=FALSE}
-
-
-```
-
-
 
 ### Mental disorders and subtypes
 
-_What ilneess are speciall mentioned in the apepr per category of mental diorder?_
+_What illnesses are specially mentioned in the paper per category of mental disorder?_
 
-### Mental disorders and the 23, 24, 25 c
+_What illnesses are included in category 23 (Dual), 24 (Multiple) and  25 (Suicidal...)?_
 
 
 ### Mental disorders and phsycological framework
 
-_Which is the coverage of CBT?_
+_Which is the total coverage of CBT?_ _And the coverage of the rest of phsycological framework?_
+
+
 _Which DMs are related to third wave theraphy and /or positive Psychotherapy?_
 
-_How many apps are related to MD 4- Depreession
+
+## Mental disorders and Apps
+
+Let's start simple: _How many apps are related to the top1 MD (4-Depression)?_
+
+
 
 
 ### BELOW THIS LINE IS NOT VALID
