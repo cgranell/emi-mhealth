@@ -161,7 +161,7 @@ all_data %>%
         coord_flip() +
     geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, size = 2) +
     theme_bw() + 
-    labs(title="Distribution of MDs by year", subtitle = "Absolute count. Colored by categorisation to DSH-5") + 
+    labs(title="Distribution of MDs by year", subtitle = "Absolute count. Colored by belonging to DSH-5") + 
     facet_wrap(~ year)
 
 ```
@@ -218,46 +218,68 @@ The *top3* MD are categorised in the DSH-5, and they all cover about `r percent(
 
 _Comorbidity in cases 23-Dual and 24-multiple?_ 
 
-We look at MDs which are not categorised according to the DSH-5 (id equal to 23 or 24), and check the field *md_mul*.
+Reminder: About `r percent(n_no_dsh5/n_papers)` % (N=`r n_no_dsh5`) are 23-Dual, 24-Multiple or 25-Suicidal Behavior Disorder/Nonsuicidal Self-Injury. We look at MDs which are not categorised according to the DSH-5 (id equal to 23 or 24), and check the field *md_mul*.
 
-```{r}
+```{r commorbidity, echo=FALSE}
 
 # TODO http://stulp.gmw.rug.nl/ggplotworkshop/twodiscretevariables.html
-non_dsh5 <- 
-    all_data %>%
-        filter(md_dsh5 == "NO")
 
 md_23or24 <- 
     all_data %>% 
-    filter(md_id==23 | md_id==24)
+    filter(md_id==23 | md_id==24) %>% 
+    separate_rows(sep = ";", md_mul)
 
-md_23or24_ <- 
-    md_23or24 %>%
-        separate_rows(sep = ";", md_mul)
+md_23or24$md_mul <- str_trim(md_23or24$md_mul)
 
-md_23or24_$md_mul <- str_trim(md_23or24_$md_mul)
+md_23or24_stackedbar <- 
+    md_23or24 %>% 
+      group_by(md_mul, md_id) %>%  # first create counts for each group
+      summarise(number_cases = n()) %>%
+      group_by(md_mul) %>%
+      mutate(total_cases = sum(number_cases),
+             proportion = number_cases/total_cases) # Create total counts 
 
-#' TODO: ERRORES GRAMATICALES EN LA COLUMNA MD_MUL, OTRA VEZ!
+head(md_23or24_stackedbar)
+```
 
-md_23or24_ %>% 
-  group_by(md_mul, md_id) %>% 
-  summarise(number_cases = n()) %>% 
+A way to visualizing two discrete variables is by using a stacked bar plot 
+
+```{r plot_commorbidity, echo=FALSE}
+
+md_23or24_stackedbar %>%
   ggplot(aes(x=md_mul, y=number_cases, fill=factor(md_id))) + 
-  geom_bar(stat="identity", position="stack") +
+  geom_bar(stat="identity") +
   coord_flip()
 
-# md_23or24_stacked_bar <- mpg %>% 
-#   group_by(class, drv) %>% # First we'll create counts for each group
-#   summarise(number_cases = n()) %>% 
-#   group_by(class) %>% # Group new datafram by class
-#   mutate(total_cases = sum(number_cases),
-#          proportion = number_cases/total_cases) # Create total counts
-# mpg_stacked_bar
+
+md_23or24_stackedbar %>%
+    ggplot(aes(x=md_mul, y=proportion, fill=factor(md_id))) + 
+    geom_bar(stat="identity", position="stack") +
+    geom_text(aes(x=md_mul, y=0.05, label=total_cases), size=3, colour="white") +
+    scale_y_continuous(labels = scales::percent_format()) +
+    coord_flip()
 
 
 ```
 
-Reminder: About `r percent(n_no_dsh5/n_papers)` % (N=`r n_no_dsh5`) are 23-Dual, 24-Multiple or 25-Suicidal Behavior Disorder/Nonsuicidal Self-Injury. 
+An alternative way is by using a bubble plot.
+
+```{r bubbleplot_commorbidity, echo=FALSE }
+# Source: http://stulp.gmw.rug.nl/ggplotworkshop/twodiscretevariables.html#bubbleplot
+
+md_23or24_stackedbar %>%
+    ggplot(aes(x=md_mul, y=factor(md_id))) +
+    geom_count(aes(size=..prop..), colour="lightgrey") +
+    
+    geom_point(aes(size=proportion), colour="cornflowerblue") + 
+    scale_size(range = c(0,10), breaks=seq(0,1,by=0.2)) +
+    #scale_size(range = c(0.4,1.0), breaks=seq(0.4,1.0,by=0.1)) +
+    #geom_point(aes(size=proportion)) + 
+    coord_flip() +
+    theme_minimal()
+
+```
+
 
 
 
