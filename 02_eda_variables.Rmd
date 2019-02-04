@@ -231,7 +231,7 @@ md_23or24 <-
 
 md_23or24$md_mul <- str_trim(md_23or24$md_mul)
 
-md_23or24_stackedbar <- 
+md_23or24 <- 
     md_23or24 %>% 
       group_by(md_mul, md_id) %>%  # first create counts for each group
       summarise(number_cases = n()) %>%
@@ -239,25 +239,29 @@ md_23or24_stackedbar <-
       mutate(total_cases = sum(number_cases),
              proportion = number_cases/total_cases) # Create total counts 
 
-head(md_23or24_stackedbar)
+head(md_23or24)
 ```
 
 A way to visualizing two discrete variables is by using a stacked bar plot 
 
 ```{r plot_commorbidity, echo=FALSE}
 
-md_23or24_stackedbar %>%
+md_23or24 %>%
   ggplot(aes(x=md_mul, y=number_cases, fill=factor(md_id))) + 
   geom_bar(stat="identity") +
-  coord_flip()
+  coord_flip() + 
+  labs(title="Commorbidity. Absolute count") +
+  theme_minimal()
 
 
-md_23or24_stackedbar %>%
+md_23or24 %>%
     ggplot(aes(x=md_mul, y=proportion, fill=factor(md_id))) + 
     geom_bar(stat="identity", position="stack") +
     geom_text(aes(x=md_mul, y=0.05, label=total_cases), size=3, colour="white") +
     scale_y_continuous(labels = scales::percent_format()) +
-    coord_flip()
+    coord_flip() +
+    labs(title="Commorbidity. Proportional stacked bar") +
+    theme_minimal()
 
 
 ```
@@ -267,26 +271,80 @@ An alternative way is by using a bubble plot.
 ```{r bubbleplot_commorbidity, echo=FALSE }
 # Source: http://stulp.gmw.rug.nl/ggplotworkshop/twodiscretevariables.html#bubbleplot
 
-md_23or24_stackedbar %>%
+md_23or24 %>%
     ggplot(aes(x=md_mul, y=factor(md_id))) +
     geom_count(aes(size=..prop..), colour="lightgrey") +
-    
     geom_point(aes(size=proportion), colour="cornflowerblue") + 
     scale_size(range = c(0,10), breaks=seq(0,1,by=0.2)) +
     #scale_size(range = c(0.4,1.0), breaks=seq(0.4,1.0,by=0.1)) +
     #geom_point(aes(size=proportion)) + 
     coord_flip() +
+    labs(title="Commorbidity. Proportional bubble plot") +
     theme_minimal()
+
 
 ```
 
 
+_What subtypes of illnesses are mentioned (in the papers) per each category of mental disorder in DSH-5?_ 
+
+We look at MDs which are categorised according to the DSH-5 (id <> 23 or 24), and check the field *md_sub*.
+
+```{r subtypes}
+
+#' Source: http://stulp.gmw.rug.nl/ggplotworkshop/twodiscretevariables.html
+
+md_subtypes <- 
+    all_data %>% 
+    filter(md_id!=23 & md_id!=24) %>%
+    drop_na(md_sub)
+
+md_subtypes$md_sub <- str_to_lower(md_subtypes$md_sub)
+
+md_subtypes %>%
+    group_by(md_id, md_desc, md_sub)  %>%  # first create counts for each group
+    summarise(number_cases = n())
+
+
+#separate_rows(sep = ";", md_mul)
+
+#' Source: https://cran.r-project.org/web/packages/ggalluvial/vignettes/ggalluvial.html
+#' Source: http://corybrunson.github.io/ggalluvial/index.html
+
+library(ggalluvial)
+
+# TODO: Error: Too many colors
+md_subtypes %>%
+    group_by(md_id, md_sub)  %>%  # first create counts for each group
+    summarise(number_cases = n()) %>%
+    ggplot(aes(y = number_cases, axis1=md_id, axis2=md_sub)) +
+    geom_alluvium(aes(fill=md_sub), width = 1/12) +
+    geom_stratum(width = 1/12, fill = "black", color = "grey") +
+    geom_label(stat = "stratum", label.strata = TRUE) +
+    #scale_x_discrete (breaks = 1:2, labels = c("MD", "Subtype")) +
+    scale_x_discrete(limits = c("MDs", "Subtypes"), expand = c(.05, .05)) +
+    scale_fill_brewer(type = "qual", palette = "Set1") +  
+    theme(legend.position = "bottom") +
+    labs(title="Mental disorders and subtypes. Alluvial plot") +
+    theme_minimal()
 
 
 
-_What illnesses are specially mentioned in the paper per category of mental disorder?_ 
+md_subtypes %>%
+    group_by(md_id, md_sub)  %>%  # first create counts for each group
+    summarise(number_cases = n()) %>%
+    ggplot(aes(y = number_cases, axis1=md_id, axis2=md_sub)) +
+    stat_stratum(geom = "errorbar") +
+  geom_line(stat = "alluvium") +
+  stat_alluvium(geom = "pointrange") +
+  geom_text(stat = "stratum", label.strata = TRUE) +
+  scale_x_discrete(limits = c("MDs", "Subtypes"), expand = c(.05, .05))
 
 
+#' Source: http://jokergoo.github.io/circlize/example/bi_directional.html
+    
+
+```
 
 
 ### Mental disorders and phsycological framework
