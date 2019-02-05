@@ -290,10 +290,10 @@ _What subtypes of illnesses are mentioned (in the papers) per each category of m
 
 We look at MDs which are categorised according to the DSH-5 (id <> 23 or 24), and check the field *md_sub*.
 
-```{r subtypes}
+```{r subtypes, echo=FALSE}
 
 #' Source: http://stulp.gmw.rug.nl/ggplotworkshop/twodiscretevariables.html
-
+#' TODO ONGOIND
 md_subtypes <- 
     all_data %>% 
     filter(md_id!=23 & md_id!=24) %>%
@@ -301,9 +301,9 @@ md_subtypes <-
 
 md_subtypes$md_sub <- str_to_lower(md_subtypes$md_sub)
 
-md_subtypes %>%
-    group_by(md_id, md_desc, md_sub)  %>%  # first create counts for each group
-    summarise(number_cases = n())
+# md_subtypes %>%
+#     group_by(md_id, md_desc, md_sub)  %>%  # first create counts for each group
+#     summarise(number_cases = n())
 
 
 #separate_rows(sep = ";", md_mul)
@@ -314,31 +314,30 @@ md_subtypes %>%
 library(ggalluvial)
 
 # TODO: Error: Too many colors
-md_subtypes %>%
-    group_by(md_id, md_sub)  %>%  # first create counts for each group
-    summarise(number_cases = n()) %>%
-    ggplot(aes(y = number_cases, axis1=md_id, axis2=md_sub)) +
-    geom_alluvium(aes(fill=md_sub), width = 1/12) +
-    geom_stratum(width = 1/12, fill = "black", color = "grey") +
-    geom_label(stat = "stratum", label.strata = TRUE) +
-    #scale_x_discrete (breaks = 1:2, labels = c("MD", "Subtype")) +
-    scale_x_discrete(limits = c("MDs", "Subtypes"), expand = c(.05, .05)) +
-    scale_fill_brewer(type = "qual", palette = "Set1") +  
-    theme(legend.position = "bottom") +
-    labs(title="Mental disorders and subtypes. Alluvial plot") +
-    theme_minimal()
+# md_subtypes %>%
+#     group_by(md_id, md_sub)  %>%  # first create counts for each group
+#     summarise(number_cases = n()) %>%
+#     ggplot(aes(y = number_cases, axis1=md_id, axis2=md_sub)) +
+#     geom_alluvium(aes(fill=md_sub), width = 1/12) +
+#     geom_stratum(width = 1/12, fill = "black", color = "grey") +
+#     geom_label(stat = "stratum", label.strata = TRUE) +
+#     #scale_x_discrete (breaks = 1:2, labels = c("MD", "Subtype")) +
+#     scale_x_discrete(limits = c("MDs", "Subtypes"), expand = c(.05, .05)) +
+#     scale_fill_brewer(type = "qual", palette = "Set1") +  
+#     theme(legend.position = "bottom") +
+#     labs(title="Mental disorders and subtypes. Alluvial plot") +
+#     theme_minimal()
 
 
-
-md_subtypes %>%
-    group_by(md_id, md_sub)  %>%  # first create counts for each group
-    summarise(number_cases = n()) %>%
-    ggplot(aes(y = number_cases, axis1=md_id, axis2=md_sub)) +
-    stat_stratum(geom = "errorbar") +
-  geom_line(stat = "alluvium") +
-  stat_alluvium(geom = "pointrange") +
-  geom_text(stat = "stratum", label.strata = TRUE) +
-  scale_x_discrete(limits = c("MDs", "Subtypes"), expand = c(.05, .05))
+# md_subtypes %>%
+#     group_by(md_id, md_sub)  %>%  # first create counts for each group
+#     summarise(number_cases = n()) %>%
+#     ggplot(aes(y = number_cases, axis1=md_id, axis2=md_sub)) +
+#     stat_stratum(geom = "errorbar") +
+#   geom_line(stat = "alluvium") +
+#   stat_alluvium(geom = "pointrange") +
+#   geom_text(stat = "stratum", label.strata = TRUE) +
+#   scale_x_discrete(limits = c("MDs", "Subtypes"), expand = c(.05, .05))
 
 
 #' circlize, source: http://jokergoo.github.io/circlize/example/bi_directional.html
