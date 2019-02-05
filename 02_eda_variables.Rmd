@@ -308,9 +308,9 @@ md_subtypes %>%
 
 #separate_rows(sep = ";", md_mul)
 
-#' Source: https://cran.r-project.org/web/packages/ggalluvial/vignettes/ggalluvial.html
-#' Source: http://corybrunson.github.io/ggalluvial/index.html
-
+#' ggalluvial, source: https://cran.r-project.org/web/packages/ggalluvial/vignettes/ggalluvial.html
+#' ggalluvial, source: http://corybrunson.github.io/ggalluvial/index.html
+#' easyalluvial, source: https://github.com/erblast/easyalluvial/blob/master/README.md
 library(ggalluvial)
 
 # TODO: Error: Too many colors
@@ -341,7 +341,7 @@ md_subtypes %>%
   scale_x_discrete(limits = c("MDs", "Subtypes"), expand = c(.05, .05))
 
 
-#' Source: http://jokergoo.github.io/circlize/example/bi_directional.html
+#' circlize, source: http://jokergoo.github.io/circlize/example/bi_directional.html
     
 
 ```
