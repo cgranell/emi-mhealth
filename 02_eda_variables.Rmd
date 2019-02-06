@@ -18,6 +18,10 @@ library(stringr)
 library(skimr)
 library(ggalt)
 library(scales)
+library(easyalluvial)
+library(RColorBrewer)
+library(gridExtra)
+
 
 ```
 
@@ -129,7 +133,7 @@ md_percent <-
     all_data %>%
       group_by(md) %>%
       summarise(n = n()) %>%
-      mutate(proportion = round(n/n_papers, 2)) %>%
+      mutate(proportion = n/n_papers) %>%
       arrange(desc(n))
 
 # head(md_percent)
@@ -137,7 +141,7 @@ md_percent <-
 md_percent %>%
     ggplot(aes(y=reorder(md, proportion), x=proportion)) +
     geom_lollipop(point.colour = 'steelblue', point.size = 2,horizontal = TRUE) +
-    scale_x_continuous(expand=c(0,0), labels=percent, breaks=seq(0, 0.21, by=0.03), limits=c(0, 0.21)) +
+    scale_x_continuous(expand=c(0,0), labels=scales::percent_format(), breaks=seq(0, 0.20, by=0.02), limits=c(0, 0.20)) +
     theme_minimal() +
     labs(x=NULL, y=NULL, 
          title="Distribution of MDs",
@@ -226,16 +230,11 @@ Remarks:
 
 
 ```{r md_years_area, echo=FALSE}
-md_by_year <- 
-    all_data %>% 
-      group_by(md, year) %>%  # first create counts for each group
-      summarise(number_cases = n()) %>% 
-      group_by(year) %>%
-      mutate(total_cases = sum(number_cases),
-             proportion = number_cases/total_cases) # Create total counts 
 
-head(md_by_year,6) %>%
-    ggplot(aes(x=year, y=total_cases)) +
+all_data %>% 
+    group_by(year) %>%  # first create counts for each group
+    summarise(number_cases = n()) %>% 
+    ggplot(aes(x=year, y=number_cases )) +
     geom_area(colour="cornflowerblue", fill = "cornflowerblue", 
               alpha=0.5, # Make the fill see through 50%)
               size=0.5) + # Make the size of the borders smaller
@@ -246,20 +245,41 @@ head(md_by_year,6) %>%
 
 
 Remarks:
-* There is a sudden peak in 2016-2017 compared to 2013-2015. The former accounts for (`r percent(60/n_paper)`)
+* There is a sudden peak in 2016-2017 compared to 2013-2015. The former accounts for (`r percent(60/n_papers)`)
 
 
 ```{r md_years_alluvial}
-md_by_year %>% str()
+
+md_by_year <- 
+    all_data %>% 
+    group_by(md_id, md_desc, year) %>%  # first create counts for each group
+    summarise(number_cases = n()) %>% 
+    group_by(year) %>%
+    mutate(total_cases = sum(number_cases),
+           proportion = number_cases/total_cases) %>% # Create total counts 
+    ungroup() %>%
+    as_tibble()
+    
+# md_by_year %>%  str()
 
 
-library(easyalluvial)
+# source: https://www.r-bloggers.com/how-to-expand-color-palette-with-ggplot-and-rcolorbrewer/
+n_colors <- length(unique(md_by_year$md_id))
+get_palette <- colorRampPalette(brewer.pal(9, "Set1"))
 
+
+# https://www.rdocumentation.org/packages/easyalluvial/versions/0.1.8/topics/alluvial_long
 alluvial_long(md_by_year, 
               key = year, 
-              value = number_cases, 
-              id = md, 
-              fill_by = 'first_variable')
+              value = proportion, 
+              id = md_id, 
+              bins = n_colors,
+              NA_label = "NA",
+              bin_labels = as.character(unique(md_by_year$md_id)),
+              fill_by = 'all_flows',
+              col_vector_flow = get_palette(n_colors),
+              col_vector_value = get_palette(n_colors)
+)
       
 
 
@@ -295,10 +315,12 @@ md_23or24 <-
 #head(md_23or24)
 ```
 
-A way to visualizing two discrete variables is by using a stacked bar plot 
+A way to visualizing the two discrete variables is by using a stacked bar plot 
 
 ```{r plot_commorbidity, echo=FALSE}
 
+
+plot_left <- 
 md_23or24 %>%
   ggplot(aes(x=md_mul, y=number_cases, fill=factor(md_id))) + 
   geom_bar(stat="identity") +
@@ -306,7 +328,7 @@ md_23or24 %>%
   labs(title="Commorbidity. Absolute count") +
   theme_minimal()
 
-
+plot_right <- 
 md_23or24 %>%
     ggplot(aes(x=md_mul, y=proportion, fill=factor(md_id))) + 
     geom_bar(stat="identity", position="stack") +
@@ -317,6 +339,7 @@ md_23or24 %>%
     theme_minimal()
 
 
+gridExtra::grid.arrange(plot_left, plot_right, nrow = 1)
 ```
 
 An alternative way is by using a bubble plot.
@@ -339,9 +362,9 @@ md_23or24 %>%
 ```
 
 
-_What subtypes of illnesses are mentioned (in the papers) per each category of mental disorder in DSH-5?_ 
+_What subtypes of illnesses are mentioned (in the papers) per each category of mental disorder in DSM-5?_ 
 
-We look at MDs which are categorised according to the DSH-5 (id <> 23 or 24), and check the field *md_sub*.
+We look at MDs which are categorised according to the DSM-5 (id <> 23 or 24), and check the field *md_sub*.
 
 ```{r subtypes, echo=FALSE}
 
@@ -436,7 +459,7 @@ Let's start simple: _How many apps are related to the top1 MD (4-Depression)?_
 
 ```{r}
 # md_data %>%
-# ggplot(mapping = aes(x = md, y = n, fill = md_dsh5)) +
+# ggplot(mapping = aes(x = md, y = n, fill = md_dsm5)) +
 #     geom_bar(stat="identity") +
 #     coord_flip() +
 #     geom_text(aes(label = n), nudge_y = 0.5, size = 2) +
