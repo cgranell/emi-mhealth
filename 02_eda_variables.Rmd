@@ -30,7 +30,10 @@ This document is an EDA notebook to explore descriptive and informative figures 
 
 ## Data 
 
-We analyse three  datasets: *ipapers2018_csdata* dataset (psy-realted data items) has `` `r nrow(ipapers2018_csdata)` `` records, *ipapers2018_psydata* dataset (cs-related data items) that has `` `r nrow(ipapers2018_psydata)` `` records, and *ipapers2018*  dataset (analysed papers) with `` `r nrow(ipapers2018)` `` records.
+We analyse three datasets: 
+* *ipapers2018_psydata* (extracted data items related to psychology) has `` `r nrow(ipapers2018_psydata)` `` records and `` `r ncol(ipapers2018_psydata)` `` columns.
+* *ipapers2018_csdata* (extracted data items related to tech/cs) has `` `r nrow(ipapers2018_csdata)` `` records and `` `r ncol(ipapers2018_csdata)` `` columns. 
+* *ipapers2018* (list of analysed papers) has `` `r nrow(ipapers2018)` `` records and `` `r ncol(ipapers2018)` `` columns.
 
 ```{r data_source, echo=FALSE}
 cs_data <- ipapers2018_csdata
