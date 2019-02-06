@@ -35,6 +35,7 @@ This document is an EDA notebook to explore descriptive and informative figures 
 ## Data 
 
 We analyse three datasets: 
+
 * *ipapers2018_psydata* (extracted data items related to psychology) has `` `r nrow(ipapers2018_psydata)` `` records and `` `r ncol(ipapers2018_psydata)` `` columns.
 * *ipapers2018_csdata* (extracted data items related to tech/cs) has `` `r nrow(ipapers2018_csdata)` `` records and `` `r ncol(ipapers2018_csdata)` `` columns. 
 * *ipapers2018* (list of analysed papers) has `` `r nrow(ipapers2018)` `` records and `` `r ncol(ipapers2018)` `` columns.
@@ -157,7 +158,6 @@ md_percent %>%
 
 ```
 
-
 _Top3 MDs_? 
 
 ```{r md_top3, echo=FALSE}
@@ -180,8 +180,6 @@ md_top3
 ```
 
 The *top3* MDs are categorised in the DSM-5, and they all cover about `r percent(n_top3/n_papers)` (N=`r n_top3`).
-
-
 
 ```{r lollipop_top3, echo=FALSE}
 
@@ -221,10 +219,11 @@ all_data %>%
 
 ```
 
-Note: The period 2013-2017 covers full years. 2118 only covers the first tow months (Bibliographic searches were conducted at the beginning of March 2018). 
+_Note: The period 2013-2017 covers full years. 2018 only covers the first two months (Bibliographic searches were conducted at the beginning of March 2018)._ 
 
 Remarks:
-* There is no clear temporal trend. Only that the last years attract more papers/cases.
+
+* There is no clear temporal trend. Only that the last years attract more papers.
 * Top3 mental disorders (`r top3`) remain significant over years.
 
 
@@ -238,18 +237,23 @@ all_data %>%
     geom_area(colour="cornflowerblue", fill = "cornflowerblue", 
               alpha=0.5, # Make the fill see through 50%)
               size=0.5) + # Make the size of the borders smaller
-    geom_vline(aes(xintercept = 2017), linetype = 'dashed', size = 0.1)
+    geom_text(aes(label = number_cases), color= "blue", nudge_y = -1, size = 3) +
+    geom_vline(aes(xintercept = 2017), linetype = 'dashed', size = 0.5)
 
 
 ```
 
 
 Remarks:
-* There is a sudden peak in 2016-2017 compared to 2013-2015. The former accounts for (`r percent(60/n_papers)`)
+
+* There is a sharp peak in 2016-2017 compared to 2013-2015. 
+* The 2015-2016 period accounts for (`r percent(60/n_papers)`), while 2013-2015 accounts for (`r percent(32/n_papers)`).
+* Only two months of 2018 (`r percent(12/n_papers)`) almost reach the amount of documents in 2012 and 2013 together (`r percent(15/n_papers)`).
 
 
-```{r md_years_alluvial}
+```{r md_years_alluvial, echo=FALSE}
 
+#' TODO ONGOING
 md_by_year <- 
     all_data %>% 
     group_by(md_id, md_desc, year) %>%  # first create counts for each group
@@ -259,6 +263,23 @@ md_by_year <-
            proportion = number_cases/total_cases) %>% # Create total counts 
     ungroup() %>%
     as_tibble()
+
+    
+# md_by_year2 <- 
+#     all_data %>% 
+#     group_by(md_id, md_desc, year)  %>%    
+#     expand(year)
+# 
+#     summarise(number_cases = n()) %>% 
+#     expand(md_id, year, number_cases)
+#     summarise(number_cases = n()) %>% 
+#     group_by(year) %>%
+#     mutate(total_cases = sum(number_cases),
+#            proportion = number_cases/total_cases) %>% # Create total counts 
+#       .[complete.cases(.), ]
+#     ungroup() %>%
+#     as_tibble()
+    
     
 # md_by_year %>%  str()
 
@@ -281,7 +302,6 @@ alluvial_long(md_by_year,
               col_vector_value = get_palette(n_colors)
 )
       
-
 
 ```
 
@@ -320,7 +340,7 @@ A way to visualizing the two discrete variables is by using a stacked bar plot
 ```{r plot_commorbidity, echo=FALSE}
 
 
-plot_left <- 
+#plot_left <- 
 md_23or24 %>%
   ggplot(aes(x=md_mul, y=number_cases, fill=factor(md_id))) + 
   geom_bar(stat="identity") +
@@ -328,7 +348,7 @@ md_23or24 %>%
   labs(title="Commorbidity. Absolute count") +
   theme_minimal()
 
-plot_right <- 
+#plot_right <- 
 md_23or24 %>%
     ggplot(aes(x=md_mul, y=proportion, fill=factor(md_id))) + 
     geom_bar(stat="identity", position="stack") +
@@ -339,7 +359,7 @@ md_23or24 %>%
     theme_minimal()
 
 
-gridExtra::grid.arrange(plot_left, plot_right, nrow = 1)
+#gridExtra::grid.arrange(plot_left, plot_right, nrow = 1)
 ```
 
 An alternative way is by using a bubble plot.
@@ -438,7 +458,7 @@ Let's start simple: _How many apps are related to the top1 MD (4-Depression)?_
 
 ### BELOW THIS LINE IS NOT VALID
 
-```{r plot_dumbbell}
+```{r plot_dumbbell, echo=FALSE}
 
 
 # df <- data.frame(trt=LETTERS[1:5], l=c(20, 40, 10, 30, 50), r=c(70, 50, 30, 60, 80))
