@@ -478,24 +478,42 @@ _Which DMs are related to third wave theraphy and /or positive Psychotherapy?_
 
 Let's start simple: _How many apps are related to the top1 MD (4-Depression)?_
 
+
 ```{r md_apps, echo=FALSE}
+cols = c("id", "md", "md_id", "md_desc", "md_sub", "md_dsm5",
+         "sens_acc", "sens_gyr", "sens_gps", "sens_gps", 
+         "os_ios", "os_and", "app_name", 
+         "type", "year")
 
-md_apps <- 
+sens_apps <- 
     all_data %>% 
-    #filter(md_id==4) %>% 
-    #separate_rows(sep = ";", md_sub) %>%
+    filter(md_id!=23 & md_id!=24) %>%
+    select(cols) %>%
     group_by(md_desc, md_sub) %>%
-    summarise(number_cases = n()) 
+    summarise(number_apps = n()) 
 
-head(md_apps)
+sens_apps %>% str()
+
+n_apps <- 
+    all_data %>% 
+    filter(md_id!=23 & md_id!=24) %>% 
+    group_by(md_desc, md_sub) %>%
+    summarise(number_apps = n()) 
+
+kable(md_apps,
+      format = "html", 
+      caption = "Apps")
+
+```
+
+
+```{r plot_md_apps, echo=FALSE}
 # A treemap is a diagram representing hierarchical data in the form of nested rectangles, the area of each corresponding to its numerical value
-
-
 library(treemap)
 
 md_apps %>%
     treemap(index=c("md_desc","md_sub"),  #A list of your categorical variables
-        vSize = "number_cases",  #This is your quantitative variable
+        vSize = "number_apps",  #This is your quantitative variable
         type="index", #Type sets the organization and color scheme of your treemap
         palette = "Greens",  #Select your color palette from the RColorBrewer presets or make your own.
         title="Number of apps per subtype and main category of MDs", #Customize your title
@@ -511,6 +529,10 @@ md_23or24 <-
              proportion = number_cases/total_cases) # Create total counts 
 
 ```
+
+
+
+
 
 
 
