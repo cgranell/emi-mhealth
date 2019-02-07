@@ -473,23 +473,40 @@ _Which DMs are related to third wave theraphy and /or positive Psychotherapy?_
 
 ### Number of apps related to each MD 
 
-Let's start simple: _How many apps are related to the MDs and subtypes?_ We use a treemap diagram to represente hierarchical data in the form of nested rectangles, the area of each corresponding to its numerical value. i.e. the count of apps
+Let's start simple: _How many apps are related to the MDs and subtypes?_ 
 
-```{r plot_md_apps, echo=FALSE}
+```{r md_apps, echo=FALSE}
 
 # # TODO: Ongoing
 n_apps <- 
     all_data %>% 
     filter(md_id!=23 & md_id!=24) %>% 
-    group_by(md_desc, md_sub) %>%
+    group_by(md_id, md_desc, md_sub) %>%
+    #drop_na(md_sub)%>%
     summarise(number_apps = n()) 
 
 n_apps %>%
-    treemap(index=c("md_desc","md_sub"),  #A list of your categorical variables
+  ggplot(aes(x=md_sub, y=number_apps, fill=factor(md_id))) + 
+  geom_bar(stat="identity") +
+  coord_flip() + 
+  labs(title="Apsps per MD. Absolute count") +
+  theme(legend.position = "top") +
+  theme_minimal()
+
+
+```
+
+We use a [treemap](https://cran.r-project.org/package=treemap) diagram to represent hierarchical data in the form of nested rectangles, the area of each corresponding to its numerical value. i.e. the count of apps per subtype and main MD
+
+```{r md_apps_treemap, echo=FALSE}
+
+n_apps %>%
+    treemap(
+        index=c("md_desc","md_sub"),  #A list of your categorical variables
         vSize = "number_apps",  #This is your quantitative variable
         type="index", #Type sets the organization and color scheme of your treemap
         palette = "Greens",  #Select your color palette from the RColorBrewer presets or make your own.
-        title="Number of apps per subtype and main category of MDs", #Customize your title
+        title="Number of apps per subtype and main category of MDs", 
         fontsize.title = 14 #Change the font size of the title
     )
 
@@ -497,7 +514,7 @@ n_apps %>%
 
 ### Sensory capabilities related to each MD 
 
-```{r md_apps, echo=FALSE}
+```{r md_apps_table, echo=FALSE}
 cols = c("id", "md", "md_id", "md_desc", "md_sub", "md_dsm5",
          "sens_acc", "sens_gyr", "sens_gps", "sens_mic", 
          "os_ios", "os_and", "app_name", 
@@ -514,23 +531,33 @@ sens_apps <-
 
 #' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
 sens_apps %>%
-    mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
+    # mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
     select(`DSM-5 Mental Disorder` = md_desc,
            `MD Subtype` = md_sub,
            `Accelerometer` = sens_acc,
            `Ggyroscope` = sens_gyr,
            `GPS` = sens_gps,
            `Microphone` = sens_mic) %>%
-    kable(format = "html", caption = "Apps", escape = F) %>%
+    kable(format = "html", caption = "Apps", escape = FALSE) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+
+```
+
+Now, we filter the records that have any value from the "sens" fields to true. Heatmeap?
+
+```{r md_apps_sensors}
+
+
+sens_apps %>%
+    filter(sens_acc == "YES" | sens_gyr =="YES" | sens_gps == "YES" | sens_mic == "YES") %>%
+    kable(format = "html", caption = "Apps", escape = FALSE) %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 
 
 ```
-
-
-
 
 
 
