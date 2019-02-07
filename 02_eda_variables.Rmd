@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "R Notebook - exploratory analysis of survey papers for JMIR paper""
 output:
   html_document:
     df_print: paged
@@ -206,6 +206,8 @@ The *top3* MDs are categorised in the DSM-5, and they all cover about `r percent
 
 _Variability of MDs over time_?
 
+_Note: The period 2013-2017 covers full years. 2018 only covers the first two months (Bibliographic searches were conducted at the beginning of March 2018)._ 
+
 ```{r md_years, echo=FALSE}
 
 all_data %>%
@@ -219,13 +221,12 @@ all_data %>%
 
 ```
 
-_Note: The period 2013-2017 covers full years. 2018 only covers the first two months (Bibliographic searches were conducted at the beginning of March 2018)._ 
-
 Remarks:
 
-* There is no clear temporal trend. Only that the last years attract more papers.
-* Top3 mental disorders (`r top3`) remain significant over years.
-
+* There is no clear temporal trend. Only that the last years attract more papers. 
+* In terms of variaty, we can say that the range of MDs addressed by interventions.
+* Top3 mental disorders (`r top3`) remain significant over all years.
+* 
 
 
 ```{r md_years_area, echo=FALSE}
@@ -246,7 +247,7 @@ all_data %>%
 
 Remarks:
 
-* There is a sharp peak in 2016-2017 compared to 2013-2015. 
+* There is a sharp peak in 2016-2017 compared to 2013-2015. Speculating a bit, it is plausible to say that the number of documents eligible for the years between 2008 and 2012 would have represented a small part of the total number of eligible documents, especially when compared with the last 5 years (2013-2018).
 * The 2015-2016 period accounts for (`r percent(60/n_papers)`), while 2013-2015 accounts for (`r percent(32/n_papers)`).
 * Only two months of 2018 (`r percent(12/n_papers)`) almost reach the amount of documents in 2012 and 2013 together (`r percent(15/n_papers)`).
 
@@ -311,7 +312,7 @@ alluvial_long(md_by_year,
 
 _Comorbidity in cases 23-Dual and 24-multiple?_ 
 
-Reminder: About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal Behavior Disorder/Nonsuicidal Self-Injury. We look at MDs which are not categorised according to the DSm-5 (23 or 24), and check the field *md_mul* that lists the mutliple MDs.
+Reminder: About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal Behavior Disorder/Nonsuicidal Self-Injury. We look now at 23-Dual and 24-Multiple MDs, and check the field *md_mul* that lists the mutliple MDs.
 
 ```{r commorbidity, echo=FALSE}
 
@@ -335,7 +336,7 @@ md_23or24 <-
 #head(md_23or24)
 ```
 
-A way to visualizing the two discrete variables is by using a stacked bar plot 
+A way to visualize the two discrete variables is by using a bar plot (counts) and a stacked bar plot (proportions).
 
 ```{r plot_commorbidity, echo=FALSE}
 
@@ -362,7 +363,7 @@ md_23or24 %>%
 #gridExtra::grid.arrange(plot_left, plot_right, nrow = 1)
 ```
 
-An alternative way is by using a bubble plot.
+Same as the above stacked bar plot but using a bubble plot.
 
 ```{r bubbleplot_commorbidity, echo=FALSE }
 # Source: http://stulp.gmw.rug.nl/ggplotworkshop/twodiscretevariables.html#bubbleplot
@@ -384,18 +385,41 @@ md_23or24 %>%
 
 _What subtypes of illnesses are mentioned (in the papers) per each category of mental disorder in DSM-5?_ 
 
-We look at MDs which are categorised according to the DSM-5 (id <> 23 or 24), and check the field *md_sub*.
+We look at MDs which are categorised according to the DSM-5 (id <= 22 or id = 25), and check the field *md_sub*.
 
-```{r subtypes, echo=FALSE}
-
+```{r subtypes_dotplot, echo=FALSE}
 #' Source: http://stulp.gmw.rug.nl/ggplotworkshop/twodiscretevariables.html
-#' TODO ONGOIND
 md_subtypes <- 
     all_data %>% 
     filter(md_id!=23 & md_id!=24) %>%
-    drop_na(md_sub)
+    drop_na(md_sub) %>%
+    arrange(desc(md_id))
 
-md_subtypes$md_sub <- str_to_lower(md_subtypes$md_sub)
+n_colors <- nlevels(factor(md_subtypes$md_id))
+get_palette <- colorRampPalette(brewer.pal(8, "Set2"))
+
+#' Source: https://ggplot2.tidyverse.org/reference/geom_dotplot.html
+#' source: http://www.sthda.com/english/wiki/ggplot2-dot-plot-quick-start-guide-r-software-and-data-visualization
+md_subtypes %>%
+    ggplot(aes(x=factor(md_sub), fill=factor(md_id)), group=factor(md_id), colour=get_palette(n_colors)) + 
+    geom_dotplot(method="dotdensity", binwidth=1, stackdir = "center", stackratio=1.2) + 
+    #geom_dotplot(method="histodot", binwidth=1, stackdir = "center") + 
+    scale_y_continuous(name=NULL, breaks=NULL) +
+    coord_flip() +
+    labs(title="Subtypes of MDs as dotplot.", subtitle ="Absolute count.") +
+    theme(legend.position="bottom") +
+    theme_minimal()
+
+#' TODO: Reorder the factor (md_mul) to group subtypes per main MD. For example, all depression-related subtypes must be shown together 
+
+
+```
+
+
+
+```{r subtypes_alluvial, echo=FALSE}
+
+#' TODO ONGOING
 
 # md_subtypes %>%
 #     group_by(md_id, md_desc, md_sub)  %>%  # first create counts for each group
@@ -453,6 +477,44 @@ _Which DMs are related to third wave theraphy and /or positive Psychotherapy?_
 ## Mental disorders and Apps
 
 Let's start simple: _How many apps are related to the top1 MD (4-Depression)?_
+
+```{r md_apps, echo=FALSE}
+
+md_apps <- 
+    all_data %>% 
+    #filter(md_id==4) %>% 
+    #separate_rows(sep = ";", md_sub) %>%
+    group_by(md_desc, md_sub) %>%
+    summarise(number_cases = n()) 
+
+head(md_apps)
+# A treemap is a diagram representing hierarchical data in the form of nested rectangles, the area of each corresponding to its numerical value
+
+
+library(treemap)
+
+md_apps %>%
+    treemap(index=c("md_desc","md_sub"),  #A list of your categorical variables
+        vSize = "number_cases",  #This is your quantitative variable
+        type="index", #Type sets the organization and color scheme of your treemap
+        palette = "Greens",  #Select your color palette from the RColorBrewer presets or make your own.
+        title="Number of apps per subtype and main category of MDs", #Customize your title
+        fontsize.title = 14 #Change the font size of the title
+    )
+
+md_23or24 <- 
+    md_23or24 %>% 
+      group_by(md_mul, md_id) %>%  # first create counts for each group
+      summarise(number_cases = n()) %>%
+      group_by(md_mul) %>%
+      mutate(total_cases = sum(number_cases),
+             proportion = number_cases/total_cases) # Create total counts 
+
+```
+
+
+
+
 
 
 
