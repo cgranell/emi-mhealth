@@ -126,6 +126,11 @@ all_data %>%
 
 ```
 
+Remarks:
+
+* There appears to be three main groups of MDs: 1/ well-addressed, 2/ marginal, and 3/ ignored. In the group 1, we have for instance the last 4 rows of the above plot, which cover a good proportion of the papers. The second group refers to those MDs that have a reduce number of apps, say less than 4. They are for example the first rows of the above plot. The third group is the MDs that are not shown in the plot. 
+
+
 ```{r lollipop_md_variability, echo=FALSE}
 
 md_percent <- 
@@ -222,9 +227,8 @@ all_data %>%
 Remarks:
 
 * There is no clear temporal trend. Only that the last years attract more papers. 
-* In terms of variaty, we can say that the range of MDs addressed by interventions.
-* Top3 mental disorders (`r top3`) remain significant over all years.
-* 
+* In terms of variability, we can say that the range of MD addressed in papers is expanding in recent years
+* We can say that the range oftop3`) remain significant over all years.
 
 
 ```{r md_years_area, echo=FALSE}
@@ -289,17 +293,17 @@ get_palette <- colorRampPalette(brewer.pal(9, "Set1"))
 
 
 # https://www.rdocumentation.org/packages/easyalluvial/versions/0.1.8/topics/alluvial_long
-alluvial_long(md_by_year, 
-              key = year, 
-              value = proportion, 
-              id = md_id, 
-              bins = n_colors,
-              NA_label = "NA",
-              bin_labels = as.character(unique(md_by_year$md_id)),
-              fill_by = 'all_flows',
-              col_vector_flow = get_palette(n_colors),
-              col_vector_value = get_palette(n_colors)
-)
+# alluvial_long(md_by_year, 
+#               key = year, 
+#               value = proportion, 
+#               id = md_id, 
+#               bins = n_colors,
+#               NA_label = "NA",
+#               bin_labels = as.character(unique(md_by_year$md_id)),
+#               fill_by = 'all_flows',
+#               col_vector_flow = get_palette(n_colors),
+#               col_vector_value = get_palette(n_colors)
+# )
       
 
 ```
