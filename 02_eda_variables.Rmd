@@ -1,5 +1,5 @@
 ---
-title: "R Notebook - exploratory analysis of survey papers for JMIR paper""
+title: "R Notebook - exploratory analysis of survey papers for JMIR paper"
 output:
   html_document:
     df_print: paged
@@ -21,7 +21,7 @@ library(scales)
 library(easyalluvial)
 library(RColorBrewer)
 library(gridExtra)
-
+library(treemap)
 
 ```
 
@@ -75,7 +75,7 @@ n_papers = nrow(all_data)
 
 The final number of papers to analyse is `` `r n_papers` ``.
 
-## Exploratory analysis
+## Exploratory analysis of mental disorders (MDs)
 
 Next exploratory tables and figures attempt to figure out what's going on. The initial assumption of the paper is that the field of mental disorder (*md*) drives the analysis. So we start exploring the related columns (variables), which are: 
 
@@ -86,9 +86,7 @@ all_data %>%
 
 ```
 
-### Mental disorders (MDs) 
-
-_How many distinct MDs are there?_ 
+### How many distinct MDs are there?
 
 ```{r md_variability, echo=FALSE}
 
@@ -158,7 +156,7 @@ md_percent %>%
 
 ```
 
-_Top3 MDs_? 
+### Top3 MDs? 
 
 ```{r md_top3, echo=FALSE}
 top3 <- levels(all_data$md)[1:3]
@@ -204,7 +202,7 @@ The *top3* MDs are categorised in the DSM-5, and they all cover about `r percent
 
 ```
 
-_Variability of MDs over time_?
+### Variability of MDs over time?
 
 _Note: The period 2013-2017 covers full years. 2018 only covers the first two months (Bibliographic searches were conducted at the beginning of March 2018)._ 
 
@@ -308,9 +306,7 @@ alluvial_long(md_by_year,
 
 
 
-### Mental disorders and subtypes
-
-_Comorbidity in cases 23-Dual and 24-multiple?_ 
+### Comorbidity in cases 23-Dual and 24-multiple? 
 
 Reminder: About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal Behavior Disorder/Nonsuicidal Self-Injury. We look now at 23-Dual and 24-Multiple MDs, and check the field *md_mul* that lists the mutliple MDs.
 
@@ -383,7 +379,7 @@ md_23or24 %>%
 ```
 
 
-_What subtypes of illnesses are mentioned (in the papers) per each category of mental disorder in DSM-5?_ 
+### What subtypes of illnesses are mentioned (in the papers) per each category of mental disorder in DSM-5?
 
 We look at MDs which are categorised according to the DSM-5 (id <= 22 or id = 25), and check the field *md_sub*.
 
@@ -470,48 +466,25 @@ library(ggalluvial)
 
 _Which is the total coverage of CBT?_ _And the coverage of the rest of phsycological framework?_
 
-
 _Which DMs are related to third wave theraphy and /or positive Psychotherapy?_
 
 
-## Mental disorders and Apps
+## Exploratory analysis of mental disorders and apps
 
-Let's start simple: _How many apps are related to the top1 MD (4-Depression)?_
+### Number of apps related to each MD 
 
+Let's start simple: _How many apps are related to the MDs and subtypes?_ We use a treemap diagram to represente hierarchical data in the form of nested rectangles, the area of each corresponding to its numerical value. i.e. the count of apps
 
-```{r md_apps, echo=FALSE}
-cols = c("id", "md", "md_id", "md_desc", "md_sub", "md_dsm5",
-         "sens_acc", "sens_gyr", "sens_gps", "sens_gps", 
-         "os_ios", "os_and", "app_name", 
-         "type", "year")
+```{r plot_md_apps, echo=FALSE}
 
-sens_apps <- 
-    all_data %>% 
-    filter(md_id!=23 & md_id!=24) %>%
-    select(cols) %>%
-    group_by(md_desc, md_sub) %>%
-    summarise(number_apps = n()) 
-
-sens_apps %>% str()
-
+# # TODO: Ongoing
 n_apps <- 
     all_data %>% 
     filter(md_id!=23 & md_id!=24) %>% 
     group_by(md_desc, md_sub) %>%
     summarise(number_apps = n()) 
 
-kable(md_apps,
-      format = "html", 
-      caption = "Apps")
-
-```
-
-
-```{r plot_md_apps, echo=FALSE}
-# A treemap is a diagram representing hierarchical data in the form of nested rectangles, the area of each corresponding to its numerical value
-library(treemap)
-
-md_apps %>%
+n_apps %>%
     treemap(index=c("md_desc","md_sub"),  #A list of your categorical variables
         vSize = "number_apps",  #This is your quantitative variable
         type="index", #Type sets the organization and color scheme of your treemap
@@ -520,20 +493,41 @@ md_apps %>%
         fontsize.title = 14 #Change the font size of the title
     )
 
-md_23or24 <- 
-    md_23or24 %>% 
-      group_by(md_mul, md_id) %>%  # first create counts for each group
-      summarise(number_cases = n()) %>%
-      group_by(md_mul) %>%
-      mutate(total_cases = sum(number_cases),
-             proportion = number_cases/total_cases) # Create total counts 
-
 ```
 
+### Sensory capabilities related to each MD 
+
+```{r md_apps, echo=FALSE}
+cols = c("id", "md", "md_id", "md_desc", "md_sub", "md_dsm5",
+         "sens_acc", "sens_gyr", "sens_gps", "sens_mic", 
+         "os_ios", "os_and", "app_name", 
+         "type", "year")
+
+sens_apps <- 
+    all_data %>% 
+    filter(md_id!=23 & md_id!=24) %>%
+    select(cols) %>%
+    arrange(md_desc, md_sub)
+    # group_by(md_desc, md_sub) %>%
+    # summarise(number_apps = n()) 
+
+
+#' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+sens_apps %>%
+    mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
+    select(`DSM-5 Mental Disorder` = md_desc,
+           `MD Subtype` = md_sub,
+           `Accelerometer` = sens_acc,
+           `Ggyroscope` = sens_gyr,
+           `GPS` = sens_gps,
+           `Microphone` = sens_mic) %>%
+    kable(format = "html", caption = "Apps", escape = F) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 
 
+```
 
 
 
