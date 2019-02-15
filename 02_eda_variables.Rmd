@@ -493,12 +493,16 @@ n_apps %>%
   ggplot(aes(x=md_sub, y=number_apps, fill=factor(md_id))) + 
   geom_bar(stat="identity") +
   coord_flip() + 
-  labs(title="Apsps per MD. Absolute count") +
+  labs(title="Apps per subtopic coloured by MD",
+       subtitle = "Absolute count") +
   theme(legend.position = "top") +
   theme_minimal()
 
 
 ```
+
+Note that in the above bar chart, there is a significant proportion of app whose subtopic is not defined (NA). Are therefore these apps too much generic?  
+
 
 We use a [treemap](https://cran.r-project.org/package=treemap) diagram to represent hierarchical data in the form of nested rectangles, the area of each corresponding to its numerical value. i.e. the count of apps per subtype and main MD
 
@@ -541,27 +545,43 @@ sens_apps %>%
            `Accelerometer` = sens_acc,
            `Ggyroscope` = sens_gyr,
            `GPS` = sens_gps,
-           `Microphone` = sens_mic) %>%
-    kable(format = "html", caption = "Apps", escape = FALSE) %>%
+           `Microphone` = sens_mic,
+           `App Name` = app_name) %>%
+    kable(format = "html", escape = FALSE) %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 ```
 
-Now, we filter the records that have any value from the "sens" fields to true. Heatmeap?
+Now, we filter the records that have any value from the "sens_" fields to true. Heatmeap?
 
 ```{r md_apps_sensors}
 
+heatmap_data <- 
+    sens_apps %>%
+    filter(sens_acc == "YES" | sens_gyr =="YES" | sens_gps == "YES" | sens_mic == "YES")
 
-sens_apps %>%
-    filter(sens_acc == "YES" | sens_gyr =="YES" | sens_gps == "YES" | sens_mic == "YES") %>%
+heatmap_data %>%
+    select(`DSM-5 Mental Disorder` = md_desc,
+           `MD Subtype` = md_sub,
+           `Accelerometer` = sens_acc,
+           `Ggyroscope` = sens_gyr,
+           `GPS` = sens_gps,
+           `Microphone` = sens_mic,
+           `App Name` = app_name) %>%
     kable(format = "html", caption = "Apps", escape = FALSE) %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 
+```
+
+
+```{r}
+
 
 ```
+
 
 
 
@@ -586,7 +606,7 @@ sens_apps %>%
 
 
 
-```{r}
+```{r echo=FALSE}
 # md_data %>%
 # ggplot(mapping = aes(x = md, y = n, fill = md_dsm5)) +
 #     geom_bar(stat="identity") +
