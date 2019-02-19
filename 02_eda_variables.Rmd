@@ -1,5 +1,6 @@
 ---
 title: "R Notebook - exploratory analysis of survey papers for JMIR paper"
+date: "`r format(Sys.Date())`"
 output:
   html_document:
     df_print: paged
