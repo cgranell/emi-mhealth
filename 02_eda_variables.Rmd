@@ -556,7 +556,7 @@ sens_apps %>%
 
 Now, we filter the records that have any value from the "sens_" fields to true. Heatmeap?
 
-```{r md_apps_sensors}
+```{r md_apps_sensors, echo=FALSE}
 
 heatmap_data <- 
     sens_apps %>%
