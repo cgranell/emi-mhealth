@@ -171,27 +171,90 @@ md_percent %>%
 # plot variety of mental disorders per assessment 
 
 
+
+library(forcats)
+
+md_data_kp <- 
+    all_data %>%
+    select(md, md_id, md_desc, val_ass)
+
+#' Merge two factors levels into a new one "26-Various" 
+md_data_kp$md <- 
+    md_data_kp$md %>% 
+    fct_collapse("26-Various" = c("23-Duo","24-Multiple"))
+
+#' Sync changes to other two columns, md_id adn md_desc
+md_data_kp <- 
+    md_data_kp %>% 
+        separate(md, c("md_id","md_desc"), "-", remove = FALSE) %>%
+        group_by(md_id, md_desc, val_ass) %>%  # first create counts for each group
+        summarise(number_cases = n()) %>%
+        # Create total counts and proportions per mental disorder
+        group_by(md_desc) %>%
+        mutate(total_cases = sum(number_cases),
+               proportion = number_cases/total_cases) %>% 
+        ungroup() %>%
+        arrange(desc(total_cases), md_id)
+
+
+# convert to factor to retain sorted order in plot.
+md_data_kp$md_desc <- factor(md_data_kp$md_desc, levels=unique(md_data_kp$md_desc))  
+
+        # Create total counts and proportions per assessment  
+        # group_by(val_ass) %>%
+        # summarise(number_cases_ass = n()) %>%
+        # mutate(total_cases_ass = sum(number_cases_ass),
+        #        proportion_ass = number_cases_ass/total_cases_ass) %>% 
+        # ungroup()
+
 kp_variability <- 
-all_data %>%
-  ggplot(mapping = aes(x = md, fill=val_ass, group= val_ass)) +
-    geom_bar() +
-    geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, nudge_x= 0,  size = 2) +
-    labs(title="Distribution of papers per mental disorder", 
-         subtitle = paste0("(N=",n_papers, ")"),
-          x="Mental disorders", y="Number of cases", caption="Source: authors") + 
-    coord_flip() +
-    guides(fill=guide_legend(title="Assessment")) +  # modify legend title
-    scale_fill_brewer(palette = "Set1") +
-    theme_bw() +
-    # Legend: Top-Right Inside the Plot") 
-    theme(legend.title = element_text(size=11), 
-          legend.justification = c('right', 'top'),
-          legend.position=c(0.95, 0.95),  
-          #legend.background = element_blank(),
-          legend.background = element_rect(color = "gray", size = 0.5, linetype ="solid"),
-          legend.key = element_blank()) +
-    # Change the line type and color of axis lines
-    theme(axis.line = element_line(colour = "gray", size = 1, linetype = "solid"))
+    md_data_kp %>%
+      ggplot(aes(x=md_desc, y=number_cases, label=number_cases)) + #, fill=val_ass, group= val_ass)) +
+        geom_bar(stat="identity", aes(fill = val_ass), position = position_stack(reverse = T)) +
+        geom_text(aes(label=number_cases), size=2, family="American Typewriter") +
+        # geom_text(aes, (label=  color), nudge_y = 0.5, nudge_x= 0,  size = 2) +
+        labs(title="Distribution of papers per mental disorder", 
+             subtitle = paste0("(N=",n_papers, ")"),
+              x="Mental disorders", y="Number of cases", caption="Source: authors") + 
+        coord_flip() +
+        guides(fill=guide_legend(title="Assessment")) +  # modify legend title
+        scale_fill_brewer(palette = "Set1") +
+        theme_bw() +
+        # Legend: Top-Right Inside the Plot") 
+        theme(legend.title = element_text(size=11), 
+              legend.justification = c('right', 'top'),
+              legend.position=c(0.95, 0.95),  
+              #legend.background = element_blank(),
+              legend.background = element_rect(color = "gray", size = 0.5, linetype ="solid"),
+              legend.key = element_blank()) +
+        # Change the line type and color of axis lines
+        theme(axis.line = element_line(colour = "gray", size = 1, linetype = "solid"))
+        
+
+kp_variability
+
+
+kp_variability <- 
+    md_data_kp %>%
+      ggplot(mapping = aes(x = md_desc, fill=val_ass, group= val_ass)) +
+        geom_bar() +
+        geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, nudge_x= 0,  size = 2) +
+        labs(title="Distribution of papers per mental disorder", 
+             subtitle = paste0("(N=",n_papers, ")"),
+              x="Mental disorders", y="Number of cases", caption="Source: authors") + 
+        coord_flip() +
+        guides(fill=guide_legend(title="Assessment")) +  # modify legend title
+        scale_fill_brewer(palette = "Set1") +
+        theme_bw() +
+        # Legend: Top-Right Inside the Plot") 
+        theme(legend.title = element_text(size=11), 
+              legend.justification = c('right', 'top'),
+              legend.position=c(0.95, 0.95),  
+              #legend.background = element_blank(),
+              legend.background = element_rect(color = "gray", size = 0.5, linetype ="solid"),
+              legend.key = element_blank()) +
+        # Change the line type and color of axis lines
+        theme(axis.line = element_line(colour = "gray", size = 1, linetype = "solid"))
     
 kp_variability
 kp_file_name <- "fig_dist.png"
