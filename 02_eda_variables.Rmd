@@ -186,7 +186,7 @@ md_data_kp$md <-
 #' Sync changes to other two columns, md_id adn md_desc
 md_data_kp <- 
     md_data_kp %>% 
-        separate(md, c("md_id","md_desc"), "-", remove = FALSE) %>%
+        separate(md, c("md_id","md_desc"), "-", extra="merge", remove=FALSE) %>%
         group_by(md_id, md_desc, val_ass) %>%  # first create counts for each group
         summarise(number_cases = n()) %>%
         # Create total counts and proportions per mental disorder
@@ -211,8 +211,8 @@ kp_variability <-
     md_data_kp %>%
       ggplot(aes(x=md_desc, y=number_cases, label=number_cases)) + #, fill=val_ass, group= val_ass)) +
         geom_bar(stat="identity", aes(fill = val_ass), position = position_stack(reverse = T)) +
-        geom_text(aes(label=number_cases), size=2, family="American Typewriter") +
-        # geom_text(aes, (label=  color), nudge_y = 0.5, nudge_x= 0,  size = 2) +
+        geom_text(aes(label=number_cases), size=2, nudge_y = 0.2) +
+        # geom_text(aes, (label=  color), , nudge_x= 0,  size = 2) +
         labs(title="Distribution of papers per mental disorder", 
              subtitle = paste0("(N=",n_papers, ")"),
               x="Mental disorders", y="Number of cases", caption="Source: authors") + 
@@ -232,6 +232,10 @@ kp_variability <-
         
 
 kp_variability
+kp_file_name <- "fig_dist.png"
+ggsave(plot = kp_variability, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
+
 
 
 kp_variability <- 
