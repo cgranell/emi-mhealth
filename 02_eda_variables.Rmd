@@ -11,6 +11,7 @@ output:
 Required libraries and runtime environment description.
 
 ```{r load_libraries, echo=TRUE, message=FALSE, warning=FALSE}
+library(here)
 library(emidata)
 library(tidyverse)
 library(tidytext)
@@ -45,9 +46,9 @@ We analyse three datasets:
 cs_data <- ipapers2018_csdata
 psy_data <- ipapers2018_psydata
 # cs_data %>% glimpse()
-# cs_data %>% skimr::skim()
+ cs_data %>% skimr::skim()
 # psy_data %>% glimpse()
-# psy_data %>% skimr::skim()
+ psy_data %>% skimr::skim()
 
 ```
 
@@ -161,6 +162,44 @@ md_percent %>%
     # theme(plot.subtitle=element_text(margin=margin(b=10)))
 
 ```
+
+
+### [KEY FIGURE] Distribution of papers per Mental Health + Assessment
+
+
+```{r plot_md_variability_assessment, echo=FALSE}
+# plot variety of mental disorders per assessment 
+
+
+kp_variability <- 
+all_data %>%
+  ggplot(mapping = aes(x = md, fill=val_ass, group= val_ass)) +
+    geom_bar() +
+    geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, nudge_x= 0,  size = 2) +
+    labs(title="Distribution of papers per mental disorder", 
+         subtitle = paste0("(N=",n_papers, ")"),
+          x="Mental disorders", y="Number of cases", caption="Source: authors") + 
+    coord_flip() +
+    guides(fill=guide_legend(title="Assessment")) +  # modify legend title
+    scale_fill_brewer(palette = "Set1") +
+    theme_bw() +
+    # Legend: Top-Right Inside the Plot") 
+    theme(legend.title = element_text(size=11), 
+          legend.justification = c('right', 'top'),
+          legend.position=c(0.95, 0.95),  
+          #legend.background = element_blank(),
+          legend.background = element_rect(color = "gray", size = 0.5, linetype ="solid"),
+          legend.key = element_blank()) +
+    # Change the line type and color of axis lines
+    theme(axis.line = element_line(colour = "gray", size = 1, linetype = "solid"))
+    
+kp_variability
+kp_file_name <- "fig_dist.png"
+ggsave(plot = kp_variability, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
+
+```
+
 
 ### Top3 MDs? 
 
