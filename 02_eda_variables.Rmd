@@ -410,6 +410,7 @@ md_top3_byyear %>%
     geom_vline(aes(xintercept = 2017), linetype = 'dashed', size = 0.5) +
     theme(legend.position = "top")
 
+####### TODO: reorganise levels
 
 # library(ggridges)
 # md_top3_byyear %>%
