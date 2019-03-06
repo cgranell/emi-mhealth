@@ -219,7 +219,7 @@ md_data_kp$md_desc <- factor(md_data_kp$md_desc, levels=unique(md_data_kp$md_des
         #        proportion_ass = number_cases_ass/total_cases_ass) %>% 
         # ungroup()
 
-kp_variability <- 
+kp_barchart <- 
     md_data_kp %>%
       ggplot(aes(x=md_desc, y=number_cases, label=number_cases)) + #, fill=val_ass, group= val_ass)) +
         geom_bar(stat="identity", aes(fill = val_ass), position = position_stack(reverse = T)) +
@@ -227,26 +227,35 @@ kp_variability <-
         # geom_text(aes, (label=  color), , nudge_x= 0,  size = 2) +
         labs(title="Distribution of papers per mental disorder", 
              subtitle = paste0("(N=",n_papers, ")"),
-              x="Mental disorders", y="Number of cases", caption="Source: authors") + 
+             x="Mental disorders", 
+             y="Number of cases", 
+             caption="Source: authors") + 
         coord_flip() +
         guides(fill=guide_legend(title="Assessment")) +  # modify legend title
-        scale_fill_brewer(palette = "Set1") +
+        scale_fill_brewer(palette = "Set2") +
         scale_y_continuous(expand=c(0,0), breaks=seq(0, 22, by=2), limits=c(0, 22)) +
-        theme_bw() +
+        theme_minimal()  +
         # Legend: Top-Right Inside the Plot") 
         theme(legend.title = element_text(size=11), 
               legend.justification = c('right', 'top'),
               legend.position=c(0.95, 0.95),  
               #legend.background = element_blank(),
-              legend.background = element_rect(color = "gray", size = 0.5, linetype ="solid"),
+              legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
               legend.key = element_blank()) +
         # Change the line type and color of axis lines
-        theme(axis.line = element_line(colour = "gray", size = 1, linetype = "solid"))
+        # theme(axis.line = element_line(colour = "darkgray", size = 1, linetype = "solid")) +
+        # theme(panel.grid.minor=element_blank()) +
+        # theme(panel.grid.major.y=element_blank())
         
+        theme(panel.grid.major = element_blank()) + 
+        theme(panel.grid.minor = element_blank()) +
+        theme(panel.background = element_blank()) +
+        theme(plot.margin=unit(rep(20, 4), "pt")) +
+        theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid"))
 
-kp_variability
-kp_file_name <- "fig_dist.png"
-ggsave(plot = kp_variability, filename = kp_file_name, device = "png", path = here::here("figs"),
+kp_barchart
+kp_file_name <- "fig_barchart.png"
+ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
 
 
@@ -411,8 +420,41 @@ md_top3_byyear %>%
     scale_fill_brewer(palette="Greens", breaks=levels(md_top3_byyear$md_desc)) +
     #geom_text(aes(label = number_cases), position= "stack", color= "blue", size = 3) +
     geom_vline(aes(xintercept = 2017), linetype = 'dashed', size = 0.5) +
-    guides(fill=guide_legend(title="Top MDs")) +  # modify legend title
+    guides(fill=guide_legend(title="")) +  # modify legend title
     theme(legend.position = "bottom")
+    
+kp_linechart <-
+md_top3_byyear %>%
+    ggplot(aes(x=year, y=number_cases, group=md_desc)) +
+    geom_line(aes(color=md_desc), size=1, alpha=.4) +
+    geom_point(aes(color=md_desc), size=6) +
+    labs(title="Distribution of papers per year", 
+         subtitle = "Total and top3 mental disorders",
+         x="Year", 
+         y="Number of cases", 
+         caption="Source: authors") + 
+    scale_color_brewer(palette="Set2", breaks=levels(md_top3_byyear$md_desc)) +
+    geom_text(aes(label = number_cases), color= "white", size=3) +
+    geom_vline(aes(xintercept = 2017), color="darkgray", linetype = "dashed", size = 0.5) +
+    theme_minimal() +
+    theme(legend.title = element_blank()) +
+    # Legend: Top-Right Inside the Plot") 
+    theme(legend.justification = c('left', 'top'),
+          legend.position=c(0.05, 0.95),  
+          #legend.background = element_blank(),
+          legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
+          legend.key = element_blank()) +
+    theme(panel.grid.major = element_blank()) + 
+    theme(panel.grid.minor = element_blank()) +
+    theme(panel.background = element_blank()) +
+    theme(plot.margin=unit(rep(20, 4), "pt")) +
+    # Change the line type and color of axis lines
+    theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid"))
+
+kp_linechart
+kp_file_name <- "fig_linechart.png"
+ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
 
 ####### TODO: reorganise levels
 
