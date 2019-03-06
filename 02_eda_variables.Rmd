@@ -20,10 +20,12 @@ library(stringr)
 library(skimr)
 library(ggalt)
 library(scales)
-library(easyalluvial)
+#library(easyalluvial)
 library(RColorBrewer)
 library(gridExtra)
 library(treemap)
+
+library(forcats)
 
 ```
 
@@ -46,9 +48,9 @@ We analyse three datasets:
 cs_data <- ipapers2018_csdata
 psy_data <- ipapers2018_psydata
 # cs_data %>% glimpse()
- cs_data %>% skimr::skim()
+# cs_data %>% skimr::skim()
 # psy_data %>% glimpse()
- psy_data %>% skimr::skim()
+# psy_data %>% skimr::skim()
 
 ```
 
@@ -65,9 +67,18 @@ all_data <- all_data %>%
     inner_join(ipapers2018, by="id") %>%
     select(-filename, -title, -abstract, -journal, -author, -keywords)
 
-
 # cast MD to factor
 all_data$md <- factor(all_data$md, levels=names(sort(table(all_data$md), decreasing=T)))
+
+#' Merge two factors levels into a new one "26-Various" 
+all_data$md <- 
+    all_data$md %>% 
+    fct_collapse("26-Various" = c("23-Duo","24-Multiple"))
+
+#' Sync changes of "md" to other two columns, "md_id"" and "md_desc""
+all_data <- 
+    all_data %>% 
+        separate(md, c("md_id","md_desc"), "-", extra="merge", remove=FALSE)
 
 n_md <- nlevels(all_data$md)
 n_papers = nrow(all_data)
@@ -76,6 +87,14 @@ n_papers = nrow(all_data)
 ```
 
 The final number of papers to analyse is `` `r n_papers` ``.
+
+
+```{r my_functions, echo=FALSE}
+
+
+```
+
+
 
 ## Exploratory analysis of mental disorders (MDs)
 
@@ -137,7 +156,7 @@ Remarks:
 
 md_percent <- 
     all_data %>%
-      group_by(md) %>%
+      group_by(md, md_desc) %>%
       summarise(n = n()) %>%
       mutate(proportion = n/n_papers) %>%
       arrange(desc(n))
@@ -145,21 +164,22 @@ md_percent <-
 # head(md_percent)
 
 md_percent %>%
-    ggplot(aes(y=reorder(md, proportion), x=proportion)) +
+    ggplot(aes(y=reorder(md_desc, proportion), x=proportion)) +
     geom_lollipop(point.colour = 'steelblue', point.size = 2,horizontal = TRUE) +
-    scale_x_continuous(expand=c(0,0), labels=scales::percent_format(), breaks=seq(0, 0.20, by=0.02), limits=c(0, 0.20)) +
+    scale_x_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 0.20, by=0.02), limits=c(0, 0.20)) +
     theme_minimal() +
-    labs(x=NULL, y=NULL, 
-         title="Distribution of MDs",
-         subtitle="Ranked by relative %",
-         caption="Data from ...") 
-    # theme(panel.grid.major.y=element_blank()) +
-    # theme(panel.grid.minor=element_blank()) +
-    # theme(axis.line.y=element_line(color="#2b2b2b", size=0.15)) +
-    # theme(axis.text.y=element_text(margin=margin(r=0, l=0))) +
-    # theme(plot.margin=unit(rep(30, 4), "pt")) +
-    # theme(plot.title=element_text(face="bold")) +
-    # theme(plot.subtitle=element_text(margin=margin(b=10)))
+    labs(title="Proportional distribution \nof metal disorders",
+         subtitle=paste0("(N=",n_papers, ")"),
+         x="Percentage",
+         y="Mental disorders",
+         caption="Source: authors") +
+    theme(panel.grid.major.y=element_blank()) +
+    theme(panel.grid.minor=element_blank()) +
+    theme(axis.line.y=element_line(color="#2b2b2b", size=0.15)) +
+    theme(axis.text.y=element_text(margin=margin(r=0, l=0))) +
+    theme(plot.margin=unit(rep(20, 4), "pt")) +
+    theme(plot.title=element_text(face="bold")) +
+    theme(plot.subtitle=element_text(margin=margin(b=10)))
 
 ```
 
@@ -171,22 +191,12 @@ md_percent %>%
 # plot variety of mental disorders per assessment 
 
 
-
-library(forcats)
-
 md_data_kp <- 
     all_data %>%
     select(md, md_id, md_desc, val_ass)
 
-#' Merge two factors levels into a new one "26-Various" 
-md_data_kp$md <- 
-    md_data_kp$md %>% 
-    fct_collapse("26-Various" = c("23-Duo","24-Multiple"))
-
-#' Sync changes to other two columns, md_id adn md_desc
 md_data_kp <- 
     md_data_kp %>% 
-        separate(md, c("md_id","md_desc"), "-", extra="merge", remove=FALSE) %>%
         group_by(md_id, md_desc, val_ass) %>%  # first create counts for each group
         summarise(number_cases = n()) %>%
         # Create total counts and proportions per mental disorder
@@ -219,6 +229,7 @@ kp_variability <-
         coord_flip() +
         guides(fill=guide_legend(title="Assessment")) +  # modify legend title
         scale_fill_brewer(palette = "Set1") +
+        scale_y_continuous(expand=c(0,0), breaks=seq(0, 22, by=2), limits=c(0, 22)) +
         theme_bw() +
         # Legend: Top-Right Inside the Plot") 
         theme(legend.title = element_text(size=11), 
@@ -237,33 +248,33 @@ ggsave(plot = kp_variability, filename = kp_file_name, device = "png", path = he
     scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
 
 
-
-kp_variability <- 
-    md_data_kp %>%
-      ggplot(mapping = aes(x = md_desc, fill=val_ass, group= val_ass)) +
-        geom_bar() +
-        geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, nudge_x= 0,  size = 2) +
-        labs(title="Distribution of papers per mental disorder", 
-             subtitle = paste0("(N=",n_papers, ")"),
-              x="Mental disorders", y="Number of cases", caption="Source: authors") + 
-        coord_flip() +
-        guides(fill=guide_legend(title="Assessment")) +  # modify legend title
-        scale_fill_brewer(palette = "Set1") +
-        theme_bw() +
-        # Legend: Top-Right Inside the Plot") 
-        theme(legend.title = element_text(size=11), 
-              legend.justification = c('right', 'top'),
-              legend.position=c(0.95, 0.95),  
-              #legend.background = element_blank(),
-              legend.background = element_rect(color = "gray", size = 0.5, linetype ="solid"),
-              legend.key = element_blank()) +
-        # Change the line type and color of axis lines
-        theme(axis.line = element_line(colour = "gray", size = 1, linetype = "solid"))
-    
-kp_variability
-kp_file_name <- "fig_dist.png"
-ggsave(plot = kp_variability, filename = kp_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
+# 
+# kp_variability <- 
+#     md_data_kp %>%
+#       ggplot(mapping = aes(x = md_desc, fill=val_ass, group= val_ass)) +
+#         geom_bar() +
+#         geom_text(stat = 'count', aes(label = ..count..), nudge_y = 0.5, nudge_x= 0,  size = 2) +
+#         labs(title="Distribution of papers per mental disorder", 
+#              subtitle = paste0("(N=",n_papers, ")"),
+#               x="Mental disorders", y="Number of cases", caption="Source: authors") + 
+#         coord_flip() +
+#         guides(fill=guide_legend(title="Assessment")) +  # modify legend title
+#         scale_fill_brewer(palette = "Set1") +
+#         theme_bw() +
+#         # Legend: Top-Right Inside the Plot") 
+#         theme(legend.title = element_text(size=11), 
+#               legend.justification = c('right', 'top'),
+#               legend.position=c(0.95, 0.95),  
+#               #legend.background = element_blank(),
+#               legend.background = element_rect(color = "gray", size = 0.5, linetype ="solid"),
+#               legend.key = element_blank()) +
+#         # Change the line type and color of axis lines
+#         theme(axis.line = element_line(colour = "gray", size = 1, linetype = "solid"))
+#     
+# kp_variability
+# kp_file_name <- "fig_dist.png"
+# ggsave(plot = kp_variability, filename = kp_file_name, device = "png", path = here::here("figs"),
+#     scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
 
 ```
 
