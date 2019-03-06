@@ -456,8 +456,6 @@ kp_file_name <- "fig_linechart.png"
 ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
 
-####### TODO: reorganise levels
-
 # library(ggridges)
 # md_top3_byyear %>%
 # ggplot(aes(x =year, y=md, fill=md)) +
