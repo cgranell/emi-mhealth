@@ -1,0 +1,385 @@
+---
+title: "R Notebook - Final figures of JMIR paper"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    df_print: paged
+---
+
+## Metadata
+
+Required libraries and runtime environment description.
+
+```{r load_libraries, echo=TRUE, message=FALSE, warning=FALSE}
+library(here)
+library(emidata)
+library(tidyverse)
+library(tidytext)
+library(kableExtra)
+library(stringr)
+library(skimr)
+library(ggalt)
+library(scales)
+#library(easyalluvial)
+library(RColorBrewer)
+library(gridExtra)
+library(treemap)
+library(forcats)
+
+```
+
+
+```{r session_info, echo=FALSE}
+# devtools::session_info(include_base = TRUE)
+```
+
+This R notebook contains the code to produce the final figures of the paper.
+
+## Data 
+
+We analyse three datasets of the *emidata* package: 
+
+* *ipapers2018_psydata* (extracted data items related to psychology) has `` `r nrow(ipapers2018_psydata)` `` records and `` `r ncol(ipapers2018_psydata)` `` columns.
+* *ipapers2018_csdata* (extracted data items related to tech/cs) has `` `r nrow(ipapers2018_csdata)` `` records and `` `r ncol(ipapers2018_csdata)` `` columns. 
+* *ipapers2018* (list of analysed papers) has `` `r nrow(ipapers2018)` `` records and `` `r ncol(ipapers2018)` `` columns.
+
+```{r data_source, echo=FALSE}
+cs_data <- ipapers2018_csdata
+psy_data <- ipapers2018_psydata
+```
+
+
+```{r all_data, echo=FALSE}
+
+all_data <- psy_data %>%
+    inner_join(cs_data, by="id")
+
+# Drop "included" columns
+all_data <- all_data %>% select(-id_csin, -id_psyin)
+
+all_data <- all_data %>%
+    inner_join(ipapers2018, by="id") %>%
+    select(-filename, -title, -abstract, -journal, -author, -keywords)
+
+# cast MD to factor
+all_data$md <- factor(all_data$md, levels=names(sort(table(all_data$md), decreasing=T)))
+
+#' Merge two factors levels into a new one "26-Various" 
+all_data$md <- 
+    all_data$md %>% 
+    fct_collapse("26-Various" = c("23-Duo","24-Multiple"))
+
+#' Sync changes of "md" to other two columns, "md_id"" and "md_desc""
+all_data <- 
+    all_data %>% 
+        separate(md, c("md_id","md_desc"), "-", extra="merge", remove=FALSE)
+
+all_data$md <- factor(all_data$md, levels=names(sort(table(all_data$md), decreasing=T)))
+
+n_md <- nlevels(all_data$md)
+n_papers = nrow(all_data)
+
+category_levels <- c("YES","NO")
+all_data <- 
+    all_data %>%
+    mutate(md_dsm5 = factor(if_else(md_id <= 22, "YES", "NO"), levels=category_levels))
+
+n_yes_dsm5 <- 
+    all_data %>%
+        filter(md_dsm5 == "YES") %>%
+        nrow()
+
+n_no_dsm5 <- 
+    all_data %>%
+        filter(md_dsm5 == "NO") %>%
+        nrow()
+
+```
+
+The final number of papers to analyse is `` `r n_papers` ``.
+
+There are `` `r n_md` `` distinct MDs (out of 25). About `r percent(n_yes_dsm5/n_papers)` (N=`r n_yes_dsm5`) are categorised according to Section II of  [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal behavior disorder/nonsuicidal self-injury. 
+
+## Utility functions 
+
+```{r my_functions, echo=FALSE}
+
+
+```
+
+## Key figures
+
+
+### Figure 1  
+
+Barchart: Distribution of papers per mental disorders, colored by assessment (yes/no).
+
+
+```{r key_plot_1_barchart, echo=FALSE}
+
+data_kp_barchart <- 
+    all_data %>%
+    select(md, md_id, md_desc, val_ass)
+
+data_kp_barchart <- 
+    data_kp_barchart %>% 
+        group_by(md_id, md_desc, val_ass) %>%  # first create counts for each group
+        summarise(number_cases = n()) %>%
+        # Create total counts and proportions per mental disorder
+        group_by(md_desc) %>%
+        mutate(total_cases = sum(number_cases),
+               proportion = number_cases/total_cases) %>% 
+        ungroup() %>%
+        arrange(desc(total_cases), md_id)
+
+
+# convert to factor to retain sorted order in plot.
+data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
+
+kp_barchart <- 
+    data_kp_barchart %>%
+      ggplot(aes(x=md_desc, y=number_cases, label=number_cases)) + #, fill=val_ass, group= val_ass)) +
+        geom_bar(stat="identity", aes(fill = val_ass), position = position_stack(reverse = T)) +
+        geom_text(aes(label=number_cases), size=2, nudge_y = 0.2) +
+        labs(title="Distribution of papers per mental disorder", 
+             subtitle = paste0("(N=",n_papers, ")"),
+             x="Mental disorders", 
+             y="Number of cases", 
+             caption="Source: authors") + 
+        coord_flip() +
+        guides(fill=guide_legend(title="Assessment")) +  # modify legend title
+        scale_fill_brewer(palette = "Set2") +
+        scale_y_continuous(expand=c(0,0), breaks=seq(0, 22, by=2), limits=c(0, 22)) +
+        theme_minimal()  +
+        # Legend: Top-Right Inside the Plot") 
+        theme(legend.title = element_text(size=11), 
+              legend.justification = c('right', 'top'),
+              legend.position=c(0.95, 0.95),  
+              #legend.background = element_blank(),
+              legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
+              legend.key = element_blank()) +
+        # Change the line type and color of axis lines
+        theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid")) +
+        theme(panel.grid.major = element_blank()) + 
+        theme(panel.grid.minor = element_blank()) +
+        theme(panel.background = element_blank()) +
+        theme(plot.margin=unit(rep(20, 4), "pt"))
+
+kp_barchart
+kp_file_name <- "fig_barchart.png"
+ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
+
+
+```
+
+Alternatively to the barchart
+
+```{r key_plot_1_lollipop, echo=FALSE}
+
+md_percent <- 
+    all_data %>%
+      group_by(md, md_desc) %>%
+      summarise(n = n()) %>%
+      mutate(proportion = n/n_papers) %>%
+      arrange(desc(n))
+
+md_percent %>%
+    ggplot(aes(y=reorder(md_desc, proportion), x=proportion)) +
+    geom_lollipop(point.colour = 'steelblue', point.size = 2,horizontal = TRUE) +
+    scale_x_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 0.20, by=0.02), limits=c(0, 0.20)) +
+    theme_minimal() +
+    labs(title="Proportional distribution of mental disorders",
+         subtitle=paste0("(N=",n_papers, ")"),
+         x="Percentage",
+         y="Mental disorders",
+         caption="Source: authors") +
+    theme(panel.grid.major.y=element_blank()) +
+    theme(panel.grid.minor=element_blank()) +
+    theme(axis.line.y=element_line(color="#2b2b2b", size=0.15)) +
+    theme(axis.text.y=element_text(margin=margin(r=0, l=0))) +
+    theme(plot.margin=unit(rep(20, 4), "pt")) +
+    theme(plot.subtitle=element_text(margin=margin(b=10)))
+
+```
+
+
+
+### Figure 2
+
+Linechart: Distribution of papers (Total and top3 mental disorders) per year.
+
+
+```{r key_plot_2_linechart, echo=FALSE}
+
+top3 <- levels(all_data$md)[1:3]
+
+data_total_byyear <- 
+    all_data %>% 
+    group_by(year) %>%  # first create counts for each group
+    summarise(number_cases = n()) %>%
+    mutate(md_desc = c("All"))
+
+
+data_top3_byyear <- 
+    all_data %>%
+      filter(md %in% top3) %>%
+      group_by(md_desc, year) %>%
+      summarise(number_cases = n()) %>%
+      bind_rows(data_total_byyear) %>%
+      ungroup() %>%
+      mutate(md_desc = factor(md_desc)) %>%
+      arrange(desc(number_cases))
+
+# https://www.r-graph-gallery.com/portfolio/ggplot2-package/
+# https://ggplot2.tidyverse.org/reference/position_stack.html
+
+data_top3_byyear$md_desc <- fct_relevel(data_top3_byyear$md_desc, c("All", "Depressive disorders", "Various", "Anxiety disorders"))
+brks <- levels(data_top3_byyear$md_desc) 
+    
+kp_linechart <-
+data_top3_byyear %>%
+    ggplot(aes(x=year, y=number_cases, group=md_desc)) +
+    geom_line(aes(color=md_desc), size=1, alpha=.4) +
+    geom_point(aes(color=md_desc), size=6) +
+    labs(title="Distribution of papers per year", 
+         subtitle = "Total and top3 mental disorders",
+         x="Year", 
+         y="Number of cases", 
+         caption="Source: authors") + 
+    scale_color_brewer(palette="Set2", breaks=brks) +
+    geom_text(aes(label = number_cases), color= "white", size=3) +
+    geom_vline(aes(xintercept = 2017), color="darkgray", linetype = "dashed", size = 0.5) +
+    annotate("rect", xmin = 2017, xmax = 2018, ymin = -Inf, ymax = +Inf, fill = "lightgray", alpha = 0.2) +
+    theme_minimal() +
+    theme(legend.title = element_blank()) +
+    # Legend: Top-Right Inside the Plot") 
+    theme(legend.justification = c('left', 'top'),
+          legend.position=c(0.05, 0.95),  
+          #legend.background = element_blank(),
+          legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
+          legend.key = element_blank()) +
+    theme(panel.grid.major = element_blank()) + 
+    theme(panel.grid.minor = element_blank()) +
+    theme(panel.background = element_blank()) +
+    theme(plot.margin=unit(rep(20, 4), "pt")) +
+    # Change the line type and color of axis lines
+    theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid"))
+
+kp_linechart
+kp_file_name <- "fig_linechart.png"
+ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
+
+
+```
+
+
+### Figure 3 (Table)
+
+Table: Distribution of papers (apps) according to mental disorder.  _How many apps are related to the MDs and subtypes?_ Per each mental disorder, we show the paper id and appname.
+
+
+```{r key_plot_3_table, echo=FALSE}
+
+
+# source: https://www.r-bloggers.com/how-to-expand-color-palette-with-ggplot-and-rcolorbrewer/
+n_colors <- length(unique(md_by_year$md_id))
+get_palette <- colorRampPalette(brewer.pal(9, "Set1"))
+
+#' circlize, source: http://jokergoo.github.io/circlize/example/bi_directional.html
+
+kp_file_name <- here::here("figs", "table.html")
+
+library(kableExtra)
+library(formattable)
+
+data_kp_apps <- 
+    all_data %>%
+    filter(!is.na(app_name)) %>%
+    filter(as.integer(md_id) < 10) %>%
+    # group_by(val_ass) %>%
+    # summarise(number_apps = n()) 
+    # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
+    arrange(md_id, val_ass, year, id)
+
+#' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+
+data_kp_apps %>%
+    select(`Mental Disorder` = md,
+           `Assessment` = val_ass,
+           `Year` = year,
+           `Paper id` = id,
+           `App Name` = app_name) %>%
+    kable( caption = "Distribution of papers (apps) according to mental disorder", escape = T) %>%
+    # kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+    kable_styling(bootstrap_options = c("condensed")) %>%
+    column_spec(1, bold = T) %>%
+    collapse_rows(columns = 1:3, valign = "top")
+    save_kable(file = kp_file_name, self_contained = T)
+
+
+
+# data_kp_apps <- 
+#     all_data %>%
+#     group_by(md_id, md_desc) %>%
+#     #drop_na(md_sub)%>%
+#     summarise(number_apps = n()) 
+# 
+# data_kp_apps %>%
+#   ggplot(aes(x=md_desc, y=number_apps, fill=factor(md_id))) + 
+#   geom_bar(stat="identity") +
+#   coord_flip() + 
+#   labs(title="Apps per subtopic coloured by MD",
+#        subtitle = "Absolute count") +
+#   theme(legend.position = "top") +
+#   theme_minimal()
+
+
+```
+
+
+### Figure 4
+
+
+Bubble plot: Distribution fo apper per mental disorder and technolgy variables (sensor capabilities and features)
+
+
+### Sensory capabilities related to each MD 
+
+```{r md_apps_table, echo=FALSE}
+cols = c("id", "md", "md_id", "md_desc", "md_sub", "md_dsm5",
+         "sens_acc", "sens_gyr", "sens_gps", "sens_mic", 
+         "os_ios", "os_and", "app_name", 
+         "type", "year")
+
+sens_apps <- 
+    all_data %>% 
+    filter(md_id!=23 & md_id!=24) %>%
+    select(cols) %>%
+    arrange(md_desc, md_sub)
+    # group_by(md_desc, md_sub) %>%
+    # summarise(number_apps = n()) 
+
+
+#' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+sens_apps %>%
+    # mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
+    select(`DSM-5 Mental Disorder` = md_desc,
+           `MD Subtype` = md_sub,
+           `Accelerometer` = sens_acc,
+           `Ggyroscope` = sens_gyr,
+           `GPS` = sens_gps,
+           `Microphone` = sens_mic,
+           `App Name` = app_name) %>%
+    kable(format = "html", escape = FALSE) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+
+
+```
+
+
+
+
+
+
