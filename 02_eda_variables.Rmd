@@ -388,7 +388,7 @@ Remarks:
 
 ```{r}
 
-tmp <- 
+totalcount_byyear <- 
     all_data %>% 
     group_by(year) %>%  # first create counts for each group
     summarise(number_cases = n()) %>%
@@ -400,7 +400,7 @@ md_top3_byyear <-
       filter(md %in% top3) %>%
       group_by(md_desc, year) %>%
       summarise(number_cases = n()) %>%
-      bind_rows(tmp) %>%
+      bind_rows(totalcount_byyear) %>%
       ungroup() %>%
       mutate(md_desc = factor(md_desc)) %>%
       arrange(desc(number_cases))
@@ -409,19 +409,8 @@ md_top3_byyear <-
 # https://ggplot2.tidyverse.org/reference/position_stack.html
 
 
-md_top3_byyear$md_reordered <- factor(md_top3_byyear$md, levels = c('all', '4-Depressive disorders', '26-Various', '5-Anxiety disorders'))
-brks <-levels(md_top3_byyear$md_reordered)
-
 md_top3_byyear$md_desc <- fct_relevel(md_top3_byyear$md_desc, c("All", "Depressive disorders", "Various", "Anxiety disorders"))
 
-md_top3_byyear %>%
-    ggplot(aes(x=year, y=number_cases)) +
-    geom_area(aes(fill=md_desc), colour="black", size=.2, alpha=.4) +
-    scale_fill_brewer(palette="Greens", breaks=levels(md_top3_byyear$md_desc)) +
-    #geom_text(aes(label = number_cases), position= "stack", color= "blue", size = 3) +
-    geom_vline(aes(xintercept = 2017), linetype = 'dashed', size = 0.5) +
-    guides(fill=guide_legend(title="")) +  # modify legend title
-    theme(legend.position = "bottom")
     
 kp_linechart <-
 md_top3_byyear %>%
@@ -436,6 +425,7 @@ md_top3_byyear %>%
     scale_color_brewer(palette="Set2", breaks=levels(md_top3_byyear$md_desc)) +
     geom_text(aes(label = number_cases), color= "white", size=3) +
     geom_vline(aes(xintercept = 2017), color="darkgray", linetype = "dashed", size = 0.5) +
+    annotate("rect", xmin = 2017, xmax = 2018, ymin = -Inf, ymax = +Inf, fill = "lightgray", alpha = 0.2) +
     theme_minimal() +
     theme(legend.title = element_blank()) +
     # Legend: Top-Right Inside the Plot") 
