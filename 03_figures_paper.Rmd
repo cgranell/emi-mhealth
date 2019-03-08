@@ -291,12 +291,13 @@ get_palette <- colorRampPalette(brewer.pal(9, "Set1"))
 
 kp_file_name <- here::here("figs", "table.html")
 
-library(kableExtra)
 library(formattable)
+library(purrr)
 
+#' Example  1, verbose table
 data_kp_apps <- 
     all_data %>%
-    filter(!is.na(app_name)) %>%
+    # filter(!is.na(app_name)) %>%
     filter(as.integer(md_id) < 10) %>%
     # group_by(val_ass) %>%
     # summarise(number_apps = n()) 
@@ -313,12 +314,54 @@ data_kp_apps %>%
            `Paper id` = id,
            `App Name` = app_name) %>%
     kable( caption = "Distribution of papers (apps) according to mental disorder", escape = T) %>%
-    # kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
-    kable_styling(bootstrap_options = c("condensed")) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+    # kable_styling(bootstrap_options = c("condensed")) %>%
     column_spec(1, bold = T) %>%
     collapse_rows(columns = 1:3, valign = "top") %>%  
     save_kable(file = kp_file_name, self_contained = T)
 
+#' Example 2: compact table, showing the counts of apps 
+data_kp_apps2 <- 
+    all_data %>%
+    filter(as.integer(md_id) < 10) %>%
+    group_by(md, app_name) %>%
+    summarise(number_apps = n()) %>% 
+    # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
+    arrange(md, number_apps)
+
+unite_paper_ids <- function(mentaldisorder, appname) {
+    if (!is.na(appname)) {
+        all_data %>% 
+            filter(md == mentaldisorder & app_name==appname) %>%
+            arrange(year) %>%
+            select(id) %>%
+            as_vector() %>%
+            stringr::str_c(collapse = ";")    
+    } else {
+         all_data %>% 
+            filter(md == mentaldisorder & is.na(app_name)) %>%
+            arrange(year) %>%
+            select(id) %>%
+            as_vector() %>%
+            stringr::str_c(collapse = ";")  
+    }
+}
+
+data_kp_apps2 <- 
+    data_kp_apps2 %>%
+    add_column(ids = purrr::map2(data_kp_apps2$md, data_kp_apps2$app_name, unite_paper_ids))
+
+data_kp_apps2 %>%
+    select(`Mental Disorder` = md,
+           `App Name` = app_name,
+           `# apps` = number_apps,
+           `References` = ids) %>%
+    kable( caption = "Distribution of papers (apps) according to mental disorder", escape = T) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+    # kable_styling(bootstrap_options = c("condensed")) %>%
+    column_spec(1, bold = T) %>%
+    collapse_rows(columns = 1, valign = "top") %>%  
+    save_kable(file = kp_file_name, self_contained = T)
 
 # data_kp_apps <- 
 #     all_data %>%
