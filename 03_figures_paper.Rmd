@@ -1,10 +1,22 @@
 ---
-title: "R Notebook - Final figures of JMIR paper"
-date: "`r format(Sys.Date())`"
+title: 'Analysis and visualisations for "<JMIR paper title here>"'
+author: "Carlos GRanell "
+date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
+  pdf_document:
+    keep_tex: yes
+    #latex_engine: xelatex
+    toc: yes
   html_document:
     df_print: paged
+    toc: yes
+urlcolor: blue    
 ---
+
+## License
+
+This document is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+
 
 ## Metadata
 
@@ -25,6 +37,7 @@ library(RColorBrewer)
 library(gridExtra)
 library(treemap)
 library(forcats)
+library(purrr)
 
 ```
 
@@ -106,6 +119,8 @@ There are `` `r n_md` `` distinct MDs (out of 25). About `r percent(n_yes_dsm5/n
 
 
 ```
+
+\newpage
 
 ## Key figures
 
@@ -203,7 +218,7 @@ md_percent %>%
 
 ```
 
-
+\newpage
 
 ### Figure 2
 
@@ -274,31 +289,26 @@ ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here
 
 ```
 
+\newpage
 
 ### Figure 3 (Table)
 
-Table: Distribution of papers (apps) according to mental disorder.  _How many apps are related to the MDs and subtypes?_ Per each mental disorder, we show the paper id and appname.
+Table (Example 1): Distribution of papers (apps) per mental disorder.  _How many apps are related to each mental disorder?_ Per each mental disorder, assessment (yes/no) and year, we show the paper id and appname.
 
 
-```{r key_plot_3_table, echo=FALSE}
-
+```{r key_plot_3_table1, echo=FALSE}
 
 # source: https://www.r-bloggers.com/how-to-expand-color-palette-with-ggplot-and-rcolorbrewer/
 n_colors <- length(unique(md_by_year$md_id))
 get_palette <- colorRampPalette(brewer.pal(9, "Set1"))
 
-#' circlize, source: http://jokergoo.github.io/circlize/example/bi_directional.html
-
-kp_file_name <- here::here("figs", "table.html")
-
 library(formattable)
-library(purrr)
 
+kp_file_name <- here::here("figs", "table1.html")
 #' Example  1, verbose table
 data_kp_apps <- 
     all_data %>%
-    # filter(!is.na(app_name)) %>%
-    filter(as.integer(md_id) < 10) %>%
+    filter(as.integer(md_id) < 6) %>%
     # group_by(val_ass) %>%
     # summarise(number_apps = n()) 
     # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
@@ -306,28 +316,28 @@ data_kp_apps <-
 
 #' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
 
-
+# options(knitr.kable.NA = '-')
 data_kp_apps %>%
     select(`Mental Disorder` = md,
            `Assessment` = val_ass,
            `Year` = year,
            `Paper id` = id,
            `App Name` = app_name) %>%
-    kable( caption = "Distribution of papers (apps) according to mental disorder", escape = T) %>%
+    kable(format="html", escape = T, booktabs = TRUE,
+          caption =  paste0("Distribution of papers (apps) per mental disorder\n",
+                            "'NA' is app not specified/available")) %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
-    # kable_styling(bootstrap_options = c("condensed")) %>%
     column_spec(1, bold = T) %>%
-    collapse_rows(columns = 1:3, valign = "top") %>%  
-    save_kable(file = kp_file_name, self_contained = T)
+    collapse_rows(columns = 1:3, valign = "top") #%>%  
+    # save_kable(file = kp_file_name, self_contained = T)
 
-#' Example 2: compact table, showing the counts of apps 
-data_kp_apps2 <- 
-    all_data %>%
-    filter(as.integer(md_id) < 10) %>%
-    group_by(md, app_name) %>%
-    summarise(number_apps = n()) %>% 
-    # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
-    arrange(md, number_apps)
+```
+Table (Example 2): _Compact_ distribution of papers (apps) per mental disorder, grouping the references per app.
+
+
+```{r key_plot_3_table2, echo=FALSE}
+
+kp_file_name <- here::here("figs", "table2.html")
 
 unite_paper_ids <- function(mentaldisorder, appname) {
     if (!is.na(appname)) {
@@ -348,20 +358,57 @@ unite_paper_ids <- function(mentaldisorder, appname) {
 }
 
 data_kp_apps2 <- 
+    all_data %>%
+    filter(as.integer(md_id) < 6) %>%
+    group_by(md, app_name) %>%
+    summarise(number_apps = n()) %>% 
+    # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
+    arrange(md, number_apps)
+
+data_kp_apps2 <- 
     data_kp_apps2 %>%
     add_column(ids = purrr::map2(data_kp_apps2$md, data_kp_apps2$app_name, unite_paper_ids))
 
+data_kp_apps2 <- 
+    data_kp_apps2 %>%
+    add_column(app_ids = paste0(data_kp_apps2$app_name, " (", data_kp_apps2$ids, ")"))
+
+data_kp_apps2 <- 
+    data_kp_apps2 %>%
+    group_by(md) %>%
+    summarise(app_ids_merge = paste0(app_ids, collapse = ", ")) %>%
+    arrange(desc(md))
+
+# options(knitr.kable.NA = '-')
 data_kp_apps2 %>%
     select(`Mental Disorder` = md,
-           `App Name` = app_name,
-           `# apps` = number_apps,
-           `References` = ids) %>%
-    kable( caption = "Distribution of papers (apps) according to mental disorder", escape = T) %>%
+           `References by app` = app_ids_merge) %>%
+    kable(formt="html", escape = T,
+          caption = paste0("Compact distribution of papers (apps) per mental disorder\n", 
+                            "'NA' is app not specified/available")) %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
-    # kable_styling(bootstrap_options = c("condensed")) %>%
     column_spec(1, bold = T) %>%
-    collapse_rows(columns = 1, valign = "top") %>%  
-    save_kable(file = kp_file_name, self_contained = T)
+    collapse_rows(columns = 1, valign = "top") #%>%  
+    # save_kable(file = kp_file_name, self_contained = T)
+
+```
+
+Circular plot (Example 3): Emphasis on links between apps, i.e., when the same app is used in distinct mental disorder.
+
+```{r key_plot_3_table3, echo=FALSE}
+
+#' circlize, source: http://jokergoo.github.io/circlize/example/bi_directional.html
+
+kp_file_name <- here::here("figs", "table3.html")
+
+data_kp_apps3 <- 
+    all_data %>%
+    filter(as.integer(md_id) < 5) %>%
+    group_by(md, app_name) %>%
+    summarise(number_apps = n()) %>% 
+    # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
+    arrange(md, number_apps)
+
 
 # data_kp_apps <- 
 #     all_data %>%
@@ -380,6 +427,7 @@ data_kp_apps2 %>%
 
 
 ```
+
 
 
 ### Figure 4
