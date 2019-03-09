@@ -380,6 +380,7 @@ data_kp_apps2 <-
     arrange(desc(md))
 
 # options(knitr.kable.NA = '-')
+# data_kp_apps2_kable <-
 data_kp_apps2 %>%
     select(`Mental Disorder` = md,
            `References by app` = app_ids_merge) %>%
@@ -390,6 +391,15 @@ data_kp_apps2 %>%
     column_spec(1, bold = T) %>%
     collapse_rows(columns = 1, valign = "top") #%>%  
     # save_kable(file = kp_file_name, self_contained = T)
+
+
+# data_kp_apps2_kable
+# library(magick)
+# install.packages("magick")
+# kable_as_image(data_kp_apps2_kable, filename = kp_file_name, file_format = "png",
+#   latex_header_includes = NULL, keep_pdf = FALSE, density = 300,
+#   keep_tex = FALSE)
+# 
 
 ```
 
