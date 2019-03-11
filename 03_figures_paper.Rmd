@@ -113,12 +113,6 @@ The final number of papers to analyse is `` `r n_papers` ``.
 
 There are `` `r n_md` `` distinct MDs (out of 25). About `r percent(n_yes_dsm5/n_papers)` (N=`r n_yes_dsm5`) are categorised according to Section II of  [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal behavior disorder/nonsuicidal self-injury. 
 
-## Utility functions 
-
-```{r my_functions, echo=FALSE}
-
-
-```
 
 \newpage
 
@@ -298,11 +292,7 @@ Table (Example 1): Distribution of papers (apps) per mental disorder.  _How many
 
 ```{r key_plot_3_table1, echo=FALSE}
 
-# source: https://www.r-bloggers.com/how-to-expand-color-palette-with-ggplot-and-rcolorbrewer/
-n_colors <- length(unique(md_by_year$md_id))
-get_palette <- colorRampPalette(brewer.pal(9, "Set1"))
-
-library(formattable)
+# library(formattable)
 
 kp_file_name <- here::here("figs", "table1.html")
 #' Example  1, verbose table
@@ -403,24 +393,66 @@ data_kp_apps2 %>%
 
 ```
 
-Circular plot (Example 3): Emphasis on links between apps, i.e., when the same app is used in distinct mental disorder.
+Circular barplot (Example 3): Emphasis on links between apps, i.e., when the same app is used in distinct mental disorder.
 
 ```{r key_plot_3_table3, echo=FALSE}
 
 #' circlize, source: http://jokergoo.github.io/circlize/example/bi_directional.html
+#' source: https://www.r-graph-gallery.com/297-circular-barplot-with-groups/
 library(circlize)
-
-kp_file_name <- here::here("figs", "table3.html")
 
 data_kp_apps3 <- 
     all_data %>%
-    group_by(app_name, md) %>%
+    filter(as.integer(md_id) < 23) %>%
+    group_by(app_name, md_desc) %>%
     summarise(number_apps = n()) %>% 
-    arrange(app_name, number_apps)
+    arrange(md_desc, number_apps)
+
+data_kp_apps3$app_name <- fct_explicit_na(data_kp_apps3$app_name, "Not App Available")
+data_kp_apps3$id <- seq(1, nrow(data_kp_apps3))
 
 
+# source: https://www.r-bloggers.com/how-to-expand-color-palette-with-ggplot-and-rcolorbrewer/
+n_colors <- length(unique(data_kp_apps3$md_desc))
+get_palette <- colorRampPalette(brewer.pal(9, "Accent"))
 
 
+# Get the name and the y position of each label
+label_data=data_kp_apps3
+number_of_bar=nrow(label_data)
+angle= 90 - 360 * (label_data$id-0.5)/number_of_bar     # I substract 0.5 because the letter must have the angle of the center of the bars. Not extreme right(1) or extreme left (0)
+label_data$hjust<-ifelse(angle < -90, 1, 0)
+label_data$angle<-ifelse(angle < -90, angle+180, angle)
+
+# Make the plot
+kp_circularbarplot <- 
+    ggplot(data_kp_apps3, aes(x=as.factor(id), y=number_apps, fill=md_desc)) +  
+      geom_bar(stat="identity", alpha=0.5) +
+      # Lmits of the plot: The negative value controls the size of the inner circle, the positive one is useful to add size over each bar
+      ylim(-5,10) +
+      #scale_fill_brewer(palette = "Accent", name="Mental\n disorders") +
+      theme_minimal() +
+      theme(
+        legend.position = "none",
+        legend.text = element_text(size=5),
+        axis.text = element_blank(),
+        axis.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.margin = unit(rep(-1,4), "cm")
+      ) +
+      guides (fill = guide_legend(ncol=1)) +    
+      coord_polar(start=0) + 
+      geom_text(data=label_data, aes(x=id, y=number_apps, label=app_name, hjust=hjust, color=md_desc), 
+                alpha=0.6, size=2.5, angle= label_data$angle, inherit.aes = FALSE ) +
+      geom_hline(yintercept = seq(1:10), col = "white", lwd=0.5)
+
+kp_circularbarplot
+
+kp_file_name <- "fig_circularbarplot.png"
+ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 20, height = 20, units = "cm", dpi = "print") #300
+
+#TODO: SOlve issues with palette and legend
 ```
 
 ```{r}
