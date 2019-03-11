@@ -403,7 +403,7 @@ library(circlize)
 
 data_kp_apps3 <- 
     all_data %>%
-    filter(as.integer(md_id) < 23) %>%
+    filter(as.integer(md_id) != 26) %>%
     group_by(app_name, md_desc) %>%
     summarise(number_apps = n()) %>% 
     arrange(md_desc, number_apps)
@@ -414,7 +414,7 @@ data_kp_apps3$id <- seq(1, nrow(data_kp_apps3))
 
 # source: https://www.r-bloggers.com/how-to-expand-color-palette-with-ggplot-and-rcolorbrewer/
 n_colors <- length(unique(data_kp_apps3$md_desc))
-get_palette <- colorRampPalette(brewer.pal(9, "Accent"))
+get_palette <- colorRampPalette(brewer.pal(8, "Set1"))
 
 
 # Get the name and the y position of each label
@@ -430,10 +430,12 @@ kp_circularbarplot <-
       geom_bar(stat="identity", alpha=0.5) +
       # Lmits of the plot: The negative value controls the size of the inner circle, the positive one is useful to add size over each bar
       ylim(-5,10) +
-      #scale_fill_brewer(palette = "Accent", name="Mental\n disorders") +
+      scale_fill_manual(values = get_palette(n_colors), name="Mental disorders") +
+      scale_color_manual(values = get_palette(n_colors)) +    
       theme_minimal() +
       theme(
-        legend.position = "none",
+        legend.position = "right",
+        legend.title = element_blank(),
         legend.text = element_text(size=5),
         axis.text = element_blank(),
         axis.title = element_blank(),
@@ -443,19 +445,19 @@ kp_circularbarplot <-
       guides (fill = guide_legend(ncol=1)) +    
       coord_polar(start=0) + 
       geom_text(data=label_data, aes(x=id, y=number_apps, label=app_name, hjust=hjust, color=md_desc), 
-                alpha=0.6, size=2.5, angle= label_data$angle, inherit.aes = FALSE ) +
+                alpha=0.6, size=3, angle= label_data$angle, inherit.aes = FALSE, show.legend = FALSE ) +
       geom_hline(yintercept = seq(1:10), col = "white", lwd=0.5)
 
 kp_circularbarplot
 
 kp_file_name <- "fig_circularbarplot.png"
 ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 20, height = 20, units = "cm", dpi = "print") #300
+    scale = 1, width = 25, height = 25, units = "cm", dpi = "print") #300
 
-#TODO: SOlve issues with palette and legend
+
 ```
 
-```{r}
+```{r echo=FALSE}
 
 appnames <- unique(data_kp_apps3$app_name)
 fappnames <- factor(data_kp_apps3$app_name, levels = appnames)    
