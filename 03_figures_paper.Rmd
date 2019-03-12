@@ -387,7 +387,7 @@ data_kp_apps2 %>%
 
 ```
 
-Circular barplot (Example 3): Each cell means one occurance of the app in a paper.
+Circular barplot (Example 3): Each cell means one occurence of the app in a paper.
 
 ```{r key_plot_3_table3, echo=FALSE}
 
