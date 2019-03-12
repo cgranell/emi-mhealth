@@ -1,14 +1,14 @@
 ---
-title: 'Analysis and visualisations for "<JMIR paper title here>"'
-author: "Carlos GRanell "
+title: 'Analysis and visualisations for "JMIR paper title here"'
+author: "Carlos Granell"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
+  html_document:
+    df_print: paged
+    toc: yes
   pdf_document:
     keep_tex: yes
     #latex_engine: xelatex
-    toc: yes
-  html_document:
-    df_print: paged
     toc: yes
 urlcolor: blue    
 ---
@@ -46,23 +46,25 @@ library(purrr)
 # devtools::session_info(include_base = TRUE)
 ```
 
-This R notebook contains the code to produce the final figures of the paper.
+This document is versioned in a public [git](https://git-scm.com/) repo: [https://github.com/cgranell/emi-mhealth](https://github.com/cgranell/emi-mhealth).
+
+\newpage
+
+This R notebook contains the code to produce the final fours figures of the paper.
 
 ## Data 
 
-We analyse three datasets of the *emidata* package: 
+We analyse three datasets of the *emidata* package. The package code is available in a public [git](https://git-scm.com/) repo: [https://github.com/cgranell/emidata](https://github.com/cgranell/emidata): 
 
 * *ipapers2018_psydata* (extracted data items related to psychology) has `` `r nrow(ipapers2018_psydata)` `` records and `` `r ncol(ipapers2018_psydata)` `` columns.
 * *ipapers2018_csdata* (extracted data items related to tech/cs) has `` `r nrow(ipapers2018_csdata)` `` records and `` `r ncol(ipapers2018_csdata)` `` columns. 
 * *ipapers2018* (list of analysed papers) has `` `r nrow(ipapers2018)` `` records and `` `r ncol(ipapers2018)` `` columns.
 
-```{r data_source, echo=FALSE}
-cs_data <- ipapers2018_csdata
-psy_data <- ipapers2018_psydata
-```
-
 
 ```{r all_data, echo=FALSE}
+
+cs_data <- ipapers2018_csdata
+psy_data <- ipapers2018_psydata
 
 all_data <- psy_data %>%
     inner_join(cs_data, by="id")
@@ -111,7 +113,7 @@ n_no_dsm5 <-
 
 The final number of papers to analyse is `` `r n_papers` ``.
 
-There are `` `r n_md` `` distinct MDs (out of 25). About `r percent(n_yes_dsm5/n_papers)` (N=`r n_yes_dsm5`) are categorised according to Section II of  [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal behavior disorder/nonsuicidal self-injury. 
+There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent(n_yes_dsm5/n_papers)` (N=`r n_yes_dsm5`) are categorised according to Section II of [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal behavior disorder/nonsuicidal self-injury. 
 
 
 \newpage
@@ -119,7 +121,7 @@ There are `` `r n_md` `` distinct MDs (out of 25). About `r percent(n_yes_dsm5/n
 ## Key figures
 
 
-### Figure 1  
+### Figure 1 (barchart + lollipop)
 
 Barchart: Distribution of papers per mental disorders, colored by assessment (yes/no).
 
@@ -182,7 +184,7 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 
 ```
 
-Alternatively to the barchart
+Alternatively to the barchart, thte lollipop plot below shows the percentatge over the total. 
 
 ```{r key_plot_1_lollipop, echo=FALSE}
 
@@ -214,7 +216,7 @@ md_percent %>%
 
 \newpage
 
-### Figure 2
+### Figure 2 (linechart)
 
 Linechart: Distribution of papers (Total and top3 mental disorders) per year.
 
@@ -285,7 +287,7 @@ ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here
 
 \newpage
 
-### Figure 3 (Table)
+### Figure 3 (Tables + circular barplot)
 
 Table (Example 1): Distribution of papers (apps) per mental disorder.  _How many apps are related to each mental disorder?_ Per each mental disorder, assessment (yes/no) and year, we show the paper id and appname.
 
@@ -298,7 +300,7 @@ kp_file_name <- here::here("figs", "table1.html")
 #' Example  1, verbose table
 data_kp_apps <- 
     all_data %>%
-    filter(as.integer(md_id) < 6) %>%
+    # filter(as.integer(md_id) < 6) %>%
     # group_by(val_ass) %>%
     # summarise(number_apps = n()) 
     # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
@@ -349,7 +351,7 @@ unite_paper_ids <- function(mentaldisorder, appname) {
 
 data_kp_apps2 <- 
     all_data %>%
-    filter(as.integer(md_id) < 6) %>%
+    # filter(as.integer(md_id) < 6) %>%
     group_by(md, app_name) %>%
     summarise(number_apps = n()) %>% 
     # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
@@ -374,7 +376,7 @@ data_kp_apps2 <-
 data_kp_apps2 %>%
     select(`Mental Disorder` = md,
            `References by app` = app_ids_merge) %>%
-    kable(formt="html", escape = T,
+    kable(formt="html", escape = T, booktabs = TRUE,    
           caption = paste0("Compact distribution of papers (apps) per mental disorder\n", 
                             "'NA' is app not specified/available")) %>%
     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
@@ -383,23 +385,13 @@ data_kp_apps2 %>%
     # save_kable(file = kp_file_name, self_contained = T)
 
 
-# data_kp_apps2_kable
-# library(magick)
-# install.packages("magick")
-# kable_as_image(data_kp_apps2_kable, filename = kp_file_name, file_format = "png",
-#   latex_header_includes = NULL, keep_pdf = FALSE, density = 300,
-#   keep_tex = FALSE)
-# 
-
 ```
 
-Circular barplot (Example 3): Emphasis on links between apps, i.e., when the same app is used in distinct mental disorder.
+Circular barplot (Example 3): Each cell means one occurance of the app in a paper.
 
 ```{r key_plot_3_table3, echo=FALSE}
 
-#' circlize, source: http://jokergoo.github.io/circlize/example/bi_directional.html
 #' source: https://www.r-graph-gallery.com/297-circular-barplot-with-groups/
-library(circlize)
 
 data_kp_apps3 <- 
     all_data %>%
@@ -459,125 +451,110 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 ```{r echo=FALSE}
 
-appnames <- unique(data_kp_apps3$app_name)
-fappnames <- factor(data_kp_apps3$app_name, levels = appnames)    
-
-circos.clear()
-circos.initialize(factors = fappnames, x = appnames)
-
-factors = appnames[1:4] #letters[1:4]
-circos.initialize(factors = factors, xlim = c(0, 1))
-circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
-    circos.points(1:20/20, 1:20/20)
-})
-text(0, 0, "This is\nthe center", cex = 1.5)
-legend("bottomleft", pch = 1, legend = "This is the legend")
-title("This is the title")
-
-
-
-
-col_fun = colorRamp2(c(-2, 0, 2), c("green", "yellow", "red"))
-
-circlize_plot = function() {
-    set.seed(12345)
-    fa <- appnames[1:10]
-    n <- length(fa)
-    circos.initialize(factors = fa, xlim = c(0, 1))
-    circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
-        circos.points(runif(20), runif(20), cex = 0.5, pch = 16, col = 2)
-        circos.points(runif(20), runif(20), cex = 0.5, pch = 16, col = 3)
-    })
-    circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
-        circos.lines(sort(runif(20)), runif(20), col = 4)
-        circos.lines(sort(runif(20)), runif(20), col = 5)
-    })
-
-    for(i in n) {
-        circos.link(sample(fa, 1), sort(runif(10))[1:2], 
-                    sample(fa, 1), sort(runif(10))[1:2],
-                    col = add_transparency(col_fun(rnorm(1))))
-    }
-    circos.clear()
-}
-
-circlize_plot()
-
-
-
-set.seed(999)
-mat <- matrix(sample(18, 18), 3, 6) 
-rownames(mat) <- paste0("S", 1:3)
-colnames(mat) <- paste0("E", 1:6)
-mat
-
-
-df <- data.frame(from = rep(rownames(mat), times = ncol(mat)),
-    to = rep(colnames(mat), each = nrow(mat)),
-    value = as.vector(mat),
-    stringsAsFactors = FALSE)
-
-df
-
-
-circos.par(start.degree = 90, track.margin = c(-0.1, 0.1), gap.degree = 4, points.overflow.warning = FALSE)
-chordDiagram(df)
-circos.clear()
-
-# data_kp_apps <- 
-#     all_data %>%
-#     group_by(md_id, md_desc) %>%
-#     #drop_na(md_sub)%>%
-#     summarise(number_apps = n()) 
+#' circlize, source: http://jokergoo.github.io/circlize/example/bi_directional.html
+# library(circlize)
 # 
-# data_kp_apps %>%
-#   ggplot(aes(x=md_desc, y=number_apps, fill=factor(md_id))) + 
-#   geom_bar(stat="identity") +
-#   coord_flip() + 
-#   labs(title="Apps per subtopic coloured by MD",
-#        subtitle = "Absolute count") +
-#   theme(legend.position = "top") +
-#   theme_minimal()
+# appnames <- unique(data_kp_apps3$app_name)
+# fappnames <- factor(data_kp_apps3$app_name, levels = appnames)    
+# 
+# circos.clear()
+# circos.initialize(factors = fappnames, x = appnames)
+# 
+# factors = appnames[1:4] #letters[1:4]
+# circos.initialize(factors = factors, xlim = c(0, 1))
+# circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
+#     circos.points(1:20/20, 1:20/20)
+# })
+# text(0, 0, "This is\nthe center", cex = 1.5)
+# legend("bottomleft", pch = 1, legend = "This is the legend")
+# title("This is the title")
+# 
+# 
+# col_fun = colorRamp2(c(-2, 0, 2), c("green", "yellow", "red"))
+# 
+# circlize_plot = function() {
+#     set.seed(12345)
+#     fa <- appnames[1:10]
+#     n <- length(fa)
+#     circos.initialize(factors = fa, xlim = c(0, 1))
+#     circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
+#         circos.points(runif(20), runif(20), cex = 0.5, pch = 16, col = 2)
+#         circos.points(runif(20), runif(20), cex = 0.5, pch = 16, col = 3)
+#     })
+#     circos.track(ylim = c(0, 1), panel.fun = function(x, y) {
+#         circos.lines(sort(runif(20)), runif(20), col = 4)
+#         circos.lines(sort(runif(20)), runif(20), col = 5)
+#     })
+# 
+#     for(i in n) {
+#         circos.link(sample(fa, 1), sort(runif(10))[1:2], 
+#                     sample(fa, 1), sort(runif(10))[1:2],
+#                     col = add_transparency(col_fun(rnorm(1))))
+#     }
+#     circos.clear()
+# }
+# 
+# circlize_plot()
+# 
+# 
+# 
+# set.seed(999)
+# mat <- matrix(sample(18, 18), 3, 6) 
+# rownames(mat) <- paste0("S", 1:3)
+# colnames(mat) <- paste0("E", 1:6)
+# mat
+# 
+# 
+# df <- data.frame(from = rep(rownames(mat), times = ncol(mat)),
+#     to = rep(colnames(mat), each = nrow(mat)),
+#     value = as.vector(mat),
+#     stringsAsFactors = FALSE)
+# 
+# df
+# 
+# 
+# circos.par(start.degree = 90, track.margin = c(-0.1, 0.1), gap.degree = 4, points.overflow.warning = FALSE)
+# chordDiagram(df)
+# circos.clear()
 
 
 ```
 
+\newpage
 
-### Figure 4
+### Figure 4 (Bubble plot)
 
+Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
 
-Bubble plot: Distribution fo apper per mental disorder and technolgy variables (sensor capabilities and features)
-
-
-### Sensory capabilities related to each MD 
-
+ 
 ```{r md_apps_table, echo=FALSE}
-cols = c("id", "md", "md_id", "md_desc", "md_sub", "md_dsm5",
-         "sens_acc", "sens_gyr", "sens_gps", "sens_mic", 
-         "os_ios", "os_and", "app_name", 
-         "type", "year")
-
-sens_apps <- 
-    all_data %>% 
-    filter(md_id!=23 & md_id!=24) %>%
-    select(cols) %>%
-    arrange(md_desc, md_sub)
-    # group_by(md_desc, md_sub) %>%
-    # summarise(number_apps = n()) 
-
-
-#' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
-sens_apps %>%
-    # mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
-    select(`DSM-5 Mental Disorder` = md_desc,
-           `MD Subtype` = md_sub,
-           `Accelerometer` = sens_acc,
-           `Ggyroscope` = sens_gyr,
-           `GPS` = sens_gps,
-           `Microphone` = sens_mic,
-           `App Name` = app_name) %>%
-    kable(format = "html", escape = FALSE) %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+# Sensory capabilities related to each MD 
+# cols = c("id", "md", "md_id", "md_desc", "md_sub", "md_dsm5",
+#          "sens_acc", "sens_gyr", "sens_gps", "sens_mic", 
+#          "os_ios", "os_and", "app_name", 
+#          "type", "year")
+# 
+# sens_apps <- 
+#     all_data %>% 
+#     filter(md_id!=23 & md_id!=24) %>%
+#     select(cols) %>%
+#     arrange(md_desc, md_sub)
+#     # group_by(md_desc, md_sub) %>%
+#     # summarise(number_apps = n()) 
+# 
+# 
+# #' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+# sens_apps %>%
+#     # mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
+#     select(`DSM-5 Mental Disorder` = md_desc,
+#            `MD Subtype` = md_sub,
+#            `Accelerometer` = sens_acc,
+#            `Ggyroscope` = sens_gyr,
+#            `GPS` = sens_gps,
+#            `Microphone` = sens_mic,
+#            `App Name` = app_name) %>%
+#     kable(format = "html", escape = FALSE) %>%
+#     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 ```
