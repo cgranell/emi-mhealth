@@ -113,7 +113,7 @@ n_no_dsm5 <-
 
 The final number of papers to analyse is `` `r n_papers` ``.
 
-There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent(n_yes_dsm5/n_papers)` (N=`r n_yes_dsm5`) are categorised according to Section II of [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal behavior disorder/nonsuicidal self-injury. 
+There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent(n_yes_dsm5/n_papers)` (N=`r n_yes_dsm5`) are categorised according to Section II of [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal behavior disorder/nonsuicidal self-injury. In the following analysis, categories 23 and 24 are merged into a new one: 26-Various. Therefore, dual and multiple disorders are jointly treated.
 
 
 \newpage
@@ -184,7 +184,7 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 
 ```
 
-Alternatively to the barchart, thte lollipop plot below shows the percentatge over the total. 
+Alternatively to the barchart, the lollipop plot below shows the percentatge over the total. 
 
 ```{r key_plot_1_lollipop, echo=FALSE}
 
@@ -522,7 +522,7 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 \newpage
 
-### Figure 4 (Bubble plot)
+### Figure 4 (Bubble plot) - TODO
 
 Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
 
