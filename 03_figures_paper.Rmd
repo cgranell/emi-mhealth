@@ -324,7 +324,7 @@ data_kp_apps %>%
     # save_kable(file = kp_file_name, self_contained = T)
 
 ```
-Table (Example 2): _Compact_ distribution of papers (apps) per mental disorder, grouping the references per app.
+Table (Example 2): _Compact_ distribution of papers (apps) per mental disorder, grouping the references per app. The mumber(s) in brackets next to the app name is the reference(s) in which the app is mentioned. 
 
 
 ```{r key_plot_3_table2, echo=FALSE}
