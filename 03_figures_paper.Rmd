@@ -22,7 +22,7 @@ This document is licensed under a [Creative Commons Attribution 4.0 Internationa
 
 Required libraries and runtime environment description.
 
-```{r load_libraries, echo=TRUE, message=FALSE, warning=FALSE}
+```{r load_libraries, echo=FALSE, message=FALSE, warning=FALSE}
 library(here)
 library(emidata)
 library(tidyverse)
@@ -42,7 +42,7 @@ library(purrr)
 
 
 ```{r session_info, echo=FALSE}
-# devtools::session_info(include_base = TRUE)
+devtools::session_info(include_base = TRUE)
 ```
 
 This document is versioned in a public [git](https://git-scm.com/) repo: [https://github.com/cgranell/emi-mhealth](https://github.com/cgranell/emi-mhealth).
@@ -120,13 +120,13 @@ There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent
 ## Key figures
 
 
-### Figure 1 (barchart + lollipop)
+### Figure 1 (barchart)
 
 Barchart: Distribution of papers per mental disorders, colored by assessment (yes/no).
 
 
-```{r key_plot_1_barchart, echo=FALSE}
-
+```{r key_plot_1_barchart, echo=FALSE, dpi=600,fig.width=12,fig.asp=0.85}
+#  Fig1,dpi=600,fig.width=7,fig.asp=0.85
 data_kp_barchart <- 
     all_data %>%
     select(md, md_id, md_desc, val_ass)
@@ -135,12 +135,25 @@ data_kp_barchart <-
     data_kp_barchart %>% 
         group_by(md_id, md_desc, val_ass) %>%  # first create counts for each group
         summarise(number_cases = n()) %>%
-        # Create total counts and proportions per mental disorder
-        group_by(md_desc) %>%
-        mutate(total_cases = sum(number_cases),
-               proportion = number_cases/total_cases) %>% 
+        mutate(proportion = number_cases/n_papers) %>% 
         ungroup() %>%
-        arrange(desc(total_cases), md_id)
+        group_by(md_id) %>%
+        mutate(total_cases = sum(number_cases),
+               proportion_sum = sum(proportion)) %>% 
+        ungroup() %>%
+        arrange(desc(proportion), md_id)
+
+# data_kp_barchart <- 
+#     data_kp_barchart %>% 
+#         group_by(md_id, md_desc, val_ass) %>%  # first create counts for each group
+#         summarise(number_cases = n()) %>%
+#         # Create total counts and proportions per mental disorder
+#         group_by(md_desc) %>%
+#         mutate(total_cases = sum(number_cases),
+#                proportion_cases = number_cases/total_cases,
+#                proportion_all = number_cases/n_papers) %>%
+#         ungroup() %>%
+#         arrange(desc(total_cases), md_id)
 
 
 # convert to factor to retain sorted order in plot.
@@ -149,8 +162,8 @@ data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_
 kp_barchart <- 
     data_kp_barchart %>%
       ggplot(aes(x=md_desc, y=number_cases, label=number_cases)) + #, fill=val_ass, group= val_ass)) +
-        geom_bar(stat="identity", aes(fill = val_ass), position = position_stack(reverse = T)) +
-        geom_text(aes(label=number_cases), size=2, nudge_y = 0.2) +
+        geom_bar(stat="identity", aes(fill=val_ass), position = position_stack(reverse = T)) +
+        geom_text(aes(label=number_cases, group=val_ass), size=2, nudge_y=0.2) +
         labs(title="Distribution of papers per mental disorder", 
              subtitle = paste0("(N=",n_papers, ")"),
              x="Mental disorders", 
@@ -183,7 +196,50 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 
 ```
 
+
+Barchat with proportions isntead of absolute counts 
+```{r key_plot_1_barchart_bis, echo=FALSE,dpi=600,fig.width=10,fig.asp=0.85}
+
+kp_barchart <- 
+    data_kp_barchart %>%
+      ggplot(aes(x=md_desc, y=proportion)) + #, )) +
+        geom_bar(stat="identity", aes(fill=val_ass), position = "dodge") +
+        # geom_text(aes(label=proportion_sum, group=val_ass), size=2, nudge_y=0.2) +
+        labs(title="Distribution of papers in % per mental disorder", 
+             subtitle = paste0("(N=",n_papers, ")"),
+             x="Mental disorders", 
+             y="Percentatge", 
+             caption="Source: authors") + 
+        geom_lollipop(point.colour = 'black', aes(y=proportion_sum), point.size = 3,horizontal = FALSE) +
+    
+        coord_flip() +
+        
+        guides(fill=guide_legend(title="Assessment")) +  # modify legend title
+        scale_fill_brewer(palette = "Set2") +
+        scale_y_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 0.20, by=0.02), limits=c(0, 0.20)) +
+        theme_minimal()  +
+        # Legend: Top-Right Inside the Plot") 
+        theme(legend.title = element_text(size=11), 
+              legend.justification = c('right', 'top'),
+              legend.position=c(0.95, 0.95),  
+              #legend.background = element_blank(),
+              legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
+              legend.key = element_blank()) +
+        # Change the line type and color of axis lines
+        theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid")) +
+        theme(panel.grid.major = element_blank()) + 
+        theme(panel.grid.minor = element_blank()) +
+        theme(panel.background = element_blank()) +
+        theme(plot.margin=unit(rep(20, 4), "pt"))
+
+kp_barchart
+
+```
+
+
+
 Alternatively to the barchart, the lollipop plot below shows the percentatge over the total. 
+
 
 ```{r key_plot_1_lollipop, echo=FALSE}
 
