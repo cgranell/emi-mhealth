@@ -1,6 +1,6 @@
 ---
 title: 'Analysis and visualisations for "JMIR paper title here"'
-author: "Carlos Granell"
+author: "Carlos Granell et al."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   html_document:
@@ -32,7 +32,6 @@ library(stringr)
 library(skimr)
 library(ggalt)
 library(scales)
-#library(easyalluvial)
 library(RColorBrewer)
 library(gridExtra)
 library(treemap)
@@ -50,11 +49,11 @@ This document is versioned in a public [git](https://git-scm.com/) repo: [https:
 
 \newpage
 
-This R notebook contains the code to produce the final fours figures of the paper.
+This R notebook contains the code to produce the final figures adn tables of the paper. 
 
 ## Data 
 
-We analyse three datasets of the *emidata* package. The package code is available in a public [git](https://git-scm.com/) repo: [https://github.com/cgranell/emidata](https://github.com/cgranell/emidata): 
+Input datasets are the processed datasets within the *emidata* data package. The package code is available in a public [git](https://git-scm.com/) repo: [https://github.com/cgranell/emidata](https://github.com/cgranell/emidata). We analyse the follwing three datasets of the *emidata* package: 
 
 * *ipapers2018_psydata* (extracted data items related to psychology) has `` `r nrow(ipapers2018_psydata)` `` records and `` `r ncol(ipapers2018_psydata)` `` columns.
 * *ipapers2018_csdata* (extracted data items related to tech/cs) has `` `r nrow(ipapers2018_csdata)` `` records and `` `r ncol(ipapers2018_csdata)` `` columns. 
