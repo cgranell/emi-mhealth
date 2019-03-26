@@ -125,8 +125,7 @@ There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent
 Barchart: Distribution of papers per mental disorders, colored by assessment (yes/no).
 
 
-```{r key_plot_1_barchart, echo=FALSE, dpi=600,fig.width=12,fig.asp=0.85}
-#  Fig1,dpi=600,fig.width=7,fig.asp=0.85
+```{r key_plot_1_barchart, echo=FALSE, dpi=600, fig.width=12, fig.asp=0.65}
 data_kp_barchart <- 
     all_data %>%
     select(md, md_id, md_desc, val_ass)
@@ -139,22 +138,10 @@ data_kp_barchart <-
         ungroup() %>%
         group_by(md_id) %>%
         mutate(total_cases = sum(number_cases),
-               proportion_sum = sum(proportion)) %>% 
+               proportion_sum = sum(proportion),
+               proportion_lbl = paste0(round(proportion_sum*100,1), "%")) %>% 
         ungroup() %>%
-        arrange(desc(proportion), md_id)
-
-# data_kp_barchart <- 
-#     data_kp_barchart %>% 
-#         group_by(md_id, md_desc, val_ass) %>%  # first create counts for each group
-#         summarise(number_cases = n()) %>%
-#         # Create total counts and proportions per mental disorder
-#         group_by(md_desc) %>%
-#         mutate(total_cases = sum(number_cases),
-#                proportion_cases = number_cases/total_cases,
-#                proportion_all = number_cases/n_papers) %>%
-#         ungroup() %>%
-#         arrange(desc(total_cases), md_id)
-
+        arrange(desc(proportion_sum), md_id)
 
 # convert to factor to retain sorted order in plot.
 data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
@@ -164,8 +151,7 @@ kp_barchart <-
       ggplot(aes(x=md_desc, y=number_cases, label=number_cases)) + #, fill=val_ass, group= val_ass)) +
         geom_bar(stat="identity", aes(fill=val_ass), position = position_stack(reverse = T)) +
         geom_text(aes(label=number_cases, group=val_ass), size=2, nudge_y=0.2) +
-        labs(title="Distribution of papers per mental disorder", 
-             subtitle = paste0("(N=",n_papers, ")"),
+        labs(title=paste("Distribution of papers per mental disorder(N=",n_papers,")"),
              x="Mental disorders", 
              y="Number of cases", 
              caption="Source: authors") + 
@@ -191,29 +177,38 @@ kp_barchart <-
 kp_barchart
 kp_file_name <- "fig_barchart.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
+    scale = 1, width = 20, height = 12, units = "cm", dpi = 600)
 
 
 ```
 
 
 Barchat with proportions isntead of absolute counts 
-```{r key_plot_1_barchart_bis, echo=FALSE,dpi=600,fig.width=10,fig.asp=0.85}
+```{r key_plot_1_barchart_bis, echo=FALSE,dpi=600,fig.width=12,fig.asp=0.65}
+
+# lbls <- as.data.frame(round(unique(data_kp_barchart$proportion_sum*100,1)))
 
 kp_barchart <- 
     data_kp_barchart %>%
-      ggplot(aes(x=md_desc, y=proportion)) + #, )) +
-        geom_bar(stat="identity", aes(fill=val_ass), position = "dodge") +
-        # geom_text(aes(label=proportion_sum, group=val_ass), size=2, nudge_y=0.2) +
+      ggplot(aes(x=md_desc, y=proportion)) + 
+        geom_bar(stat="identity", aes(fill=val_ass), position = position_dodge2(preserve = "single", padding = 0)) +
+        # geom_text(aes(label=proportion_sum), size=2, nudge_y=0.2) +
         labs(title="Distribution of papers in % per mental disorder", 
              subtitle = paste0("(N=",n_papers, ")"),
              x="Mental disorders", 
              y="Percentatge", 
              caption="Source: authors") + 
-        geom_lollipop(point.colour = 'black', aes(y=proportion_sum), point.size = 3,horizontal = FALSE) +
-    
+        geom_segment(aes(x=md_desc, y=0, xend=md_desc, yend=proportion_sum), color="grey50") +
+        geom_point(aes(y=proportion_sum), size=3, color="darkgrey") +
+        # geom_text(data=lbls, color= "black", size=3) +        #TODO
+        annotate("text", x = "Schizophrenia spectrum and other psychotic disorders", y = .18,
+                 label = "TOP 6", color = "black", size = 3, hjust = -0.1, vjust = 1) +
+        geom_segment(aes(x = "Schizophrenia spectrum and other psychotic disorders", 
+                         xend = "Substance-related and addictive disorders", 
+                         y = .18, 
+                         yend = .18),
+                         arrow = arrow(length = unit(0.5,"cm")), color = "black") +
         coord_flip() +
-        
         guides(fill=guide_legend(title="Assessment")) +  # modify legend title
         scale_fill_brewer(palette = "Set2") +
         scale_y_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 0.20, by=0.02), limits=c(0, 0.20)) +
@@ -233,9 +228,12 @@ kp_barchart <-
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
 kp_barchart
+kp_file_name <- "fig_barchart_proportion.png"
+ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 20, height = 12, units = "cm", dpi = 600)
+
 
 ```
-
 
 
 Alternatively to the barchart, the lollipop plot below shows the percentatge over the total. 
