@@ -230,7 +230,7 @@ kp_barchart <-
 kp_barchart
 kp_file_name <- "fig_barchart_proportion.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 20, height = 12, units = "cm", dpi = 600)
+    scale = 1, width = 21, height = 15, units = "cm", dpi = 600)
 
 
 ```
