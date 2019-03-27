@@ -193,7 +193,7 @@ kp_barchart <-
       ggplot(aes(x=md_desc, y=proportion)) + 
         geom_bar(stat="identity", aes(fill=val_ass), position = position_dodge2(preserve = "single", padding = 0)) +
         # geom_text(aes(label=proportion_sum), size=2, nudge_y=0.2) +
-        labs(title=paste0("Distribution per mental disorder and assesment (N=",n_papers,")"), 
+        labs(title=paste0("Distribution per mental disorder and assessment (N=",n_papers,")"), 
              subtitle = "Total percentatge per mental disorder within each point",
              x="Mental disorders", 
              y="Percentatge of papers [%]", 
