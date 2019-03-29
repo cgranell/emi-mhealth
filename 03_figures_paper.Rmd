@@ -188,8 +188,8 @@ Barchat with proportions isntead of absolute counts
 
 lbls <- distinct(data_kp_barchart, md_desc, proportion_sum, proportion_lbl)
 
-top6_proportion <- sum(lbls[1:6, "proportion_sum"]) 
-top6_lbl <- paste0(round(top6_proportion*100,1), "%")
+top_proportion <- sum(lbls[1:6, "proportion_sum"]) 
+top_lbl <- paste0(round(top6_proportion*100,1), "%")
 
 kp_barchart <- 
     data_kp_barchart %>%
@@ -213,7 +213,7 @@ kp_barchart <-
                  label = lbls$proportion_lbl, color = "black", size=2, hjust = 0.4, vjust = 0.2) +
         # Arrow to indidate  Top6 mental disorders 
         annotate("text", x = "Schizophrenia spectrum and other psychotic disorders", y = .17,
-                 label = top6_lbl, color = "black", size = 3, hjust = -0.1, vjust = 1.2) +
+                 label = top_lbl, color = "black", size = 3, hjust = -0.1, vjust = 1.2) +
         geom_segment(aes(x = "Schizophrenia spectrum and other psychotic disorders", 
                          xend = "Substance-related and addictive disorders", 
                          y = .19, 
@@ -255,12 +255,12 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 
 ### Figure 2 (linechart)
 
-Linechart: Distribution of papers (Total and top3 mental disorders) per year.
+Linechart: Distribution of papers (Total and top6 mental disorders) per year.
 
 
-```{r key_plot_2_linechart, echo=FALSE}
+```{r key_plot_2_linechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 
-top3 <- levels(all_data$md)[1:3]
+top <- levels(all_data$md)[1:6]
 
 data_total_byyear <- 
     all_data %>% 
@@ -269,9 +269,9 @@ data_total_byyear <-
     mutate(md_desc = c("All"))
 
 
-data_top3_byyear <- 
+data_top_byyear <- 
     all_data %>%
-      filter(md %in% top3) %>%
+      filter(md %in% top) %>%
       group_by(md_desc, year) %>%
       summarise(number_cases = n()) %>%
       bind_rows(data_total_byyear) %>%
@@ -282,16 +282,20 @@ data_top3_byyear <-
 # https://www.r-graph-gallery.com/portfolio/ggplot2-package/
 # https://ggplot2.tidyverse.org/reference/position_stack.html
 
-data_top3_byyear$md_desc <- fct_relevel(data_top3_byyear$md_desc, c("All", "Depressive disorders", "Various", "Anxiety disorders"))
-brks <- levels(data_top3_byyear$md_desc) 
+data_top_byyear$md_desc <- fct_relevel(data_top_byyear$md_desc, 
+                                       c("All", "Depressive disorders", "Various", "Anxiety disorders", 
+                                         "Trauma and stressor-related disorders",
+                                         "Substance-related and addictive disorders",
+                                         "Schizophrenia spectrum and other psychotic disorders"))
+brks <- levels(data_top_byyear$md_desc) 
     
 kp_linechart <-
-data_top3_byyear %>%
+data_top_byyear %>%
     ggplot(aes(x=year, y=number_cases, group=md_desc)) +
     geom_line(aes(color=md_desc), size=1, alpha=.4) +
     geom_point(aes(color=md_desc), size=6) +
-    labs(title="Distribution of papers per year", 
-         subtitle = "Total and top3 mental disorders",
+    labs(title="Distribution top mental disorders per year", 
+         subtitle = paste0("All vs. top mental disorders (", top_lbl,")"),
          x="Year", 
          y="Number of cases", 
          caption="Source: authors") + 
@@ -317,7 +321,7 @@ data_top3_byyear %>%
 kp_linechart
 kp_file_name <- "fig2_linechart.png"
 ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 20, height = 12, units = "cm", dpi = "print") #300
+    scale = 1, width = 20, height = 18, units = "cm", dpi = 600) 
 
 
 ```
