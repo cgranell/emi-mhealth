@@ -146,6 +146,8 @@ data_kp_barchart <-
 # convert to factor to retain sorted order in plot.
 data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
 
+data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY", "EFFICACY AND OTHERS"))
+
 kp_barchart <- 
     data_kp_barchart %>%
       ggplot(aes(x=md_desc, y=number_cases, label=number_cases)) + #, fill=val_ass, group= val_ass)) +
@@ -183,13 +185,13 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 ```
 
 
-Barchat with proportions isntead of absolute counts 
+Barchat with proportions instead of absolute counts 
 ```{r key_plot_1_barchart_bis, echo=FALSE,dpi=600,fig.width=12,fig.asp=0.65}
 
 lbls <- distinct(data_kp_barchart, md_desc, proportion_sum, proportion_lbl)
 
 top_proportion <- sum(lbls[1:6, "proportion_sum"]) 
-top_lbl <- paste0(round(top6_proportion*100,1), "%")
+top_lbl <- paste0(round(top_proportion*100,1), "%")
 
 kp_barchart <- 
     data_kp_barchart %>%
@@ -200,7 +202,6 @@ kp_barchart <-
         geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "single")) + 
         # Uncomment  for dodge barchart, single (option C) 
         #geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "total")) + 
-        # geom_text(aes(label=proportion_sum), size=2, nudge_y=0.2) +
         labs(title=paste0("Distribution per mental disorder and assessment (N=",n_papers,")"), 
              subtitle = "Total percentatge per mental disorder within each point",
              x="Mental disorders", 
@@ -294,7 +295,14 @@ brks <- levels(data_top_byyear$md_desc)
 kp_linechart <-
     data_top_byyear %>%
         ggplot(aes(x=year, y=number_cases, group=md_desc)) +
+        geom_vline(aes(xintercept = 2017), color="lightgray", linetype = "dashed", size = 0.5) +
+        annotate("rect", xmin = 2017, xmax = 2018, ymin = -Inf, ymax = +Inf, fill = "lightgray", alpha = 0.2) +
         geom_line(aes(color=md_desc), size=1, alpha=.4) +
+        # prediction all papers in 2018
+        geom_segment(aes(x=2017,
+                         y=39,
+                         xend=2018,
+                         yend=prediction_2018), color="darkgray", linetype=2) +
         geom_point(aes(color=md_desc), size=6) +
         labs(title="Distribution top mental disorders per year", 
              subtitle = paste0("All vs. top mental disorders (", top_lbl,"). Dashed line denotes prediction in 2018"),
@@ -303,13 +311,7 @@ kp_linechart <-
              caption="Source: authors") + 
         scale_color_brewer(palette="Set2", breaks=brks) +
         geom_text(aes(label = number_cases), color= "white", size=3) +
-        geom_vline(aes(xintercept = 2017), color="darkgray", linetype = "dashed", size = 0.5) +
-        annotate("rect", xmin = 2017, xmax = 2018, ymin = -Inf, ymax = +Inf, fill = "lightgray", alpha = 0.2) +
         # prediction all papers in 2018
-        geom_segment(aes(x=2017, 
-                         y=39, 
-                         xend=2018, 
-                         yend=prediction_2018), color="darkgray", linetype=2) +
         geom_point(x=2018, y=prediction_2018, color="darkgray", size=6) +
         annotate("text", x =2018, y = 70,
                  label = prediction_2018, color = "black", size=3) +
