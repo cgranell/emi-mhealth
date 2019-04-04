@@ -286,12 +286,17 @@ data_kp_barchart <-
 # convert to factor to retain sorted order in plot.
 data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
 
+
+# TODO https://stackoverflow.com/questions/45055661/combine-grouped-and-stacked-bar-graph-in-r thanks
+#- Add a new column (factor): No is value A, thre rest thre are B
+#- use facet_wrap() over this new factor.  
+
 # Not run
 # display.brewer.all()
 # display.brewer.pal(n = 5, name = "PRGn")
 # brewer.pal(n = 5, name = "PRGn")[2:5]
 # divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
-pal <- brewer.pal(n = nlevels(data_kp_barchart$val_asstype)+1, name = "PRGn")[1:3]
+pal <- brewer.pal(n = nlevels(data_kp_barchart$val_asstype), name = "PRGn")
 
 lbls <- distinct(data_kp_barchart, md_desc, proportion_sum, proportion_lbl)
 
@@ -302,9 +307,9 @@ kp_barchart <-
     data_kp_barchart %>%
       ggplot(aes(x=md_desc, y=proportion)) + 
         # Uncomment  for stacked barchart (option A) 
-        #geom_bar(stat="identity", aes(fill=val_asstype)) +
+        geom_bar(stat="identity", aes(fill=val_asstype)) +
         # Uncomment  for dodge barchart, single (option B) 
-        geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "single")) + 
+        # geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "single")) + 
         # Uncomment  for dodge barchart, single (option C) 
         #geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "total")) + 
         labs(title=paste0("Distribution per mental disorder and assessment (N=",n_papers,")"), 
@@ -350,7 +355,7 @@ kp_barchart <-
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
 kp_barchart
-kp_file_name <- "fig2_barchart_proportion_b.png"
+kp_file_name <- "fig2_barchart_proportion_a.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 21, height = 20, units = "cm", dpi = 600)
 
