@@ -307,16 +307,16 @@ kp_barchart <-
     data_kp_barchart %>%
       ggplot(aes(x=md_desc, y=proportion)) + 
         # Uncomment  for stacked barchart (option A) 
-        #geom_bar(stat="identity", aes(fill=val_asstype)) +
+        geom_bar(stat="identity", aes(fill=val_asstype)) +
         # Uncomment  for dodge barchart, single (option B) 
-        geom_bar(stat="identity", aes(fill=val_asstype), position=position_dodge(preserve = "single")) + 
+        # geom_bar(stat="identity", aes(fill=val_asstype), position=position_dodge(preserve = "single")) + 
         labs(title=paste0("Distribution per mental disorder and assessment (N=",n_papers,")"), 
              subtitle = "Total percentatge per mental disorder within each point",
              x="Mental disorders", 
              y="Percentatge of papers [%]", 
              caption="Source: authors") + 
-        geom_segment(aes(x=md_desc, y=0, xend=md_desc, yend=proportion_sum), color="grey50") +
-        geom_point(aes(y=proportion_sum), size=6, color="lightgray") +
+        geom_segment(aes(x=md_desc, y=0, xend=md_desc, yend=proportion_sum), color="white") + # grey50
+        geom_point(aes(y=proportion_sum), size=6, color="white") +  # lightgray
         # Percentatge inside point
         annotate("text", x = lbls$md_desc, y = lbls$proportion_sum,
                  label = lbls$proportion_lbl, color = "black", size=2, hjust = 0.4, vjust = 0.2) +
@@ -353,7 +353,7 @@ kp_barchart <-
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
 kp_barchart
-kp_file_name <- "fig2_barchart_dodge_b.png"
+kp_file_name <- "fig2_barchart_dodge_a.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 21, height = 20, units = "cm", dpi = 600)
 
