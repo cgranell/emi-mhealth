@@ -316,7 +316,7 @@ kp_barchart <-
              y="Percentatge of papers [%]", 
              caption="Source: authors") + 
         geom_segment(aes(x=md_desc, y=0, xend=md_desc, yend=proportion_sum), color="grey50") +
-        geom_point(aes(y=proportion_sum), size=6, color="white") +
+        geom_point(aes(y=proportion_sum), size=6, color="lightgray") +
         # Percentatge inside point
         annotate("text", x = lbls$md_desc, y = lbls$proportion_sum,
                  label = lbls$proportion_lbl, color = "black", size=2, hjust = 0.4, vjust = 0.2) +
@@ -407,7 +407,7 @@ kp_barchart <-
 Linechart: Distribution of papers (Total and top6 mental disorders) per year.
 
 
-```{r key_plot_2_linechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+```{r key_plot_3_linechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 
 top <- levels(all_data$md)[1:6]
 
@@ -479,7 +479,7 @@ kp_linechart <-
         theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid"))
 
 kp_linechart
-kp_file_name <- "fig2_linechart_b.png"
+kp_file_name <- "fig3_linechart_b.png"
 ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 18, units = "cm", dpi = 600) 
 
@@ -488,12 +488,12 @@ ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here
 
 \newpage
 
-### Figure 3 (Tables + circular barplot)
+### Figure 4 (Tables + circular barplot)
 
 Table (Example 1): Distribution of papers (apps) per mental disorder.  _How many apps are related to each mental disorder?_ Per each mental disorder, assessment (yes/no) and year, we show the paper id and appname.
 
 
-```{r key_plot_3_table1, echo=FALSE}
+```{r key_plot_4_table1, echo=FALSE}
 
 # library(formattable)
 
@@ -528,7 +528,7 @@ data_kp_apps %>%
 Table (Example 2): _Compact_ distribution of papers (apps) per mental disorder, grouping the references per app. The mumber(s) in brackets next to the app name is the reference(s) in which the app is mentioned. 
 
 
-```{r key_plot_3_table2, echo=FALSE}
+```{r key_plot_4_table2, echo=FALSE}
 
 kp_file_name <- here::here("figs", "table2.html")
 
@@ -590,7 +590,7 @@ data_kp_apps2 %>%
 
 Circular barplot (Example 3): Each cell means one occurence of the app in a paper.
 
-```{r key_plot_3_table3, echo=FALSE}
+```{r key_plot_4_table3, echo=FALSE}
 
 #' source: https://www.r-graph-gallery.com/297-circular-barplot-with-groups/
 
@@ -723,11 +723,11 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 \newpage
 
-### Figure 4 (Bubble plot) - TODO
+### Figure 5 (Bubble plot) - TODO
 
 Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
 
-```{r key_plot_4_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+```{r key_plot_5_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 # Sensory capabilities related to each mental disorder 
 cols = c("id", "md", "md_id", "md_desc", "md_sub",
          "sens_acc", "sens_gyr", "sens_gps", "sens_mic",
