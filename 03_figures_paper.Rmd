@@ -119,10 +119,9 @@ There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent
 
 ## Key figures
 
-
 ### Figure 1 (barchart)
 
-Barchart: Distribution of papers per mental disorders, colored by assessment (yes/no).
+Barchart: Distribution of papers per mental disorders, colored by assessment type (`` `r levels(all_data$val_asstype)` ``).
 
 
 ```{r key_plot_1_barchart, echo=FALSE, dpi=600, fig.width=12, fig.asp=0.65}
@@ -148,6 +147,14 @@ data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_
 
 data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY", "EFFICACY AND OTHERS"))
 
+# Not run
+# display.brewer.all()
+# display.brewer.pal(n = 6, name = "PRGn")
+# brewer.pal(n = 6, name = "PRGn")[2:5]
+
+# divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
+pal <- brewer.pal(n = nlevels(data_kp_barchart$val_asstype)+2, name = "PRGn")[2:5]
+
 kp_barchart <- 
     data_kp_barchart %>%
       ggplot(aes(x=md_desc, y=number_cases, label=number_cases)) + #, fill=val_ass, group= val_ass)) +
@@ -159,7 +166,8 @@ kp_barchart <-
              caption="Source: authors") + 
         coord_flip() +
         guides(fill=guide_legend(title="Assessment")) +  # modify legend title
-        scale_fill_brewer(palette = "Set2") +
+        # scale_fill_brewer(palette = pal) + # Set2
+        scale_fill_manual(values = pal) + 
         scale_y_continuous(expand=c(0,0), breaks=seq(0, 22, by=2), limits=c(0, 22)) +
         theme_minimal()  +
         # Legend: Top-Right Inside the Plot") 
@@ -180,7 +188,6 @@ kp_barchart
 kp_file_name <- "fig1_barchart.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 12, units = "cm", dpi = 600)
-
 
 ```
 
@@ -226,7 +233,8 @@ kp_barchart <-
                          yend=0.19), color="black") +
         coord_flip() +
         guides(fill=guide_legend(title="Assessment")) +  # modify legend title
-        scale_fill_brewer(palette = "Set2") +
+        # scale_fill_brewer(palette = "Set2") +
+        scale_fill_manual(values = pal) + 
         scale_y_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 0.21, by=0.02), limits=c(0, 0.21)) +
         theme_minimal()  +
         # Legend: Top-Right Inside the Plot") 
