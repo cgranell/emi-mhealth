@@ -150,6 +150,7 @@ data_kp_areachart <-
 
 # divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
 pal <- brewer.pal(n = nlevels(data_kp_areachart$val_asstype)+2, name = "PRGn")[2:5]
+pal <- c("#762A83", "#D9F0D3", "#7FBF7B", "#1B7837")
 
 kp_areachart <- 
     data_kp_areachart %>%
@@ -184,15 +185,16 @@ ggsave(plot = kp_areachart, filename = kp_file_name, device = "png", path = here
 
 \newpage
 
-### Figure 2 (barchart) - EXCLUDE FROM THE PAPER
+### Figure 2 (OUT)
 
-Barchart: Distribution of papers per mental disorders, colored by assessment type.
+Stacked barchart: Distribution of papers per mental disorders, colored by assessment type.
 
 
-```{r key_plot_1_barchart, echo=FALSE, dpi=600, fig.width=12, fig.asp=0.65}
+```{r key_plot_2_barchart_stack, echo=FALSE, dpi=600, fig.width=12, fig.asp=0.65}
+cols <- c("md", "md_id", "md_desc", "val_asstype")
 data_kp_barchart <- 
     all_data %>%
-    select(md, md_id, md_desc, val_asstype)
+    select(cols)
 
 data_kp_barchart <- 
     data_kp_barchart %>% 
@@ -210,7 +212,7 @@ data_kp_barchart <-
 # convert to factor to retain sorted order in plot.
 data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
 
-data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY", "EFFICACY AND OTHERS"))
+data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
 
 # Not run
 # display.brewer.all()
@@ -219,6 +221,7 @@ data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO"
 
 # divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
 pal <- brewer.pal(n = nlevels(data_kp_barchart$val_asstype)+2, name = "PRGn")[2:5]
+pal <- c("#762A83", "#D9F0D3", "#7FBF7B", "#1B7837")
 
 kp_barchart <- 
     data_kp_barchart %>%
@@ -250,7 +253,7 @@ kp_barchart <-
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
 kp_barchart
-kp_file_name <- "fig2_barchart.png"
+kp_file_name <- "fig2_barchart_stack.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 12, units = "cm", dpi = 600)
 
@@ -259,16 +262,14 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 
 ### Figure 2 (IN)
 
-Proportional barchart: Distribution of papers per mental disorders, colored by assessment type. Note that we draw two bars per mental disorder: one  represent no assessment, the other is a stack bar to show the split of assessment type 
+Proportional (stacked) barchart: Distribution of papers per mental disorders, colored by assessment type. Note that we draw two bars per mental disorder: one represents no assessment at all, the other is a stacked bar to show the types of assessment 
 
-```{r key_plot_2_barchart_bis, echo=FALSE,dpi=600,fig.width=12,fig.asp=0.65}
+```{r key_plot_2_barchart_dodge, echo=FALSE,dpi=600,fig.width=12,fig.asp=0.65}
 cols <- c("md", "md_id", "md_desc", "val_asstype")
 
 data_kp_barchart <- 
     all_data %>%
-    select(md, md_id, md_desc, val_asstype)
-
-data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
+    select(cols)
 
 data_kp_barchart <- 
     data_kp_barchart %>% 
@@ -286,17 +287,16 @@ data_kp_barchart <-
 # convert to factor to retain sorted order in plot.
 data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
 
+data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
 
-# TODO https://stackoverflow.com/questions/45055661/combine-grouped-and-stacked-bar-graph-in-r thanks
-#- Add a new column (factor): No is value A, thre rest thre are B
-#- use facet_wrap() over this new factor.  
 
 # Not run
 # display.brewer.all()
-# display.brewer.pal(n = 5, name = "PRGn")
-# brewer.pal(n = 5, name = "PRGn")[2:5]
+# display.brewer.pal(n = 7, name = "PRGn")
+# brewer.pal(n = 7, name = "PRGn")
 # divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
 pal <- brewer.pal(n = nlevels(data_kp_barchart$val_asstype), name = "PRGn")
+pal <- c("#762A83", "#D9F0D3", "#7FBF7B", "#1B7837")
 
 lbls <- distinct(data_kp_barchart, md_desc, proportion_sum, proportion_lbl)
 
@@ -307,18 +307,16 @@ kp_barchart <-
     data_kp_barchart %>%
       ggplot(aes(x=md_desc, y=proportion)) + 
         # Uncomment  for stacked barchart (option A) 
-        geom_bar(stat="identity", aes(fill=val_asstype)) +
+        #geom_bar(stat="identity", aes(fill=val_asstype)) +
         # Uncomment  for dodge barchart, single (option B) 
-        # geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "single")) + 
-        # Uncomment  for dodge barchart, single (option C) 
-        #geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "total")) + 
+        geom_bar(stat="identity", aes(fill=val_asstype), position=position_dodge(preserve = "single")) + 
         labs(title=paste0("Distribution per mental disorder and assessment (N=",n_papers,")"), 
              subtitle = "Total percentatge per mental disorder within each point",
              x="Mental disorders", 
              y="Percentatge of papers [%]", 
              caption="Source: authors") + 
         geom_segment(aes(x=md_desc, y=0, xend=md_desc, yend=proportion_sum), color="grey50") +
-        geom_point(aes(y=proportion_sum), size=6, color="lightgrey") +
+        geom_point(aes(y=proportion_sum), size=6, color="white") +
         # Percentatge inside point
         annotate("text", x = lbls$md_desc, y = lbls$proportion_sum,
                  label = lbls$proportion_lbl, color = "black", size=2, hjust = 0.4, vjust = 0.2) +
@@ -355,13 +353,52 @@ kp_barchart <-
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
 kp_barchart
-kp_file_name <- "fig2_barchart_proportion_a.png"
+kp_file_name <- "fig2_barchart_dodge_b.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 21, height = 20, units = "cm", dpi = 600)
 
 
 ```
 
+
+```{r}
+# TODO https://stackoverflow.com/questions/45055661/combine-grouped-and-stacked-bar-graph-in-r thanks
+#- Add a new column (factor): No is value A, thre rest thre are B
+#- use facet_wrap() over this new factor.  
+cols <- c("md", "md_id", "md_desc", "val_asstype", "val_ass")
+
+data_kp_barchart <- 
+    all_data %>%
+    select(cols)
+
+data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
+
+data_kp_barchart <- 
+    data_kp_barchart %>% 
+        group_by(md_id, md_desc, val_asstype, val_ass) %>%  # first create counts for each group
+        summarise(number_cases = n()) %>%
+        mutate(proportion = number_cases/n_papers) %>% 
+        ungroup() %>%
+        group_by(md_id) %>%
+        mutate(total_cases = sum(number_cases),
+               proportion_sum = sum(proportion),
+               proportion_lbl = paste0(round(proportion_sum*100,1), "%")) %>% 
+        ungroup() %>%
+        arrange(desc(proportion_sum), md_id)
+
+# convert to factor to retain sorted order in plot.
+data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
+
+kp_barchart <- 
+    data_kp_barchart %>%
+    ggplot(aes(x=val_ass, y=proportion)) + 
+    geom_bar(stat="identity", aes(fill=val_asstype), position="stack") + 
+        # Uncomment  for dodge barchart, single (option C) 
+        #geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "total")) + 
+    facet_wrap(~md_desc, ncol = 1) + theme(panel.spacing = unit(0, "lines")) +
+    coord_flip()
+
+```
 
 \newpage
 
