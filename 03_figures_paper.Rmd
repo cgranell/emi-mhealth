@@ -119,9 +119,74 @@ There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent
 
 ## Key figures
 
-### Figure 1 (barchart)
 
-Barchart: Distribution of papers per mental disorders, colored by assessment type (`` `r levels(all_data$val_asstype)` ``).
+### Figure 1 (proportional stacked area chart)
+
+Proportional stacked area chart: Temporal distribution of papers colored by assessment type. The summ of each year is always equal to hundred, and the value of each group (assessment type) is in percentages
+
+
+```{r key_plot_1_areachart, echo=FALSE, dpi=600, fig.width=12, fig.asp=0.65}
+cols <- c("md", "md_id", "md_desc", "val_asstype", "year")
+
+data_kp_areachart <- 
+    all_data %>%
+    select(cols)
+
+data_kp_areachart$val_asstype <- fct_relevel(data_kp_areachart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
+
+data_kp_areachart <- 
+    data_kp_areachart %>%
+    group_by(year, val_asstype) %>%  # first create counts for each group
+    summarise(number_cases = n()) %>%
+    mutate(total_cases_per_year = sum(number_cases),
+           proportion = number_cases/total_cases_per_year,
+           proportion_lbl = paste0(round(proportion*100,1), "%"))
+
+
+# Not run
+# display.brewer.all()
+# display.brewer.pal(n = 6, name = "PRGn")
+# brewer.pal(n = 6, name = "PRGn")[2:5]
+
+# divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
+pal <- brewer.pal(n = nlevels(data_kp_areachart$val_asstype)+2, name = "PRGn")[2:5]
+
+kp_areachart <- 
+    data_kp_areachart %>%
+        ggplot(aes(x=year, y=proportion, fill=val_asstype)) + 
+        geom_area() +
+        labs(title="Temporal distribution of papers per assessment type",
+        x="Year", 
+        y="Percentage of paper  per assessment type", 
+        caption="Source: authors") + 
+        guides(fill=guide_legend(title="Assessment")) + # modify legend title
+        scale_fill_manual(values = pal) +
+        scale_y_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 1.00, by=0.20), limits=c(0, 1.00)) +
+        theme_minimal() +
+        theme(legend.title = element_text(size=11), 
+              legend.position = "bottom",
+              legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
+              legend.key = element_blank()) +
+        # Change the line type and color of axis lines
+        theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid")) +
+        theme(panel.grid.major = element_blank()) + 
+        theme(panel.grid.minor = element_blank()) +
+        theme(panel.background = element_blank()) +
+        theme(plot.margin=unit(rep(20, 4), "pt"))
+
+kp_areachart
+kp_file_name <- "fig1_areachart.png"
+ggsave(plot = kp_areachart, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 20, height = 12, units = "cm", dpi = 600)
+
+```
+
+
+\newpage
+
+### Figure 2 (barchart) - EXCLUDE FROM THE PAPER
+
+Barchart: Distribution of papers per mental disorders, colored by assessment type.
 
 
 ```{r key_plot_1_barchart, echo=FALSE, dpi=600, fig.width=12, fig.asp=0.65}
@@ -185,15 +250,48 @@ kp_barchart <-
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
 kp_barchart
-kp_file_name <- "fig1_barchart.png"
+kp_file_name <- "fig2_barchart.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 12, units = "cm", dpi = 600)
 
 ```
 
 
-Barchat with proportions instead of absolute counts 
-```{r key_plot_1_barchart_bis, echo=FALSE,dpi=600,fig.width=12,fig.asp=0.65}
+### Figure 2 (IN)
+
+Proportional barchart: Distribution of papers per mental disorders, colored by assessment type. Note that we draw two bars per mental disorder: one  represent no assessment, the other is a stack bar to show the split of assessment type 
+
+```{r key_plot_2_barchart_bis, echo=FALSE,dpi=600,fig.width=12,fig.asp=0.65}
+cols <- c("md", "md_id", "md_desc", "val_asstype")
+
+data_kp_barchart <- 
+    all_data %>%
+    select(md, md_id, md_desc, val_asstype)
+
+data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
+
+data_kp_barchart <- 
+    data_kp_barchart %>% 
+        group_by(md_id, md_desc, val_asstype) %>%  # first create counts for each group
+        summarise(number_cases = n()) %>%
+        mutate(proportion = number_cases/n_papers) %>% 
+        ungroup() %>%
+        group_by(md_id) %>%
+        mutate(total_cases = sum(number_cases),
+               proportion_sum = sum(proportion),
+               proportion_lbl = paste0(round(proportion_sum*100,1), "%")) %>% 
+        ungroup() %>%
+        arrange(desc(proportion_sum), md_id)
+
+# convert to factor to retain sorted order in plot.
+data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
+
+# Not run
+# display.brewer.all()
+# display.brewer.pal(n = 5, name = "PRGn")
+# brewer.pal(n = 5, name = "PRGn")[2:5]
+# divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
+pal <- brewer.pal(n = nlevels(data_kp_barchart$val_asstype)+1, name = "PRGn")[1:3]
 
 lbls <- distinct(data_kp_barchart, md_desc, proportion_sum, proportion_lbl)
 
@@ -252,7 +350,7 @@ kp_barchart <-
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
 kp_barchart
-kp_file_name <- "fig1_barchart_proportion_b.png"
+kp_file_name <- "fig2_barchart_proportion_b.png"
 ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 21, height = 20, units = "cm", dpi = 600)
 
@@ -271,7 +369,7 @@ Linechart: Distribution of papers (Total and top6 mental disorders) per year.
 
 top <- levels(all_data$md)[1:6]
 
-prediction_2018 <- 70
+prediction_2018 <- 52
 
 data_total_byyear <- 
     all_data %>% 
@@ -313,16 +411,16 @@ kp_linechart <-
                          yend=prediction_2018), color="darkgray", linetype=2) +
         geom_point(aes(color=md_desc), size=6) +
         labs(title="Distribution top mental disorders per year", 
-             subtitle = paste0("All vs. top mental disorders (", top_lbl,"). Dashed line denotes prediction in 2018"),
+             subtitle = paste0("All vs. top mental disorders (", top_lbl,"). Dashed line denotes extrapolation for 2018"),
              x="Year", 
              y="Number of cases", 
              caption="Source: authors") + 
         scale_color_brewer(palette="Set2", breaks=brks) +
         geom_text(aes(label = number_cases), color= "white", size=3) +
         # prediction all papers in 2018
-        geom_point(x=2018, y=prediction_2018, color="darkgray", size=6) +
-        annotate("text", x =2018, y = 70,
-                 label = prediction_2018, color = "black", size=3) +
+        # geom_point(x=2018, y=prediction_2018, color="darkgray", size=6) +
+        # annotate("text", x =2018, y = prediction_2018,
+        #          label = prediction_2018, color = "black", size=3) +
         theme_minimal() +
         theme(legend.title = element_blank()) +
         # Legend: Top-Right Inside the Plot") 
@@ -587,35 +685,33 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
 
- 
-```{r md_apps_table, echo=FALSE}
-# Sensory capabilities related to each MD 
-# cols = c("id", "md", "md_id", "md_desc", "md_sub", "md_dsm5",
-#          "sens_acc", "sens_gyr", "sens_gps", "sens_mic", 
-#          "os_ios", "os_and", "app_name", 
-#          "type", "year")
-# 
-# sens_apps <- 
-#     all_data %>% 
-#     filter(md_id!=23 & md_id!=24) %>%
-#     select(cols) %>%
-#     arrange(md_desc, md_sub)
-#     # group_by(md_desc, md_sub) %>%
-#     # summarise(number_apps = n()) 
-# 
-# 
-# #' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
-# sens_apps %>%
-#     # mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
-#     select(`DSM-5 Mental Disorder` = md_desc,
-#            `MD Subtype` = md_sub,
-#            `Accelerometer` = sens_acc,
-#            `Ggyroscope` = sens_gyr,
-#            `GPS` = sens_gps,
-#            `Microphone` = sens_mic,
-#            `App Name` = app_name) %>%
-#     kable(format = "html", escape = FALSE) %>%
-#     kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```{r key_plot_4_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+# Sensory capabilities related to each mental disorder 
+cols = c("id", "md", "md_id", "md_desc", "md_sub",
+         "sens_acc", "sens_gyr", "sens_gps", "sens_mic",
+         "os_ios", "os_and", "app_name",
+         "type", "year")
+
+
+data_kp_sens <- 
+    all_data %>%
+    select(cols) %>%
+    arrange(md_desc, md_sub)
+    # group_by(md_desc, md_sub) %>%
+    # summarise(number_apps = n())
+
+#' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
+data_kp_sens %>%
+    # mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
+    select(`DSM-5 Mental Disorder` = md_desc,
+           `MD Subtype` = md_sub,
+           `Accelerometer` = sens_acc,
+           `Ggyroscope` = sens_gyr,
+           `GPS` = sens_gps,
+           `Microphone` = sens_mic,
+           `App Name` = app_name) %>%
+    kable(format = "html", escape = FALSE) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
 
 
 ```
