@@ -728,7 +728,7 @@ Bubble plot: Distribution of papers per mental disorder and technology variables
 
 ```{r key_plot_5_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 # Sensory capabilities related to each mental disorder 
-cols = c("id", "md", "md_id", "md_desc", "md_sub",
+cols = c("id", "md", "md_id", "md_desc", 
          "sens_acc", "sens_gyr", "sens_gps", "sens_mic",
          "os_ios", "os_and", "app_name",
          "type", "year")
@@ -737,28 +737,33 @@ cols = c("id", "md", "md_id", "md_desc", "md_sub",
 data_kp_sens <- 
     all_data %>%
     select(cols) %>%
-    arrange(md_desc, md_sub)
+    filter((sens_acc != "NOT KNOWN") & (sens_gyr != "NOT KNOWN") & (sens_gps != "NOT KNOWN") & (sens_mic != "NOT KNOWN"))  %>%
+    arrange(md_desc)
     # group_by(md_desc, md_sub) %>%
     # summarise(number_apps = n())
 
-#' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
-data_kp_sens %>%
-    # mutate(sens_acc = cell_spec(sens_acc, color = ifelse(sens_acc=="YES", "blue", "red"))) %>%
-    select(`DSM-5 Mental Disorder` = md_desc,
-           `MD Subtype` = md_sub,
-           `Accelerometer` = sens_acc,
-           `Ggyroscope` = sens_gyr,
-           `GPS` = sens_gps,
-           `Microphone` = sens_mic,
-           `App Name` = app_name) %>%
-    kable(format = "html", escape = FALSE) %>%
-    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+n_sens <- nrow(data_kp_sens)
 
+# data_kp_sens_2 <-
+    data_kp_sens %>%
+    select(id, sens_acc, sens_gyr, sens_gps, sens_mic) %>%
+    gather(sens_acc, sens_gyr, sens_gps, sens_mic, key="sens_type",value="sens_enabled") %>%
+    ggplot(aes(x=factor(sens_type))) +
+    geom_bar(stat="count", aes(fill=factor(sens_enabled)))
+    
+
+data_kp_sens %>%
+    select(id, md_desc, sens_acc, sens_gyr, sens_gps, sens_mic) %>%
+    gather(sens_acc, sens_gyr, sens_gps, sens_mic, key="sens_type",value="sens_enabled") %>%
+    ggplot(aes(x=md_desc)) +
+    geom_bar(stat="count", aes(fill=factor(sens_enabled))) +
+    coord_flip() +
+    facet_wrap(~sens_type)
+    
+percent(table(data_kp_sens$sens_mic)[3]/n_papers)
 
 ```
 
 
-
-
-
+`r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but sitllt in a low proportion. gps = `r percent(table(data_kp_sens$sens_gps)[3]/n_papers)`, mic = `r percent(table(data_kp_sens$sens_mic)[3]/n_papers)`
 
