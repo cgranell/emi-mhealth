@@ -120,9 +120,9 @@ There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent
 ## Key figures
 
 
-### Figure 1 (proportional stacked area chart)
+### Figure 1 (IN)
 
-Proportional stacked area chart: Temporal distribution of papers colored by assessment type. The summ of each year is always equal to hundred, and the value of each group (assessment type) is in percentages
+Proportional stacked area chart: Temporal distribution of papers colored by assessment type. The sum of each year is always equal to hundred, and the value of each group (assessment type) is in percentages.
 
 
 ```{r key_plot_1_areachart, echo=FALSE, dpi=600, fig.width=12, fig.asp=0.65}
@@ -402,7 +402,7 @@ kp_barchart <-
 
 \newpage
 
-### Figure 2 (linechart)
+### Figure 3 (IN)
 
 Linechart: Distribution of papers (Total and top6 mental disorders) per year.
 
@@ -479,7 +479,7 @@ kp_linechart <-
         theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid"))
 
 kp_linechart
-kp_file_name <- "fig3_linechart_b.png"
+kp_file_name <- "fig3_linechart.png"
 ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 18, units = "cm", dpi = 600) 
 
@@ -488,7 +488,7 @@ ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here
 
 \newpage
 
-### Figure 4 (Tables + circular barplot)
+### Figure 4 (OUT)
 
 Table (Example 1): Distribution of papers (apps) per mental disorder.  _How many apps are related to each mental disorder?_ Per each mental disorder, assessment (yes/no) and year, we show the paper id and appname.
 
@@ -501,10 +501,6 @@ kp_file_name <- here::here("figs", "table1.html")
 #' Example  1, verbose table
 data_kp_apps <- 
     all_data %>%
-    # filter(as.integer(md_id) < 6) %>%
-    # group_by(val_ass) %>%
-    # summarise(number_apps = n()) 
-    # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
     arrange(md_id, val_ass, year, id)
 
 #' source: https://cran.r-project.org/web/packages/kableExtra/vignettes/awesome_table_in_html.html
@@ -525,6 +521,9 @@ data_kp_apps %>%
     # save_kable(file = kp_file_name, self_contained = T)
 
 ```
+
+### Figure 4 (IN)
+
 Table (Example 2): _Compact_ distribution of papers (apps) per mental disorder, grouping the references per app. The mumber(s) in brackets next to the app name is the reference(s) in which the app is mentioned. 
 
 
@@ -552,10 +551,8 @@ unite_paper_ids <- function(mentaldisorder, appname) {
 
 data_kp_apps2 <- 
     all_data %>%
-    # filter(as.integer(md_id) < 6) %>%
     group_by(md, app_name) %>%
     summarise(number_apps = n()) %>% 
-    # mutate(val_ass = color_tile("white", "orange")(val_ass)) %>%
     arrange(md, number_apps)
 
 data_kp_apps2 <- 
@@ -573,7 +570,6 @@ data_kp_apps2 <-
     arrange(desc(md))
 
 # options(knitr.kable.NA = '-')
-# data_kp_apps2_kable <-
 data_kp_apps2 %>%
     select(`Mental Disorder` = md,
            `References by app` = app_ids_merge) %>%
@@ -587,6 +583,9 @@ data_kp_apps2 %>%
 
 
 ```
+
+
+### Figure 4 (IN/OUT?)
 
 Circular barplot (Example 3): Each cell means one occurence of the app in a paper.
 
@@ -617,7 +616,7 @@ angle= 90 - 360 * (label_data$id-0.5)/number_of_bar     # I substract 0.5 becaus
 label_data$hjust<-ifelse(angle < -90, 1, 0)
 label_data$angle<-ifelse(angle < -90, angle+180, angle)
 
-# Make the plot
+
 kp_circularbarplot <- 
     ggplot(data_kp_apps3, aes(x=as.factor(id), y=number_apps, fill=md_desc)) +  
       geom_bar(stat="identity", alpha=0.5) +
@@ -723,7 +722,7 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 \newpage
 
-### Figure 5 (Bubble plot) - TODO
+### Figure 5 (IN) - ONGOING
 
 Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
 
