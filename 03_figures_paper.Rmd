@@ -760,10 +760,55 @@ data_kp_sens %>%
     coord_flip() +
     facet_wrap(~sens_type)
     
-percent(table(data_kp_sens$sens_mic)[3]/n_papers)
-
 ```
 
 
 `r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but sitllt in a low proportion. gps = `r percent(table(data_kp_sens$sens_gps)[3]/n_papers)`, mic = `r percent(table(data_kp_sens$sens_mic)[3]/n_papers)`
+
+```{r}
+all_data$sens_acc %>% str()
+
+data_kp_sens2 <-
+    data_kp_sens %>%
+    select(id, md_desc, sens_acc, sens_gyr, sens_gps, sens_mic) %>%
+    gather(sens_acc, sens_gyr, sens_gps, sens_mic, key="sens_type",value="sens_enabled")
+
+
+data_kp_sens2$md_desc <- factor(data_kp_sens2$md_desc, levels=unique(data_kp_sens2$md_desc))  
+
+data_kp_sens2 %>%
+    ggplot(aes(x=md_desc, y=sens_type)) +
+    geom_count(aes(size = stat(prop), group = 1)) + 
+    scale_size_area(max_size = 10) +
+    coord_flip()
+
+data_kp_sens2 %>%
+    ggplot(aes(x=md_desc, y=sens_type)) +
+    geom_count() + 
+    scale_size_area(max_size = 10)  +
+    coord_flip()
+
+
+#TODO: geom_point - https://stackoverflow.com/questions/37687544/using-scale-size-area-ggplot2-to-plot-points-of-size-0-as-completely-absent
+# Eliminar todos los NO, NOT KNOWN
+# agrupar por mmd_desc & sens_type, y contar los "yes" en nueva columna  n() 
+
+data_kp_sens2 %>%
+    data_kp_sens2 %>%
+    group_by(md_desc, sens_type) %>%
+
+
+data_kp_sens2 %>%
+    ggplot(aes(x=md_desc, y=sens_type)) +
+    geom_jitter(aes(color = sens_type), size=5) +
+    coord_flip()
+
+data_kp_sens2 %>%
+    ggplot(aes(x=md_desc, y=sens_type, )) +
+    geom_count() + 
+    scale_size_area(max_size = 10)  +
+    coord_flip()
+
+
+```
 
