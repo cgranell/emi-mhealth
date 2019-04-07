@@ -726,89 +726,115 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
 
-```{r key_plot_5_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+```{r key_plot_5_sens, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 # Sensory capabilities related to each mental disorder 
 cols = c("id", "md", "md_id", "md_desc", 
          "sens_acc", "sens_gyr", "sens_gps", "sens_mic",
          "os_ios", "os_and", "app_name",
          "type", "year")
+cols_sens <- c("sens_acc", "sens_gyr", "sens_gps", "sens_mic")
 
-
-data_kp_sens <- 
+n_sens <- 
     all_data %>%
+    select(cols_sens) %>%
+    filter((sens_acc == "YES") | (sens_gyr == "YES") | (sens_gps == "YES") | (sens_mic == "YES"))  %>%
+    nrow()
+
+all_data %>%
     select(cols) %>%
-    filter((sens_acc != "NOT KNOWN") & (sens_gyr != "NOT KNOWN") & (sens_gps != "NOT KNOWN") & (sens_mic != "NOT KNOWN"))  %>%
-    arrange(md_desc)
-    # group_by(md_desc, md_sub) %>%
-    # summarise(number_apps = n())
-
-n_sens <- nrow(data_kp_sens)
-
-# data_kp_sens_2 <-
-    data_kp_sens %>%
-    select(id, sens_acc, sens_gyr, sens_gps, sens_mic) %>%
-    gather(sens_acc, sens_gyr, sens_gps, sens_mic, key="sens_type",value="sens_enabled") %>%
-    ggplot(aes(x=factor(sens_type))) +
-    geom_bar(stat="count", aes(fill=factor(sens_enabled)))
-    
-
-data_kp_sens %>%
-    select(id, md_desc, sens_acc, sens_gyr, sens_gps, sens_mic) %>%
-    gather(sens_acc, sens_gyr, sens_gps, sens_mic, key="sens_type",value="sens_enabled") %>%
+    gather(cols_sens, key="sens_type", value="sens_value") %>%
     ggplot(aes(x=md_desc)) +
-    geom_bar(stat="count", aes(fill=factor(sens_enabled))) +
+    geom_bar(stat="count", aes(fill=factor(sens_value))) +
     coord_flip() +
     facet_wrap(~sens_type)
-    
+
+
 ```
 
 
 `r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but sitllt in a low proportion. gps = `r percent(table(data_kp_sens$sens_gps)[3]/n_papers)`, mic = `r percent(table(data_kp_sens$sens_mic)[3]/n_papers)`
 
-```{r}
-all_data$sens_acc %>% str()
 
-data_kp_sens2 <-
-    data_kp_sens %>%
-    select(id, md_desc, sens_acc, sens_gyr, sens_gps, sens_mic) %>%
-    gather(sens_acc, sens_gyr, sens_gps, sens_mic, key="sens_type",value="sens_enabled")
+```{r key_plot_5_feat, echo=FALSE,dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+# features related to each mental disorder 
+cols = c("id", "md", "md_id", "md_desc", 
+         "feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn", 
+         "feat_prog", "feat_ca", "feat_ass", "feat_vr", "feat_ar", "feat_pers", "feat_game",
+         "os_ios", "os_and", "app_name",
+         "type", "year")
+
+cols_feat = c("feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn", 
+              "feat_prog", "feat_ca", "feat_ass", "feat_vr", "feat_ar", "feat_pers", "feat_game")
+n_feat <- 
+    all_data %>%
+    select(cols_feat) %>%
+    filter((feat_use=="YES") || (feat_promp=="YES") || (feat_soc=="YES") || (feat_hcp=="YES") || 
+           (feat_learn=="YES") || (feat_prog=="YES") || (feat_ca=="YES") || (feat_ass=="YES") || 
+           (feat_vr=="YES") || (feat_ar=="YES") || (feat_pers="YES") || (feat_game="YES"))  %>%
+    nrow()
+
+all_data %>%
+    select(cols) %>%
+    gather(cols_feat, key="feat_type", value="feat_value") %>%
+    ggplot(aes(x=md_desc)) +
+    geom_bar(stat="count", aes(fill=factor(feat_value))) +
+    coord_flip() +
+    facet_wrap(~feat_type)
+
+```
+
+`r percent(n_feat/n_papers)` of papers provide/offer use **at least** a feature capability (N=`r n_feat`). 
 
 
-data_kp_sens2$md_desc <- factor(data_kp_sens2$md_desc, levels=unique(data_kp_sens2$md_desc))  
 
-data_kp_sens2 %>%
+```{r key_plot_5_sens_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+
+
+data_kp_sens <-
+    all_data %>%
+    select(cols) %>%
+    gather(cols_sens, key="sens_type", value="sens_value") %>%
+    mutate(cat = "sens") %>%
+    filter(sens_value == "YES") %>%
+    group_by(md_desc, sens_type, cat) %>%
+    summarise(number_cases = n()) 
+
+data_kp_sens$md_desc <- factor(data_kp_sens$md_desc, levels=unique(data_kp_sens$md_desc))  
+
+data_kp_sens %>%
     ggplot(aes(x=md_desc, y=sens_type)) +
-    geom_count(aes(size = stat(prop), group = 1)) + 
-    scale_size_area(max_size = 10) +
+    geom_point(aes(colour=sens_type, size=number_cases)) + 
+    geom_text(aes(label=number_cases), size=3) +
+    scale_size_area(max_size=10) +
     coord_flip()
 
-data_kp_sens2 %>%
-    ggplot(aes(x=md_desc, y=sens_type)) +
-    geom_count() + 
-    scale_size_area(max_size = 10)  +
+```
+```{r key_plot_5_feat_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+cols = c("id", "md", "md_id", "md_desc", 
+         "feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn", 
+         "feat_prog", "feat_ca", "feat_ass", "feat_vr", "feat_ar", "feat_pers", "feat_game",
+         "os_ios", "os_and", "app_name",
+         "type", "year")
+
+cols_feat = c("feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn", 
+              "feat_prog", "feat_ca", "feat_ass", "feat_vr", "feat_ar", "feat_pers", "feat_game")
+
+data_kp_feat <- 
+    all_data %>%
+    select(cols) %>%
+    gather(cols_feat, key="feat_type",value="feat_value") %>%
+    filter(feat_value == "YES") %>%
+    group_by(md_desc, feat_type)  %>%
+    summarise(number_cases = n()) 
+
+data_kp_feat$md_desc <- factor(data_kp_feat$md_desc, levels=unique(data_kp_feat$md_desc))  
+
+data_kp_feat %>%
+    ggplot(aes(x=md_desc, y=feat_type)) +
+    geom_point(aes(colour=feat_type, size=number_cases)) + 
+    geom_text(aes(label=number_cases), size=3) +
+    scale_size_area(max_size=15) +
     coord_flip()
-
-
-#TODO: geom_point - https://stackoverflow.com/questions/37687544/using-scale-size-area-ggplot2-to-plot-points-of-size-0-as-completely-absent
-# Eliminar todos los NO, NOT KNOWN
-# agrupar por mmd_desc & sens_type, y contar los "yes" en nueva columna  n() 
-
-data_kp_sens2 %>%
-    data_kp_sens2 %>%
-    group_by(md_desc, sens_type) %>%
-
-
-data_kp_sens2 %>%
-    ggplot(aes(x=md_desc, y=sens_type)) +
-    geom_jitter(aes(color = sens_type), size=5) +
-    coord_flip()
-
-data_kp_sens2 %>%
-    ggplot(aes(x=md_desc, y=sens_type, )) +
-    geom_count() + 
-    scale_size_area(max_size = 10)  +
-    coord_flip()
-
 
 ```
 
