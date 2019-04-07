@@ -37,6 +37,7 @@ library(gridExtra)
 library(treemap)
 library(forcats)
 library(purrr)
+library(hrbrthemes)
 
 ```
 
@@ -886,7 +887,7 @@ data_kp_all %>%
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=15) +
     coord_flip() +
-    theme(axis.text.x=element_text(angle = 45))
-
+    theme(axis.text.x=element_text(angle = 45)) +
+    theme_ipsum_tw()
 ```
 
