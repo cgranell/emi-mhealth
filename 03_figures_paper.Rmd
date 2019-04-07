@@ -882,8 +882,8 @@ data_kp_all <-
 
 data_kp_all %>%
     ggplot(aes(x=md_desc, y=tech_type)) +
-    geom_point(aes(colour=cat, size=number_cases), show.legend=FALSE) + 
-    geom_text(aes(label=number_cases), size=3) +
+    geom_point(aes(colour=cat, size=number_cases), show.legend=FALSE, na.rm = TRUE) + 
+    geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=15) +
     coord_flip() +
     theme(axis.text.x=element_text(angle = 45))
