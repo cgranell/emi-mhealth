@@ -287,6 +287,9 @@ data_kp_barchart <-
 # convert to factor to retain sorted order in plot.
 data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
 
+# Keep MD order equal for all other charts
+md_all_ordered <- levels(data_kp_barchart$md_desc)
+
 data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
 
 
@@ -551,13 +554,13 @@ unite_paper_ids <- function(mentaldisorder, appname) {
 
 data_kp_apps2 <- 
     all_data %>%
-    group_by(md, app_name) %>%
+    group_by(md_desc, app_name) %>%
     summarise(number_apps = n()) %>% 
-    arrange(md, number_apps)
+    arrange(md_desc, number_apps)
 
 data_kp_apps2 <- 
     data_kp_apps2 %>%
-    add_column(ids = purrr::map2(data_kp_apps2$md, data_kp_apps2$app_name, unite_paper_ids))
+    add_column(ids = purrr::map2(data_kp_apps2$md_desc, data_kp_apps2$app_name, unite_paper_ids))
 
 data_kp_apps2 <- 
     data_kp_apps2 %>%
@@ -565,13 +568,16 @@ data_kp_apps2 <-
 
 data_kp_apps2 <- 
     data_kp_apps2 %>%
-    group_by(md) %>%
+    group_by(md_desc) %>%
     summarise(app_ids_merge = paste0(app_ids, collapse = ", ")) %>%
-    arrange(desc(md))
+    arrange(desc(md_desc))
+
+data_kp_apps2$md_desc <- factor(data_kp_apps2$md_desc, levels=md_all_ordered)  
+
 
 # options(knitr.kable.NA = '-')
 data_kp_apps2 %>%
-    select(`Mental Disorder` = md,
+    select(`Mental Disorder` = md_desc,
            `References by app` = app_ids_merge) %>%
     kable(formt="html", escape = T, booktabs = TRUE,    
           caption = paste0("Compact distribution of papers (apps) per mental disorder\n", 
@@ -788,8 +794,11 @@ all_data %>%
 
 
 ```{r key_plot_5_sens_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
-
-
+cols = c("id", "md_id", "md_desc", 
+         "sens_acc", "sens_gyr", "sens_gps", "sens_mic",
+         "os_ios", "os_and", "app_name",
+         "type", "year")
+cols_sens <- c("sens_acc", "sens_gyr", "sens_gps", "sens_mic")
 data_kp_sens <-
     all_data %>%
     select(cols) %>%
@@ -797,20 +806,30 @@ data_kp_sens <-
     mutate(cat = "sens") %>%
     filter(sens_value == "YES") %>%
     group_by(md_desc, sens_type, cat) %>%
-    summarise(number_cases = n()) 
+    summarise(number_cases = n()) %>%
+    ungroup() # required to add_row() 
 
-data_kp_sens$md_desc <- factor(data_kp_sens$md_desc, levels=unique(data_kp_sens$md_desc))  
+md_sens <- unique(data_kp_sens$md_desc)
+md_dif <- setdiff(md_all_ordered, md_sens)
+if (length(md_dif) > 0) {
+    for (md in md_dif) {
+        # Added "sens_mic" (or any other values) to avoid NA in the "sens_type" variable. Nothing is drawn in the plot
+        data_kp_sens <- add_row(data_kp_sens, md_desc=md, sens_type="sens_mic", cat="sens")
+    }
+}
+
+data_kp_sens$md_desc <- fct_relevel(data_kp_sens$md_desc, levels=md_all_ordered)
 
 data_kp_sens %>%
     ggplot(aes(x=md_desc, y=sens_type)) +
-    geom_point(aes(colour=sens_type, size=number_cases)) + 
-    geom_text(aes(label=number_cases), size=3) +
+    geom_point(aes(colour=sens_type, size=number_cases), show.legend=FALSE, na.rm = TRUE) + 
+    geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=10) +
     coord_flip()
 
 ```
 ```{r key_plot_5_feat_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
-cols = c("id", "md", "md_id", "md_desc", 
+cols = c("id", "md_id", "md_desc", 
          "feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn", 
          "feat_prog", "feat_ca", "feat_ass", "feat_vr", "feat_ar", "feat_pers", "feat_game",
          "os_ios", "os_and", "app_name",
@@ -823,11 +842,22 @@ data_kp_feat <-
     all_data %>%
     select(cols) %>%
     gather(cols_feat, key="feat_type",value="feat_value") %>%
+    mutate(cat = "feat") %>%
     filter(feat_value == "YES") %>%
-    group_by(md_desc, feat_type)  %>%
-    summarise(number_cases = n()) 
+    group_by(md_desc, feat_type, cat)  %>%
+    summarise(number_cases = n())  %>%
+    ungroup() # required to add_row() 
 
-data_kp_feat$md_desc <- factor(data_kp_feat$md_desc, levels=unique(data_kp_feat$md_desc))  
+md_feat <- unique(data_kp_feat$md_desc)
+md_dif <- setdiff(md_all_ordered, md_feat)
+if (length(md_feat) > 0) {
+    for (md in md_dif) {
+        # Added "feat_use" (or any value) to avoid NA in the "feat_type" variable. Nothing is drawn in the plot
+        data_kp_feat <- add_row(data_kp_feat, md_desc=md, feat_type="feat_use", cat="feat")
+    }
+}
+
+data_kp_feat$md_desc <- factor(data_kp_feat$md_desc, levels=md_all_ordered)  
 
 data_kp_feat %>%
     ggplot(aes(x=md_desc, y=feat_type)) +
@@ -835,6 +865,28 @@ data_kp_feat %>%
     geom_text(aes(label=number_cases), size=3) +
     scale_size_area(max_size=15) +
     coord_flip()
+
+```
+```{r key_plot_5_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+data_kp_sens <-
+    data_kp_sens %>%
+    rename(tech_type=sens_type)
+
+data_kp_feat <-
+    data_kp_feat %>%
+    rename(tech_type=feat_type)
+
+data_kp_all <-
+    bind_rows(data_kp_sens, data_kp_feat)
+
+
+data_kp_all %>%
+    ggplot(aes(x=md_desc, y=tech_type)) +
+    geom_point(aes(colour=cat, size=number_cases), show.legend=FALSE) + 
+    geom_text(aes(label=number_cases), size=3) +
+    scale_size_area(max_size=15) +
+    coord_flip() +
+    theme(axis.text.x=element_text(angle = 45))
 
 ```
 
