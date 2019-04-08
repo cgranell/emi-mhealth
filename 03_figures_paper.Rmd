@@ -50,7 +50,7 @@ This document is versioned in a public [git](https://git-scm.com/) repo: [https:
 
 \newpage
 
-This R notebook contains the code to produce the final figures adn tables of the paper. 
+This R notebook contains the code to produce the final figures and tables of the paper. 
 
 ## Data 
 
@@ -120,8 +120,12 @@ There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent
 
 ## Key figures
 
+* *IN*: It is included in the paper
+* *IN, PRODUCTION*: It is (almost) in final form
+* *IN, DRAFT*: It is a exploratory figure. Aesthetics is not considered yet.
+* *OUT*: It is not included in the paper.
 
-### Figure 1 (IN)
+### Figure 1 (IN, PRODUCTION)
 
 Proportional stacked area chart: Temporal distribution of papers colored by assessment type. The sum of each year is always equal to hundred, and the value of each group (assessment type) is in percentages.
 
@@ -261,9 +265,9 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 ```
 
 
-### Figure 2 (IN)
+### Figure 2 (IN, PRODUCTION)
 
-Proportional (stacked) barchart: Distribution of papers per mental disorders, colored by assessment type. Note that we draw two bars per mental disorder: one represents no assessment at all, the other is a stacked bar to show the types of assessment 
+Proportional (stacked) barchart: Distribution of papers per mental disorders, colored by assessment type. Note that we draw two bars per mental disorder: one represents no assessment at all, the other is a stacked bar to show the types of assessment.
 
 ```{r key_plot_2_barchart_dodge, echo=FALSE,dpi=600,fig.width=12,fig.asp=0.65}
 cols <- c("md", "md_id", "md_desc", "val_asstype")
@@ -406,7 +410,7 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 
 \newpage
 
-### Figure 3 (IN)
+### Figure 3 (IN, PRODUCTION)
 
 Linechart: Distribution of papers (Total and top6 mental disorders) per year.
 
@@ -526,7 +530,7 @@ data_kp_apps %>%
 
 ```
 
-### Figure 4 (IN)
+### Figure 4 (IN, DRAFT)
 
 Table (Example 2): _Compact_ distribution of papers (apps) per mental disorder, grouping the references per app. The mumber(s) in brackets next to the app name is the reference(s) in which the app is mentioned. 
 
@@ -538,14 +542,14 @@ kp_file_name <- here::here("figs", "table2.html")
 unite_paper_ids <- function(mentaldisorder, appname) {
     if (!is.na(appname)) {
         all_data %>% 
-            filter(md == mentaldisorder & app_name==appname) %>%
+            filter(md_desc == mentaldisorder & app_name==appname) %>%
             arrange(year) %>%
             select(id) %>%
             as_vector() %>%
             stringr::str_c(collapse = ";")    
     } else {
          all_data %>% 
-            filter(md == mentaldisorder & is.na(app_name)) %>%
+            filter(md_desc == mentaldisorder & is.na(app_name)) %>%
             arrange(year) %>%
             select(id) %>%
             as_vector() %>%
@@ -591,7 +595,7 @@ data_kp_apps2 %>%
 ```
 
 
-### Figure 4 (IN/OUT?)
+### Figure 4 (IN/OUT?, DRAFT)
 
 Circular barplot (Example 3): Each cell means one occurence of the app in a paper.
 
@@ -728,9 +732,11 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 \newpage
 
-### Figure 5 (IN) - ONGOING
+### Figure 5 (IN, DRAFT) - ONGOING
 
 Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
+
+In the following, some exploratory charts are shown on the way to reach the bubble plot, which is the last chart. None of the following charts are in production stage, only drafted. Please, do not pay much attention to the color palette and aesthetics yet.
 
 ```{r key_plot_5_sens, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 # Sensory capabilities related to each mental disorder 
@@ -746,6 +752,11 @@ n_sens <-
     filter((sens_acc == "YES") | (sens_gyr == "YES") | (sens_gps == "YES") | (sens_mic == "YES"))  %>%
     nrow()
 
+
+n_sens_gps <- all_data %>% select(sens_gps) %>% filter(sens_gps == "YES") %>% nrow()
+n_sens_mic<- all_data %>% select(sens_mic) %>% filter(sens_mic == "YES") %>% nrow()
+
+
 all_data %>%
     select(cols) %>%
     gather(cols_sens, key="sens_type", value="sens_value") %>%
@@ -758,7 +769,8 @@ all_data %>%
 ```
 
 
-`r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but sitllt in a low proportion. gps = `r percent(table(data_kp_sens$sens_gps)[3]/n_papers)`, mic = `r percent(table(data_kp_sens$sens_mic)[3]/n_papers)`
+`r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but in a low proportion: gps = `r percent(n_sens_gps/n_papers)`, mic = `r percent(n_sens_mic/n_papers)`. Note that some papers use both type of sensors, so the sum of percentage per sensro exceeds theo total percentage of papers that use **at least** a sensing capability.
+
 
 
 ```{r key_plot_5_feat, echo=FALSE,dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
@@ -822,7 +834,7 @@ data_kp_sens$md_desc <- fct_relevel(data_kp_sens$md_desc, levels=md_all_ordered)
 
 data_kp_sens %>%
     ggplot(aes(x=md_desc, y=sens_type)) +
-    geom_point(aes(colour=sens_type, size=number_cases), show.legend=FALSE, na.rm = TRUE) + 
+    geom_point(aes(colour=sens_type, size=number_cases), na.rm = TRUE) + 
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=10) +
     coord_flip()
@@ -882,11 +894,10 @@ data_kp_all <-
 
 data_kp_all %>%
     ggplot(aes(x=md_desc, y=tech_type)) +
-    geom_point(aes(colour=cat, size=number_cases), show.legend=FALSE, na.rm = TRUE) + 
+    geom_point(aes(colour=cat, size=number_cases), na.rm = TRUE) + 
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=15) +
     coord_flip() +
-    theme(axis.text.x=element_text(angle = 45)) +
-    theme_ipsum_tw()
+    theme(axis.text.x=element_text(angle = 45))
 ```
 
