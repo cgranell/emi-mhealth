@@ -769,7 +769,7 @@ all_data %>%
 ```
 
 
-`r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but in a low proportion: gps = `r percent(n_sens_gps/n_papers)`, mic = `r percent(n_sens_mic/n_papers)`. Note that some papers use both type of sensors, so the sum of percentage per sensro exceeds theo total percentage of papers that use **at least** a sensing capability.
+`r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but in a low proportion: gps = `r percent(n_sens_gps/n_papers)`, mic = `r percent(n_sens_mic/n_papers)`. Note that some papers use both type of sensors, so the sum of percentages of gps and mic exceeds the total percentage of papers that use **at least** a sensing capability.
 
 
 
