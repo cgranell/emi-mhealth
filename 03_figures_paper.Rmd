@@ -267,7 +267,7 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 
 ### Figure 2 (IN, PRODUCTION)
 
-Proportional (stacked) barchart: Distribution of papers per mental disorders, colored by assessment type. Note that we draw two bars per mental disorder: one represents no assessment at all, the other is a stacked bar to show the types of assessment.
+Proportional (stacked) barchart: Distribution of papers per mental disorders, colored by assessment type. Note that we draw two main colors in the legend: purple represents no assessment at all, the range of greens denotes distinct types of assessment.
 
 ```{r key_plot_2_barchart_dodge, echo=FALSE,dpi=600,fig.width=12,fig.asp=0.65}
 cols <- c("md", "md_id", "md_desc", "val_asstype")
@@ -801,7 +801,7 @@ all_data %>%
 
 ```
 
-`r percent(n_feat/n_papers)` of papers provide/offer use **at least** a feature capability (N=`r n_feat`). 
+`r percent(n_feat/n_papers)` of papers provide/offer/use **at least** a feature capability (N=`r n_feat`). 
 
 
 
@@ -840,6 +840,9 @@ data_kp_sens %>%
     coord_flip()
 
 ```
+
+
+
 ```{r key_plot_5_feat_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 cols = c("id", "md_id", "md_desc", 
          "feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn", 
@@ -879,6 +882,9 @@ data_kp_feat %>%
     coord_flip()
 
 ```
+
+This is the final bubble plot. 
+
 ```{r key_plot_5_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 data_kp_sens <-
     data_kp_sens %>%
@@ -900,4 +906,5 @@ data_kp_all %>%
     coord_flip() +
     theme(axis.text.x=element_text(angle = 45))
 ```
+
 
