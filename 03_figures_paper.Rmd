@@ -37,7 +37,7 @@ library(gridExtra)
 library(treemap)
 library(forcats)
 library(purrr)
-library(hrbrthemes)
+library(hrbrthemes)  # TODO: see https://stackoverflow.com/questions/14733732/cant-change-fonts-in-ggplot-geom-text to solve font does not find
 
 ```
 
@@ -365,42 +365,42 @@ ggsave(plot = kp_barchart, filename = kp_file_name, device = "png", path = here:
 ```
 
 
-```{r}
+```{r echo=FALSE}
 # TODO https://stackoverflow.com/questions/45055661/combine-grouped-and-stacked-bar-graph-in-r thanks
 #- Add a new column (factor): No is value A, thre rest thre are B
 #- use facet_wrap() over this new factor.  
-cols <- c("md", "md_id", "md_desc", "val_asstype", "val_ass")
-
-data_kp_barchart <- 
-    all_data %>%
-    select(cols)
-
-data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
-
-data_kp_barchart <- 
-    data_kp_barchart %>% 
-        group_by(md_id, md_desc, val_asstype, val_ass) %>%  # first create counts for each group
-        summarise(number_cases = n()) %>%
-        mutate(proportion = number_cases/n_papers) %>% 
-        ungroup() %>%
-        group_by(md_id) %>%
-        mutate(total_cases = sum(number_cases),
-               proportion_sum = sum(proportion),
-               proportion_lbl = paste0(round(proportion_sum*100,1), "%")) %>% 
-        ungroup() %>%
-        arrange(desc(proportion_sum), md_id)
-
-# convert to factor to retain sorted order in plot.
-data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
-
-kp_barchart <- 
-    data_kp_barchart %>%
-    ggplot(aes(x=val_ass, y=proportion)) + 
-    geom_bar(stat="identity", aes(fill=val_asstype), position="stack") + 
-        # Uncomment  for dodge barchart, single (option C) 
-        #geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "total")) + 
-    facet_wrap(~md_desc, ncol = 1) + theme(panel.spacing = unit(0, "lines")) +
-    coord_flip()
+# cols <- c("md", "md_id", "md_desc", "val_asstype", "val_ass")
+# 
+# data_kp_barchart <- 
+#     all_data %>%
+#     select(cols)
+# 
+# data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
+# 
+# data_kp_barchart <- 
+#     data_kp_barchart %>% 
+#         group_by(md_id, md_desc, val_asstype, val_ass) %>%  # first create counts for each group
+#         summarise(number_cases = n()) %>%
+#         mutate(proportion = number_cases/n_papers) %>% 
+#         ungroup() %>%
+#         group_by(md_id) %>%
+#         mutate(total_cases = sum(number_cases),
+#                proportion_sum = sum(proportion),
+#                proportion_lbl = paste0(round(proportion_sum*100,1), "%")) %>% 
+#         ungroup() %>%
+#         arrange(desc(proportion_sum), md_id)
+# 
+# # convert to factor to retain sorted order in plot.
+# data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
+# 
+# kp_barchart <- 
+#     data_kp_barchart %>%
+#     ggplot(aes(x=val_ass, y=proportion)) + 
+#     geom_bar(stat="identity", aes(fill=val_asstype), position="stack") + 
+#         # Uncomment  for dodge barchart, single (option C) 
+#         #geom_bar(stat="identity", aes(fill=val_asstype), position = position_dodge(preserve = "total")) + 
+#     facet_wrap(~md_desc, ncol = 1) + theme(panel.spacing = unit(0, "lines")) +
+#     coord_flip()
 
 ```
 
@@ -557,7 +557,7 @@ data_kp_apps2 <-
     all_data %>%
     group_by(md_desc, app_name) %>%
     summarise(number_apps = n()) %>% 
-    arrange(md_desc, number_apps)
+    arrange(number_apps, md_desc)
 
 data_kp_apps2 <- 
     data_kp_apps2 %>%
@@ -570,8 +570,7 @@ data_kp_apps2 <-
 data_kp_apps2 <- 
     data_kp_apps2 %>%
     group_by(md_desc) %>%
-    summarise(app_ids_merge = paste0(app_ids, collapse = ", ")) %>%
-    arrange(desc(md_desc))
+    summarise(app_ids_merge = paste0(app_ids, collapse = ", ")) 
 
 data_kp_apps2$md_desc <- factor(data_kp_apps2$md_desc, levels=md_all_ordered)  
 
