@@ -898,13 +898,24 @@ data_kp_all <-
     bind_rows(data_kp_sens, data_kp_feat)
 
 
-data_kp_all %>%
+kp_bubblechart <- 
+    data_kp_all %>%
     ggplot(aes(x=md_desc, y=tech_type)) +
     geom_point(aes(colour=cat, size=number_cases), na.rm = TRUE) + 
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=15) +
     coord_flip() +
     theme(axis.text.x=element_text(angle = 45))
+
+
+kp_bubblechart
+
+kp_file_name <- "fig5_bubblechart.png"
+ggsave(plot = kp_bubblechart, filename = kp_file_name, device = "png", path = here::here("figs"),
+    scale = 1, width = 30, height = 20, units = "cm", dpi = 600)
+
+
+
 ```
 
 
