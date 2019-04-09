@@ -741,21 +741,17 @@ In the following, some exploratory charts are shown on the way to reach the bubb
 ```{r key_plot_5_sens, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 # Sensory capabilities related to each mental disorder 
 cols = c("id", "md", "md_id", "md_desc", 
-         "sens_acc", "sens_gyr", "sens_gps", "sens_mic",
+         "sens_acc", "sens_gyr", "sens_gps", "sens_mic", "sens_cam",
          "os_ios", "os_and", "app_name",
          "type", "year")
-cols_sens <- c("sens_acc", "sens_gyr", "sens_gps", "sens_mic")
+cols_sens <- c("sens_acc", "sens_gyr", "sens_gps", "sens_mic", "sens_cam")
 
 n_sens <- 
     all_data %>%
     select(cols_sens) %>%
-    filter((sens_acc == "YES") | (sens_gyr == "YES") | (sens_gps == "YES") | (sens_mic == "YES"))  %>%
+    filter((sens_acc=="YES") | (sens_gyr=="YES") | (sens_gps=="YES") | 
+              (sens_mic=="YES") | (sens_cam=="YES")) %>%
     nrow()
-
-
-n_sens_gps <- all_data %>% select(sens_gps) %>% filter(sens_gps == "YES") %>% nrow()
-n_sens_mic<- all_data %>% select(sens_mic) %>% filter(sens_mic == "YES") %>% nrow()
-
 
 all_data %>%
     select(cols) %>%
@@ -769,7 +765,7 @@ all_data %>%
 ```
 
 
-`r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but in a low proportion: gps = `r percent(n_sens_gps/n_papers)`, mic = `r percent(n_sens_mic/n_papers)`. Note that some papers use both type of sensors, so the sum of percentages of gps and mic exceeds the total percentage of papers that use **at least** a sensing capability.
+`r percent(n_sens/n_papers)` of papers use **at least** a sensing capability (N=`r n_sens`). The use of the acc and gyr is residual; gps and mic are more significant, but in a low proportion: gps = `r percent(nrow(filter(all_data, sens_gps=="YES"))/n_papers)`, mic = `r percent(nrow(filter(all_data, sens_mic=="YES"))/n_papers)`, cam = `r percent(nrow(filter(all_data, sens_cam=="YES"))/n_papers)` . Note that some papers use both type of sensors, so the sum of percentages of gps, mic and cam exceeds the total percentage of papers that use **at least** a sensing capability.
 
 
 
@@ -805,12 +801,40 @@ all_data %>%
 
 
 
-```{r key_plot_5_sens_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
-cols = c("id", "md_id", "md_desc", 
-         "sens_acc", "sens_gyr", "sens_gps", "sens_mic",
+```{r key_plot_5_anal, echo=FALSE,dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+# analytics support related to each mental disorder 
+cols = c("id", "md", "md_id", "md_desc", 
+         "anal_ml", "anal_beh", "anal_act", "anal_sen", "anal_sp", 
          "os_ios", "os_and", "app_name",
          "type", "year")
-cols_sens <- c("sens_acc", "sens_gyr", "sens_gps", "sens_mic")
+
+cols_anal = c("anal_ml", "anal_beh", "anal_act", "anal_sen", "anal_sp")
+n_anal <- 
+    all_data %>%
+    select(cols_anal) %>%
+    filter((anal_ml=="YES") | (anal_beh=="YES") | (anal_act=="YES") | (anal_sen=="YES") | (anal_sp=="YES"))  %>%
+    nrow()
+
+all_data %>%
+    select(cols) %>%
+    gather(cols_anal, key="anal_type", value="anal_value") %>%
+    ggplot(aes(x=md_desc)) +
+    geom_bar(stat="count", aes(fill=factor(anal_value))) +
+    coord_flip() +
+    facet_wrap(~anal_type)
+```
+
+
+`r percent(n_anal/n_papers)` of papers implement/use **at least** advanced analytics (N=`r n_anal`). 
+
+
+
+```{r key_plot_5_sens_bubblechart, echo=FALSE, warning=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+cols = c("id", "md_id", "md_desc", 
+         "sens_acc", "sens_gyr", "sens_gps", "sens_mic", "sens_cam",
+         "os_ios", "os_and", "app_name",
+         "type", "year")
+cols_sens <- c("sens_acc", "sens_gyr", "sens_gps", "sens_mic", "sens_cam")
 data_kp_sens <-
     all_data %>%
     select(cols) %>%
@@ -883,9 +907,53 @@ data_kp_feat %>%
 
 ```
 
+
+```{r key_plot_5_anal_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+cols = c("id", "md", "md_id", "md_desc", 
+         "anal_ml", "anal_beh", "anal_act", "anal_sen", "anal_sp", 
+         "os_ios", "os_and", "app_name",
+         "type", "year")
+
+cols_anal = c("anal_ml", "anal_beh", "anal_act", "anal_sen", "anal_sp")
+
+data_kp_anal <- 
+    all_data %>%
+    select(cols) %>%
+    gather(cols_anal, key="anal_type",value="anal_value") %>%
+    mutate(cat = "anal") %>%
+    filter(anal_value == "YES") %>%
+    group_by(md_desc, anal_type, cat)  %>%
+    summarise(number_cases = n())  %>%
+    ungroup() # required to add_row() 
+
+md_anal <- unique(data_kp_anal$md_desc)
+md_dif <- setdiff(md_all_ordered, md_anal)
+if (length(md_anal) > 0) {
+    for (md in md_dif) {
+        # Added "anal_ml" (or any value) to avoid NA in the "anal_type" variable. Nothing is drawn in the plot
+        data_kp_anal <- add_row(data_kp_anal, md_desc=md, anal_type="anal_ml", cat="anal")
+    }
+}
+
+# Since the behavior analysis is not compatible with any article, I add this line so that "anal_sen" appears in the graph.
+data_kp_anal <- add_row(data_kp_anal, md_desc="Various", anal_type="anal_sen", cat="anal")
+
+
+data_kp_anal$md_desc <- factor(data_kp_anal$md_desc, levels=md_all_ordered)  
+
+data_kp_anal %>%
+    ggplot(aes(x=md_desc, y=anal_type)) +
+    geom_point(aes(colour=anal_type, size=number_cases), na.rm = TRUE) + 
+    geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
+    scale_size_area(max_size=15) +
+    coord_flip()
+
+```
+
+
 This is the final bubble plot. 
 
-```{r key_plot_5_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+```{r key_plot_5_bubblechart, echo=FALSE, dpi=600, fig.width=15, fig.height=14, fig.asp=0.65}
 data_kp_sens <-
     data_kp_sens %>%
     rename(tech_type=sens_type)
@@ -894,25 +962,29 @@ data_kp_feat <-
     data_kp_feat %>%
     rename(tech_type=feat_type)
 
+data_kp_anal <-
+    data_kp_anal %>%
+    rename(tech_type=anal_type)
+
 data_kp_all <-
-    bind_rows(data_kp_sens, data_kp_feat)
+    bind_rows(data_kp_feat, data_kp_sens, data_kp_anal)
 
 
 kp_bubblechart <- 
     data_kp_all %>%
     ggplot(aes(x=md_desc, y=tech_type)) +
-    geom_point(aes(colour=cat, size=number_cases), na.rm = TRUE) + 
+    geom_point(aes(colour=cat, size=number_cases), na.rm = TRUE, ) + 
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=15) +
     coord_flip() +
-    theme(axis.text.x=element_text(angle = 45))
+    theme(axis.text.x=element_text(angle = 60))
 
 
 kp_bubblechart
 
 kp_file_name <- "fig5_bubblechart.png"
 ggsave(plot = kp_bubblechart, filename = kp_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 30, height = 20, units = "cm", dpi = 600)
+    scale = 1, width = 35, height = 20, units = "cm", dpi = 600)
 
 
 
