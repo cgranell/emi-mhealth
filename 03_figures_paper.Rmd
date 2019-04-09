@@ -947,7 +947,6 @@ data_kp_anal %>%
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=15) +
     coord_flip()
-
 ```
 
 
@@ -973,7 +972,7 @@ data_kp_all <-
 kp_bubblechart <- 
     data_kp_all %>%
     ggplot(aes(x=md_desc, y=tech_type)) +
-    geom_point(aes(colour=cat, size=number_cases), na.rm = TRUE, ) + 
+    geom_point(aes(colour=cat, size=number_cases), na.rm = TRUE, show.legend = FALSE) + 
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=15) +
     coord_flip() +
@@ -981,6 +980,9 @@ kp_bubblechart <-
 
 
 kp_bubblechart
+library(ggExtra)
+ggMarginal(p=kp_bubblechart,  type = "histogram", fill="transparent")
+
 
 kp_file_name <- "fig5_bubblechart.png"
 ggsave(plot = kp_bubblechart, filename = kp_file_name, device = "png", path = here::here("figs"),
