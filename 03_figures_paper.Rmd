@@ -447,7 +447,7 @@ data_top_byyear$md_desc <- fct_relevel(data_top_byyear$md_desc,
                                          "Substance-related and addictive disorders",
                                          "Schizophrenia spectrum and other psychotic disorders"))
 brks <- levels(data_top_byyear$md_desc) 
-    
+
 kp_linechart <-
     data_top_byyear %>%
         ggplot(aes(x=year, y=number_cases, group=md_desc)) +
@@ -935,7 +935,7 @@ if (length(md_anal) > 0) {
     }
 }
 
-# Since the behavior analysis is not compatible with any article, I add this line so that "anal_sen" appears in the graph.
+# Since the behavior analysis is not used by any article, I add this line so that "anal_sen" appears in the graph.
 data_kp_anal <- add_row(data_kp_anal, md_desc="Various", anal_type="anal_sen", cat="anal")
 
 
@@ -968,20 +968,58 @@ data_kp_anal <-
 data_kp_all <-
     bind_rows(data_kp_feat, data_kp_sens, data_kp_anal)
 
+data_kp_all_ordered <-
+    data_kp_all %>%
+    filter(cat=="feat") %>%
+    group_by(tech_type) %>%
+    summarise(n = sum(number_cases)) %>%
+    arrange(desc(n))
+                  
+# data_kp_all_ordered$tech_type    
+
+data_kp_all$tech_type <- as_factor(data_kp_all$tech_type)
+data_kp_all$tech_type <- fct_relevel(data_kp_all$tech_type, 
+                                     c("feat_prog", "feat_pers", "feat_ass", "feat_promp", "feat_hcp", "feat_learn", 
+                                       "feat_use", "feat_soc", "feat_ca", "feat_game",  "feat_vr", "feat_ar", 
+                                       "sens_mic", "sens_gps", "sens_cam", "sens_acc", "sens_gyr",  
+                                       "anal_ml", "anal_act", "anal_beh", "anal_sp", "anal_sen"))
+
+
+brks <- levels(data_kp_all$cat) 
 
 kp_bubblechart <- 
     data_kp_all %>%
     ggplot(aes(x=md_desc, y=tech_type)) +
-    geom_point(aes(colour=cat, size=number_cases), na.rm = TRUE, show.legend = FALSE) + 
+    geom_point(aes(colour=cat, size=number_cases), alpha=0.8, na.rm = TRUE, show.legend = FALSE) +
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
-    scale_size_area(max_size=15) +
+    scale_size_area( max_size=15) +
+    # scale_size(range=c(1, 15)) +
     coord_flip() +
-    theme(axis.text.x=element_text(angle = 60))
-
+    labs(title="Mental disorder vs Technology", 
+         subtitle = "Technology items ordered within each group",
+         x="Mental disorder", 
+         y="Technology", 
+         caption="Source: authors") + 
+    scale_color_brewer(palette="Set2", breaks=brks) +
+    theme_minimal()  +
+    theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+    # Legend: Top-Right Inside the Plot") 
+    # theme(legend.title = element_text(size=11), 
+    #       legend.justification = c('right', 'top'),
+    #       legend.position=c(0.95, 0.95),  
+    #       #legend.background = element_blank(),
+    #       legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
+    #       legend.key = element_blank()) +
+    # Change the line type and color of axis lines
+    theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid")) +
+    theme(panel.grid.major.x = element_blank()) + 
+    theme(panel.grid.minor = element_blank()) +
+    theme(panel.background = element_blank()) +
+    theme(plot.margin=unit(rep(20, 4), "pt"))
 
 kp_bubblechart
-library(ggExtra)
-ggMarginal(p=kp_bubblechart,  type = "histogram", fill="transparent")
+# library(ggExtra)
+# ggMarginal(p=kp_bubblechart,  type = "histogram", fill="transparent")
 
 
 kp_file_name <- "fig5_bubblechart.png"
