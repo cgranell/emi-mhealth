@@ -652,7 +652,7 @@ kp_circularbarplot <-
 
 kp_circularbarplot
 
-kp_file_name <- "fig_circularbarplot.png"
+kp_file_name <- "fig4_circularbarplot.png"
 ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 25, height = 25, units = "cm", dpi = "print") #300
 
