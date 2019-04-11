@@ -76,13 +76,20 @@ all_data <- all_data %>%
     inner_join(ipapers2018, by="id") %>%
     select(-filename, -title, -abstract, -journal, -author, -keywords)
 
-# cast MD to factor
+# cast to factor
 all_data$md <- factor(all_data$md, levels=names(sort(table(all_data$md), decreasing=T)))
+all_data$val_asstype <- factor(all_data$val_asstype)
 
-#' Merge two factors levels into a new one "26-Various" 
-all_data$md <- 
-    all_data$md %>% 
-    fct_collapse("26-Various" = c("23-Duo","24-Multiple"))
+#' Replace existing factors levels with "other levels"
+all_data$md <- fct_other(all_data$md, drop=c("23-Duo-comorbid", "24-Multiple"), 
+                         other_level = c("23-Comorbid disorders","24-Various disorders"))
+
+# all_data$val_asstype <- fct_other(all_data$val_asstype, drop = c("OTHERS", "EFFICACY", "EFFICACY AND OTHERS"),
+#                                   other_level = c("USABILITY/USER EXPERIENCE", "EFFECT", "EFFECT AND \nUSABILITY/USER EXPERIENCE"))
+# levels(all_data$val_asstype )[levels(all_data$val_asstype )=="OTHERS"] <- "USABILITY/USER EXPERIENCE"
+# levels(all_data$val_asstype )[levels(all_data$val_asstype )=="EFFICACY"] <- "EFFECT"
+# levels(all_data$val_asstype )[levels(all_data$val_asstype )=="EFFICACY AND OTHERS"] <- "EFFECT AND \nUSABILITY/USER EXPERIENCE"
+
 
 #' Sync changes of "md" to other two columns, "md_id"" and "md_desc""
 all_data <- 
@@ -137,7 +144,8 @@ data_kp_areachart <-
     all_data %>%
     select(cols)
 
-data_kp_areachart$val_asstype <- fct_relevel(data_kp_areachart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
+data_kp_areachart$val_asstype <- fct_relevel(data_kp_areachart$val_asstype, 
+                                             c("NO", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
 
 data_kp_areachart <- 
     data_kp_areachart %>%
@@ -163,9 +171,9 @@ kp_areachart <-
         geom_area() +
         labs(title="Temporal distribution of papers per assessment type",
         x="Year", 
-        y="Percentage of paper  per assessment type", 
+        y="Percentatge of papers [%]", 
         caption="Source: authors") + 
-        guides(fill=guide_legend(title="Assessment")) + # modify legend title
+        guides(fill=guide_legend(title="Assessment Type", nrow=2)) + # modify legend title
         scale_fill_manual(values = pal) +
         scale_y_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 1.00, by=0.20), limits=c(0, 1.00)) +
         theme_minimal() +
@@ -217,8 +225,9 @@ data_kp_barchart <-
 # convert to factor to retain sorted order in plot.
 data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
 
-data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
-
+data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, 
+                                            c("NO", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
+                                            
 # Not run
 # display.brewer.all()
 # display.brewer.pal(n = 6, name = "PRGn")
@@ -238,7 +247,7 @@ kp_barchart <-
              y="Number of cases", 
              caption="Source: authors") + 
         coord_flip() +
-        guides(fill=guide_legend(title="Assessment")) +  # modify legend title
+        guides(fill=guide_legend(title="Assessment Type")) +  # modify legend title
         # scale_fill_brewer(palette = pal) + # Set2
         scale_fill_manual(values = pal) + 
         scale_y_continuous(expand=c(0,0), breaks=seq(0, 22, by=2), limits=c(0, 22)) +
@@ -295,8 +304,9 @@ data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_
 # Keep MD order equal for all other charts
 md_all_ordered <- levels(data_kp_barchart$md_desc)
 
-data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, c("NO", "OTHERS", "EFFICACY AND OTHERS", "EFFICACY"))
-
+data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, 
+                                            c("NO", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
+                                            
 
 # Not run
 # display.brewer.all()
@@ -318,7 +328,7 @@ kp_barchart <-
         geom_bar(stat="identity", aes(fill=val_asstype)) +
         # Uncomment  for dodge barchart, single (option B) 
         # geom_bar(stat="identity", aes(fill=val_asstype), position=position_dodge(preserve = "single")) + 
-        labs(title=paste0("Distribution per mental disorder and assessment (N=",n_papers,")"), 
+        labs(title="Distribution per mental disorder and assessment type", 
              subtitle = "Total percentatge per mental disorder within each point",
              x="Mental disorders", 
              y="Percentatge of papers [%]", 
@@ -341,7 +351,7 @@ kp_barchart <-
                          xend="Schizophrenia spectrum and other psychotic disorders", 
                          yend=0.19), color="black") +
         coord_flip() +
-        guides(fill=guide_legend(title="Assessment")) +  # modify legend title
+        guides(fill=guide_legend(title="Assessment Type")) +  # modify legend title
         # scale_fill_brewer(palette = "Set2") +
         scale_fill_manual(values = pal) + 
         scale_y_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 0.21, by=0.02), limits=c(0, 0.21)) +
@@ -442,8 +452,11 @@ data_top_byyear <-
 # https://ggplot2.tidyverse.org/reference/position_stack.html
 
 data_top_byyear$md_desc <- fct_relevel(data_top_byyear$md_desc, 
-                                       c("All", "Depressive disorders", "Various", "Anxiety disorders", 
+                                       c("All", 
+                                         "Depressive disorders", 
+                                         "Anxiety disorders", 
                                          "Trauma and stressor-related disorders",
+                                         "Comorbid disorders",
                                          "Substance-related and addictive disorders",
                                          "Schizophrenia spectrum and other psychotic disorders"))
 brks <- levels(data_top_byyear$md_desc) 
@@ -456,7 +469,7 @@ kp_linechart <-
         geom_line(aes(color=md_desc), size=1, alpha=.4) +
         # prediction all papers in 2018
         geom_segment(aes(x=2017,
-                         y=39,
+                         y=38,
                          xend=2018,
                          yend=prediction_2018), color="darkgray", linetype=2) +
         geom_point(aes(color=md_desc), size=6) +
@@ -581,6 +594,7 @@ data_kp_apps2$md_desc <- factor(data_kp_apps2$md_desc, levels=md_all_ordered)
 
 # options(knitr.kable.NA = '-')
 data_kp_apps2 %>%
+    arrange(md_desc) %>%
     select(`Mental Disorder` = md_desc,
            `References by app` = app_ids_merge) %>%
     kable(formt="html", escape = T, booktabs = TRUE,    
@@ -804,15 +818,15 @@ all_data %>%
 ```{r key_plot_5_anal, echo=FALSE,dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 # analytics support related to each mental disorder 
 cols = c("id", "md", "md_id", "md_desc", 
-         "anal_ml", "anal_beh", "anal_act", "anal_sen", "anal_sp", 
+         "anal_ml", "anal_beh", "anal_act", "anal_sp", 
          "os_ios", "os_and", "app_name",
          "type", "year")
 
-cols_anal = c("anal_ml", "anal_beh", "anal_act", "anal_sen", "anal_sp")
+cols_anal = c("anal_ml", "anal_beh", "anal_act", "anal_sp")
 n_anal <- 
     all_data %>%
     select(cols_anal) %>%
-    filter((anal_ml=="YES") | (anal_beh=="YES") | (anal_act=="YES") | (anal_sen=="YES") | (anal_sp=="YES"))  %>%
+    filter((anal_ml=="YES") | (anal_beh=="YES") | (anal_act=="YES") | (anal_sp=="YES"))  %>%
     nrow()
 
 all_data %>%
@@ -910,11 +924,11 @@ data_kp_feat %>%
 
 ```{r key_plot_5_anal_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 cols = c("id", "md", "md_id", "md_desc", 
-         "anal_ml", "anal_beh", "anal_act", "anal_sen", "anal_sp", 
+         "anal_ml", "anal_beh", "anal_act", "anal_sp", 
          "os_ios", "os_and", "app_name",
          "type", "year")
 
-cols_anal = c("anal_ml", "anal_beh", "anal_act", "anal_sen", "anal_sp")
+cols_anal = c("anal_ml", "anal_beh", "anal_act", "anal_sp")
 
 data_kp_anal <- 
     all_data %>%
@@ -934,9 +948,6 @@ if (length(md_anal) > 0) {
         data_kp_anal <- add_row(data_kp_anal, md_desc=md, anal_type="anal_ml", cat="anal")
     }
 }
-
-# Since the behavior analysis is not used by any article, I add this line so that "anal_sen" appears in the graph.
-data_kp_anal <- add_row(data_kp_anal, md_desc="Various", anal_type="anal_sen", cat="anal")
 
 
 data_kp_anal$md_desc <- factor(data_kp_anal$md_desc, levels=md_all_ordered)  
@@ -968,9 +979,10 @@ data_kp_anal <-
 data_kp_all <-
     bind_rows(data_kp_feat, data_kp_sens, data_kp_anal)
 
+#TODO: Añadir totales a la figura
 data_kp_all_ordered <-
     data_kp_all %>%
-    filter(cat=="feat") %>%
+    filter(cat=="feat")%>%
     group_by(tech_type) %>%
     summarise(n = sum(number_cases)) %>%
     arrange(desc(n))
@@ -982,7 +994,7 @@ data_kp_all$tech_type <- fct_relevel(data_kp_all$tech_type,
                                      c("feat_prog", "feat_pers", "feat_ass", "feat_promp", "feat_hcp", "feat_learn", 
                                        "feat_use", "feat_soc", "feat_ca", "feat_game",  "feat_vr", "feat_ar", 
                                        "sens_mic", "sens_gps", "sens_cam", "sens_acc", "sens_gyr",  
-                                       "anal_ml", "anal_act", "anal_beh", "anal_sp", "anal_sen"))
+                                       "anal_ml", "anal_act", "anal_beh", "anal_sp"))
 
 
 brks <- levels(data_kp_all$cat) 
@@ -1015,9 +1027,21 @@ kp_bubblechart <-
     theme(panel.grid.major.x = element_blank()) + 
     theme(panel.grid.minor = element_blank()) +
     theme(panel.background = element_blank()) +
-    theme(plot.margin=unit(rep(20, 4), "pt"))
+    theme(plot.margin=unit(rep(20, 4), "pt")) 
 
-kp_bubblechart
+kp_bubblechart <- 
+kp_bubblechart +
+    # annotations total of columns
+    annotate("text", x = "Personality disorders", y = "feat_prog", fontface =2,
+                 label = "65", color = "#FC8D62", size=3, hjust = 0.4, vjust = -1.8) +
+    annotate("text", x = "Personality disorders", y = "feat_pers", fontface =2,
+                 label = "58", color = "#FC8D62", size=3, hjust = 0.4, vjust = -1.8) +
+    annotate("text", x = "Personality disorders", y = "sens_mic", fontface =2,
+                 label = "12", color = "#8DA0CB", size=3, hjust = 0.4, vjust = -1.8) +
+    annotate("text", x = "Personality disorders", y = "anal_ml", fontface =2,
+                 label = "6", color = "#66C2A5", size=3, hjust = 0.4, vjust = -1.8)
+    
+
 # library(ggExtra)
 # ggMarginal(p=kp_bubblechart,  type = "histogram", fill="transparent")
 
