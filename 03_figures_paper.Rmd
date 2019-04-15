@@ -1004,11 +1004,20 @@ data_kp_anal <-
 data_kp_all <-
     bind_rows(data_kp_feat, data_kp_sens, data_kp_anal)
 
-#TODO: Añadir totales a la figura
+data_kp_sens_n <-
+    data_kp_sens_n %>%
+    rename(tech_type=sens_type)
+
+data_kp_feat_n <-
+    data_kp_feat_n %>%
+    rename(tech_type=feat_type)
+
+data_kp_anal_n <-
+    data_kp_anal_n %>%
+    rename(tech_type=anal_type)
+
 data_kp_all_n <-
     bind_rows(data_kp_feat_n, data_kp_sens_n, data_kp_anal_n)
-
-# data_kp_all_ordered$tech_type    
 
 data_kp_all$tech_type <- as_factor(data_kp_all$tech_type)
 data_kp_all$tech_type <- fct_relevel(data_kp_all$tech_type, 
@@ -1028,9 +1037,9 @@ kp_bubblechart <-
     scale_size_area( max_size=15) +
     # scale_size(range=c(1, 15)) +
     coord_flip() +
-    labs(title="Mental disorder vs Technology", 
+    labs(title="Mental disorders vs Technology", 
          subtitle = "Technology items ordered within each group",
-         x="Mental disorder", 
+         x="Mental disorders", 
          y="Technology", 
          caption="Source: authors") + 
     scale_color_brewer(palette="Set2", breaks=brks) +
@@ -1050,23 +1059,25 @@ kp_bubblechart <-
     theme(panel.background = element_blank()) +
     theme(plot.margin=unit(rep(20, 4), "pt")) 
 
-kp_bubblechart <- 
-kp_bubblechart +
-    # annotations total of columns
-    annotate("text", x = "Personality disorders", y = "feat_learn", fontface =2,
-                 label = "80", color = "#FC8D62", size=3, hjust = 0.4, vjust = -1.8) +
-    annotate("text", x = "Personality disorders", y = "feat_prog", fontface =2,
-                 label = "65", color = "#FC8D62", size=3, hjust = 0.4, vjust = -1.8) +
-    annotate("text", x = "Personality disorders", y = "feat_pers", fontface =2,
-                 label = "58", color = "#FC8D62", size=3, hjust = 0.4, vjust = -1.8) +
-    annotate("text", x = "Personality disorders", y = "sens_mic", fontface =2,
-                 label = "12", color = "#8DA0CB", size=3, hjust = 0.4, vjust = -1.8) +
-    annotate("text", x = "Personality disorders", y = "anal_ml", fontface =2,
-                 label = "6", color = "#66C2A5", size=3, hjust = 0.4, vjust = -1.8)
+# Add annotations: total of columns
+for (i in 1:nrow(data_kp_all_n)) {
+    if (i<=12) {
+        color_cat <- "#FC8D62"
+    } else if (i<=17) {
+        color_cat <- "#8DA0CB"
+    } else {
+        color_cat <- "#66C2A5"
+    } 
+    
+    kp_bubblechart <- 
+        kp_bubblechart +
+        annotate("text", x = "Personality disorders", y = data_kp_all_n$tech_type[i], label = data_kp_all_n$n[i],
+             color = color_cat, fontface =2, size=3, hjust = 0.4, vjust = -1.8)
+
+}
+    
     
 kp_bubblechart
-# library(ggExtra)
-# ggMarginal(p=kp_bubblechart,  type = "histogram", fill="transparent")
 
 
 kp_file_name <- "fig5_bubblechart.png"
