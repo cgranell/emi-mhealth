@@ -859,6 +859,15 @@ data_kp_sens <-
     summarise(number_cases = n()) %>%
     ungroup() # required to add_row() 
 
+
+# For totals in final bubble plot
+data_kp_sens_n <-
+    data_kp_sens %>%
+    group_by(sens_type) %>%
+    summarise(n = sum(number_cases)) %>%
+    arrange(desc(n))
+                  
+
 md_sens <- unique(data_kp_sens$md_desc)
 md_dif <- setdiff(md_all_ordered, md_sens)
 if (length(md_dif) > 0) {
@@ -901,6 +910,15 @@ data_kp_feat <-
     summarise(number_cases = n())  %>%
     ungroup() # required to add_row() 
 
+
+# For totals in final bubble plot
+data_kp_feat_n <-
+    data_kp_feat %>%
+    group_by(feat_type) %>%
+    summarise(n = sum(number_cases)) %>%
+    arrange(desc(n))
+                  
+
 md_feat <- unique(data_kp_feat$md_desc)
 md_dif <- setdiff(md_all_ordered, md_feat)
 if (length(md_feat) > 0) {
@@ -939,6 +957,13 @@ data_kp_anal <-
     group_by(md_desc, anal_type, cat)  %>%
     summarise(number_cases = n())  %>%
     ungroup() # required to add_row() 
+
+# For totals in final bubble plot
+data_kp_anal_n <-
+    data_kp_anal %>%
+    group_by(anal_type) %>%
+    summarise(n = sum(number_cases)) %>%
+    arrange(desc(n))
 
 md_anal <- unique(data_kp_anal$md_desc)
 md_dif <- setdiff(md_all_ordered, md_anal)
@@ -980,13 +1005,9 @@ data_kp_all <-
     bind_rows(data_kp_feat, data_kp_sens, data_kp_anal)
 
 #TODO: Añadir totales a la figura
-data_kp_all_ordered <-
-    data_kp_all %>%
-    filter(cat=="feat")%>%
-    group_by(tech_type) %>%
-    summarise(n = sum(number_cases)) %>%
-    arrange(desc(n))
-                  
+data_kp_all_n <-
+    bind_rows(data_kp_feat_n, data_kp_sens_n, data_kp_anal_n)
+
 # data_kp_all_ordered$tech_type    
 
 data_kp_all$tech_type <- as_factor(data_kp_all$tech_type)
