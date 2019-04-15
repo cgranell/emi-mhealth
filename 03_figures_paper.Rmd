@@ -594,7 +594,7 @@ data_kp_apps2$md_desc <- factor(data_kp_apps2$md_desc, levels=md_all_ordered)
 
 # options(knitr.kable.NA = '-')
 data_kp_apps2 %>%
-    arrange(md_desc) %>%
+    arrange(desc(md_desc)) %>%
     select(`Mental Disorder` = md_desc,
            `References by app` = app_ids_merge) %>%
     kable(formt="html", escape = T, booktabs = TRUE,    
@@ -1012,7 +1012,7 @@ data_kp_all_n <-
 
 data_kp_all$tech_type <- as_factor(data_kp_all$tech_type)
 data_kp_all$tech_type <- fct_relevel(data_kp_all$tech_type, 
-                                     c("feat_prog", "feat_pers", "feat_ass", "feat_promp", "feat_hcp", "feat_learn", 
+                                     c( "feat_learn", "feat_prog", "feat_pers", "feat_ass", "feat_promp", "feat_hcp", 
                                        "feat_use", "feat_soc", "feat_ca", "feat_game",  "feat_vr", "feat_ar", 
                                        "sens_mic", "sens_gps", "sens_cam", "sens_acc", "sens_gyr",  
                                        "anal_ml", "anal_act", "anal_beh", "anal_sp"))
@@ -1053,6 +1053,8 @@ kp_bubblechart <-
 kp_bubblechart <- 
 kp_bubblechart +
     # annotations total of columns
+    annotate("text", x = "Personality disorders", y = "feat_learn", fontface =2,
+                 label = "80", color = "#FC8D62", size=3, hjust = 0.4, vjust = -1.8) +
     annotate("text", x = "Personality disorders", y = "feat_prog", fontface =2,
                  label = "65", color = "#FC8D62", size=3, hjust = 0.4, vjust = -1.8) +
     annotate("text", x = "Personality disorders", y = "feat_pers", fontface =2,
@@ -1062,7 +1064,7 @@ kp_bubblechart +
     annotate("text", x = "Personality disorders", y = "anal_ml", fontface =2,
                  label = "6", color = "#66C2A5", size=3, hjust = 0.4, vjust = -1.8)
     
-
+kp_bubblechart
 # library(ggExtra)
 # ggMarginal(p=kp_bubblechart,  type = "histogram", fill="transparent")
 
