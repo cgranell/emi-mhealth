@@ -80,15 +80,13 @@ all_data <- all_data %>%
 all_data$md <- factor(all_data$md, levels=names(sort(table(all_data$md), decreasing=T)))
 all_data$val_asstype <- factor(all_data$val_asstype)
 
-#' Replace existing factors levels with "other levels"
-all_data$md <- fct_other(all_data$md, drop=c("23-Duo-comorbid", "24-Multiple"), 
-                         other_level = c("23-Comorbid disorders","24-Various disorders"))
 
-# all_data$val_asstype <- fct_other(all_data$val_asstype, drop = c("OTHERS", "EFFICACY", "EFFICACY AND OTHERS"),
-#                                   other_level = c("USABILITY/USER EXPERIENCE", "EFFECT", "EFFECT AND \nUSABILITY/USER EXPERIENCE"))
-# levels(all_data$val_asstype )[levels(all_data$val_asstype )=="OTHERS"] <- "USABILITY/USER EXPERIENCE"
-# levels(all_data$val_asstype )[levels(all_data$val_asstype )=="EFFICACY"] <- "EFFECT"
-# levels(all_data$val_asstype )[levels(all_data$val_asstype )=="EFFICACY AND OTHERS"] <- "EFFECT AND \nUSABILITY/USER EXPERIENCE"
+#' Replace existing factors levels
+levels(all_data$md)[levels(all_data$md)=="23-Duo-comorbid"] <- "23-Comorbid disorders"
+levels(all_data$md)[levels(all_data$md)=="24-Multiple"] <- "24-Various disorders"
+
+# all_data$md <- fct_other(all_data$md, drop=c("23-Duo-comorbid", "24-Multiple"), 
+#                          other_level = c("23-Comorbid disorders","24-Various disorders"))
 
 
 #' Sync changes of "md" to other two columns, "md_id"" and "md_desc""
@@ -455,8 +453,8 @@ data_top_byyear$md_desc <- fct_relevel(data_top_byyear$md_desc,
                                        c("All", 
                                          "Depressive disorders", 
                                          "Anxiety disorders", 
+                                         "Various disorders",
                                          "Trauma and stressor-related disorders",
-                                         "Comorbid disorders",
                                          "Substance-related and addictive disorders",
                                          "Schizophrenia spectrum and other psychotic disorders"))
 brks <- levels(data_top_byyear$md_desc) 
