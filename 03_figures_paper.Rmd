@@ -1,5 +1,5 @@
 ---
-title: 'Analysis and visualisations for "JMIR paper title here"'
+title: 'Analysis and visualisations for "Smartphone apps for the treatment of mental disorders: a systematic review"'
 author: "Carlos Granell et al."
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
@@ -34,10 +34,10 @@ library(skimr)
 library(scales)
 library(RColorBrewer)
 library(gridExtra)
-library(treemap)
+#library(treemap)
 library(forcats)
 library(purrr)
-library(hrbrthemes)  # TODO: see https://stackoverflow.com/questions/14733732/cant-change-fonts-in-ggplot-geom-text to solve font does not find
+#library(hrbrthemes)  # TODO: see https://stackoverflow.com/questions/14733732/cant-change-fonts-in-ggplot-geom-text to solve font does not find
 
 ```
 
@@ -744,7 +744,7 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 \newpage
 
-### Figure 5 (IN, DRAFT) - ONGOING
+### Figure 5 (IN, PRODUCTION)
 
 Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
 
@@ -767,11 +767,11 @@ n_sens <-
 
 all_data %>%
     select(cols) %>%
-    gather(cols_sens, key="sens_type", value="sens_value") %>%
+    gather(cols_sens, key="tech_type", value="tech_value") %>%
     ggplot(aes(x=md_desc)) +
-    geom_bar(stat="count", aes(fill=factor(sens_value))) +
+    geom_bar(stat="count", aes(fill=factor(tech_value))) +
     coord_flip() +
-    facet_wrap(~sens_type)
+    facet_wrap(~tech_type)
 
 
 ```
@@ -801,11 +801,11 @@ n_feat <-
 
 all_data %>%
     select(cols) %>%
-    gather(cols_feat, key="feat_type", value="feat_value") %>%
+    gather(cols_feat, key="tech_type", value="tech_value") %>%
     ggplot(aes(x=md_desc)) +
-    geom_bar(stat="count", aes(fill=factor(feat_value))) +
+    geom_bar(stat="count", aes(fill=factor(tech_value))) +
     coord_flip() +
-    facet_wrap(~feat_type)
+    facet_wrap(~tech_type)
 
 ```
 
@@ -829,11 +829,11 @@ n_anal <-
 
 all_data %>%
     select(cols) %>%
-    gather(cols_anal, key="anal_type", value="anal_value") %>%
+    gather(cols_anal, key="tech_type", value="tech_value") %>%
     ggplot(aes(x=md_desc)) +
-    geom_bar(stat="count", aes(fill=factor(anal_value))) +
+    geom_bar(stat="count", aes(fill=factor(tech_value))) +
     coord_flip() +
-    facet_wrap(~anal_type)
+    facet_wrap(~tech_type)
 ```
 
 
@@ -850,10 +850,10 @@ cols_sens <- c("sens_acc", "sens_gyr", "sens_gps", "sens_mic", "sens_cam")
 data_kp_sens <-
     all_data %>%
     select(cols) %>%
-    gather(cols_sens, key="sens_type", value="sens_value") %>%
-    mutate(cat = "sens") %>%
-    filter(sens_value == "YES") %>%
-    group_by(md_desc, sens_type, cat) %>%
+    gather(cols_sens, key="tech_type", value="tech_value") %>%
+    mutate(cat = "Built-In sensors") %>%
+    filter(tech_value == "YES") %>%
+    group_by(md_desc, tech_type, cat) %>%
     summarise(number_cases = n()) %>%
     ungroup() # required to add_row() 
 
@@ -861,7 +861,7 @@ data_kp_sens <-
 # For totals in final bubble plot
 data_kp_sens_n <-
     data_kp_sens %>%
-    group_by(sens_type) %>%
+    group_by(tech_type) %>%
     summarise(n = sum(number_cases)) %>%
     arrange(desc(n))
                   
@@ -870,16 +870,16 @@ md_sens <- unique(data_kp_sens$md_desc)
 md_dif <- setdiff(md_all_ordered, md_sens)
 if (length(md_dif) > 0) {
     for (md in md_dif) {
-        # Added "sens_mic" (or any other values) to avoid NA in the "sens_type" variable. Nothing is drawn in the plot
-        data_kp_sens <- add_row(data_kp_sens, md_desc=md, sens_type="sens_mic", cat="sens")
+        # Added "sens_mic" (or any other values) to avoid NA in the "tech_type" variable. Nothing is drawn in the plot
+        data_kp_sens <- add_row(data_kp_sens, md_desc=md, tech_type="sens_mic", cat="Built-In sensors")
     }
 }
 
 data_kp_sens$md_desc <- fct_relevel(data_kp_sens$md_desc, levels=md_all_ordered)
 
 data_kp_sens %>%
-    ggplot(aes(x=md_desc, y=sens_type)) +
-    geom_point(aes(colour=sens_type, size=number_cases), na.rm = TRUE) + 
+    ggplot(aes(x=md_desc, y=tech_type)) +
+    geom_point(aes(colour=tech_type, size=number_cases), na.rm = TRUE) + 
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=10) +
     coord_flip()
@@ -901,10 +901,10 @@ cols_feat = c("feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn",
 data_kp_feat <- 
     all_data %>%
     select(cols) %>%
-    gather(cols_feat, key="feat_type",value="feat_value") %>%
-    mutate(cat = "feat") %>%
-    filter(feat_value == "YES") %>%
-    group_by(md_desc, feat_type, cat)  %>%
+    gather(cols_feat, key="tech_type",value="tech_value") %>%
+    mutate(cat = "Software features") %>%
+    filter(tech_value == "YES") %>%
+    group_by(md_desc, tech_type, cat)  %>%
     summarise(number_cases = n())  %>%
     ungroup() # required to add_row() 
 
@@ -912,7 +912,7 @@ data_kp_feat <-
 # For totals in final bubble plot
 data_kp_feat_n <-
     data_kp_feat %>%
-    group_by(feat_type) %>%
+    group_by(tech_type) %>%
     summarise(n = sum(number_cases)) %>%
     arrange(desc(n))
                   
@@ -921,16 +921,16 @@ md_feat <- unique(data_kp_feat$md_desc)
 md_dif <- setdiff(md_all_ordered, md_feat)
 if (length(md_feat) > 0) {
     for (md in md_dif) {
-        # Added "feat_use" (or any value) to avoid NA in the "feat_type" variable. Nothing is drawn in the plot
-        data_kp_feat <- add_row(data_kp_feat, md_desc=md, feat_type="feat_use", cat="feat")
+        # Added "feat_use" (or any value) to avoid NA in the "tech_type" variable. Nothing is drawn in the plot
+        data_kp_feat <- add_row(data_kp_feat, md_desc=md, tech_type="feat_use", cat="Software features")
     }
 }
 
 data_kp_feat$md_desc <- factor(data_kp_feat$md_desc, levels=md_all_ordered)  
 
 data_kp_feat %>%
-    ggplot(aes(x=md_desc, y=feat_type)) +
-    geom_point(aes(colour=feat_type, size=number_cases)) + 
+    ggplot(aes(x=md_desc, y=tech_type)) +
+    geom_point(aes(colour=tech_type, size=number_cases)) + 
     geom_text(aes(label=number_cases), size=3) +
     scale_size_area(max_size=15) +
     coord_flip()
@@ -949,17 +949,17 @@ cols_anal = c("anal_ml", "anal_beh", "anal_act", "anal_sp")
 data_kp_anal <- 
     all_data %>%
     select(cols) %>%
-    gather(cols_anal, key="anal_type",value="anal_value") %>%
-    mutate(cat = "anal") %>%
-    filter(anal_value == "YES") %>%
-    group_by(md_desc, anal_type, cat)  %>%
+    gather(cols_anal, key="tech_type",value="tech_value") %>%
+    mutate(cat = "Types of analyses") %>%
+    filter(tech_value == "YES") %>%
+    group_by(md_desc, tech_type, cat)  %>%
     summarise(number_cases = n())  %>%
     ungroup() # required to add_row() 
 
 # For totals in final bubble plot
 data_kp_anal_n <-
     data_kp_anal %>%
-    group_by(anal_type) %>%
+    group_by(tech_type) %>%
     summarise(n = sum(number_cases)) %>%
     arrange(desc(n))
 
@@ -967,8 +967,8 @@ md_anal <- unique(data_kp_anal$md_desc)
 md_dif <- setdiff(md_all_ordered, md_anal)
 if (length(md_anal) > 0) {
     for (md in md_dif) {
-        # Added "anal_ml" (or any value) to avoid NA in the "anal_type" variable. Nothing is drawn in the plot
-        data_kp_anal <- add_row(data_kp_anal, md_desc=md, anal_type="anal_ml", cat="anal")
+        # Added "anal_ml" (or any value) to avoid NA in the "tech_type" variable. Nothing is drawn in the plot
+        data_kp_anal <- add_row(data_kp_anal, md_desc=md, tech_type="anal_ml", cat="Types of analyses")
     }
 }
 
@@ -976,8 +976,8 @@ if (length(md_anal) > 0) {
 data_kp_anal$md_desc <- factor(data_kp_anal$md_desc, levels=md_all_ordered)  
 
 data_kp_anal %>%
-    ggplot(aes(x=md_desc, y=anal_type)) +
-    geom_point(aes(colour=anal_type, size=number_cases), na.rm = TRUE) + 
+    ggplot(aes(x=md_desc, y=tech_type)) +
+    geom_point(aes(colour=tech_type, size=number_cases), na.rm = TRUE) + 
     geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
     scale_size_area(max_size=15) +
     coord_flip()
@@ -987,69 +987,82 @@ data_kp_anal %>%
 This is the final bubble plot. 
 
 ```{r key_plot_5_bubblechart, echo=FALSE, dpi=600, fig.width=15, fig.height=14, fig.asp=0.65}
-data_kp_sens <-
-    data_kp_sens %>%
-    rename(tech_type=sens_type)
-
-data_kp_feat <-
-    data_kp_feat %>%
-    rename(tech_type=feat_type)
-
-data_kp_anal <-
-    data_kp_anal %>%
-    rename(tech_type=anal_type)
 
 data_kp_all <-
     bind_rows(data_kp_feat, data_kp_sens, data_kp_anal)
 
-data_kp_sens_n <-
-    data_kp_sens_n %>%
-    rename(tech_type=sens_type)
+data_kp_all$tech_type <- as_factor(data_kp_all$tech_type)
+#' Replace existing factors levels for production
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_learn"] <- "Learning"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_prog"] <- "Progress"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_pers"] <- "Personalization"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_ass"] <- "Assessment"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_promp"] <- "Prompting"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_hcp"] <- "Health Care Provider \nCommunication"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_use"] <- "In-Situ Use"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_soc"] <- "Social"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_ca"] <- "Context-Awareness"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_game"] <- "Game"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_vr"] <- "Virtual Reality"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="feat_ar"] <- "Augmented Reality"
 
-data_kp_feat_n <-
-    data_kp_feat_n %>%
-    rename(tech_type=feat_type)
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="sens_mic"] <- "Microphone"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="sens_gps"] <- "GPS"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="sens_cam"] <- "Camera"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="sens_acc"] <- "Accelerometer"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="sens_gyr"] <- "Gyroscope"
 
-data_kp_anal_n <-
-    data_kp_anal_n %>%
-    rename(tech_type=anal_type)
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="anal_ml"] <- "Machine Learning"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="anal_act"] <- "Activity Analysis"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="anal_beh"] <- "Behavioral Analysis"
+levels(data_kp_all$tech_type)[levels(data_kp_all$tech_type)=="anal_sp"] <- "Spatial Analysis"
+
+cols_ordered <-  c("Learning", "Progress", "Personalization", "Assessment", "Prompting", "Health Care Provider \nCommunication", 
+                   "In-Situ Use", "Social", "Context-Awareness", "Game",  "Virtual Reality", "Augmented Reality", 
+                   "Microphone", "GPS", "Camera", "Accelerometer", "Gyroscope",  
+                   "Machine Learning", "Activity Analysis", "Behavioral Analysis", "Spatial Analysis") 
+dims_ordered <- c("Software features", "Built-In sensors", "Types of analyses")
+
+data_kp_all$tech_type <- fct_relevel(data_kp_all$tech_type, cols_ordered)
 
 data_kp_all_n <-
     bind_rows(data_kp_feat_n, data_kp_sens_n, data_kp_anal_n)
 
-data_kp_all$tech_type <- as_factor(data_kp_all$tech_type)
-data_kp_all$tech_type <- fct_relevel(data_kp_all$tech_type, 
-                                     c( "feat_learn", "feat_prog", "feat_pers", "feat_ass", "feat_promp", "feat_hcp", 
-                                       "feat_use", "feat_soc", "feat_ca", "feat_game",  "feat_vr", "feat_ar", 
-                                       "sens_mic", "sens_gps", "sens_cam", "sens_acc", "sens_gyr",  
-                                       "anal_ml", "anal_act", "anal_beh", "anal_sp"))
+data_kp_all_n <-
+    data_kp_all_n %>%
+    mutate(tech_label = cols_ordered)
 
 
-brks <- levels(data_kp_all$cat) 
+data_kp_all$cat <- factor(data_kp_all$cat)
+data_kp_all$cat <- fct_relevel(data_kp_all$cat, dims_ordered)
+brks <- levels(factor(data_kp_all$cat))
 
 kp_bubblechart <- 
     data_kp_all %>%
-    ggplot(aes(x=md_desc, y=tech_type)) +
-    geom_point(aes(colour=cat, size=number_cases), alpha=0.8, na.rm = TRUE, show.legend = FALSE) +
-    geom_text(aes(label=number_cases), size=3, na.rm = TRUE) +
-    scale_size_area( max_size=15) +
-    # scale_size(range=c(1, 15)) +
+    ggplot(aes(x=md_desc, y=tech_type, colour=cat)) +
+    geom_point(aes(size=number_cases), alpha=0.8, na.rm = TRUE)+#, show.legend = FALSE) +
+    geom_text(aes(label=number_cases), colour="black", size=3, na.rm = TRUE) +
+    scale_size_area(max_size=18) +
     coord_flip() +
     labs(title="Mental disorders vs Technology", 
-         subtitle = "Technology items ordered within each group",
+         subtitle = "Technology-related characteristics are ranked in each dimension",
          x="Mental disorders", 
-         y="Technology", 
+         y="Technology-related characteristics", 
          caption="Source: authors") + 
-    scale_color_brewer(palette="Set2", breaks=brks) +
+    scale_color_manual(name="Technology-related\n dimensions", breaks=brks,
+                       values = c("Software features"="#FC8D62","Built-In sensors"="#66C2A5", "Types of analyses"="#8DA0CB")) +
+    # Which legend to show
+    guides(colour="legend",size = "none") +
     theme_minimal()  +
     theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
     # Legend: Top-Right Inside the Plot") 
-    # theme(legend.title = element_text(size=11), 
-    #       legend.justification = c('right', 'top'),
-    #       legend.position=c(0.95, 0.95),  
-    #       #legend.background = element_blank(),
-    #       legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
-    #       legend.key = element_blank()) +
+    # theme(legend.position = "right") +
+    theme(legend.title = element_text(size=9),
+          legend.justification = c('right', 'top'),
+          legend.position=c(1, 0.90),
+          #legend.background = element_blank(),
+          legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
+          legend.key = element_blank()) +
     # Change the line type and color of axis lines
     theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid")) +
     theme(panel.grid.major.x = element_blank()) + 
@@ -1062,14 +1075,14 @@ for (i in 1:nrow(data_kp_all_n)) {
     if (i<=12) {
         color_cat <- "#FC8D62"
     } else if (i<=17) {
-        color_cat <- "#8DA0CB"
-    } else {
         color_cat <- "#66C2A5"
-    } 
-    
-    kp_bubblechart <- 
+    } else {
+        color_cat <- "#8DA0CB"
+    }
+
+    kp_bubblechart <-
         kp_bubblechart +
-        annotate("text", x = "Personality disorders", y = data_kp_all_n$tech_type[i], label = data_kp_all_n$n[i],
+        annotate("text", x = "Personality disorders", y = data_kp_all_n$tech_label[i], label = data_kp_all_n$n[i],
              color = color_cat, fontface =2, size=3, hjust = 0.4, vjust = -1.8)
 
 }
@@ -1080,7 +1093,7 @@ kp_bubblechart
 
 kp_file_name <- "fig5_bubblechart.png"
 ggsave(plot = kp_bubblechart, filename = kp_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 35, height = 20, units = "cm", dpi = 600)
+    scale = 1, width = 40, height = 25, units = "cm", dpi = 600)
 
 
 
