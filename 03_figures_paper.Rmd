@@ -460,22 +460,20 @@ ggsave(plot = plot_barchart, filename = plot_file_name, device = "png", path = h
 
 \newpage
 
-### Figure 3 (IN, PRODUCTION)
+### Figure 4. Distribution top mental disorders per year
 
-Linechart: Distribution of papers (Total and top6 mental disorders) per year.
+Linechart: Distribution of papers (top6 mental disorders) per year.
 
 
-```{r key_plot_3_linechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
+```{r fig4_linechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 
 top <- levels(all_data$md)[1:6]
 
-prediction_2018 <- 52
-
-data_total_byyear <- 
-    all_data %>% 
-    group_by(year) %>%  # first create counts for each group
-    summarise(number_cases = n()) %>%
-    mutate(md_desc = c("All"))
+# data_total_byyear <- 
+#     all_data %>% 
+#     group_by(year) %>%  # first create counts for each group
+#     summarise(number_cases = n()) %>%
+#     mutate(md_desc = c("All"))
 
 
 data_top_byyear <- 
@@ -483,7 +481,7 @@ data_top_byyear <-
       filter(md %in% top) %>%
       group_by(md_desc, year) %>%
       summarise(number_cases = n()) %>%
-      bind_rows(data_total_byyear) %>%
+      # bind_rows(data_total_byyear) %>%
       ungroup() %>%
       mutate(md_desc = factor(md_desc)) %>%
       arrange(desc(number_cases))
@@ -492,13 +490,13 @@ data_top_byyear <-
 # https://ggplot2.tidyverse.org/reference/position_stack.html
 
 data_top_byyear$md_desc <- fct_relevel(data_top_byyear$md_desc, 
-                                       c("All", 
+                                       c(#"All", 
                                          "Depressive disorders", 
                                          "Anxiety disorders", 
                                          "Various disorders",
-                                         "Trauma and stressor-related disorders",
-                                         "Substance-related and addictive disorders",
-                                         "Schizophrenia spectrum and other psychotic disorders"))
+                                         "Trauma and\n stressor-related disorders",
+                                         "Substance-related and\n addictive disorders",
+                                         "Schizophrenia spectrum and\n other psychotic disorders"))
 brks <- levels(data_top_byyear$md_desc) 
 
 kp_linechart <-
@@ -508,13 +506,13 @@ kp_linechart <-
         annotate("rect", xmin = 2017, xmax = 2018, ymin = -Inf, ymax = +Inf, fill = "lightgray", alpha = 0.2) +
         geom_line(aes(color=md_desc), size=1, alpha=.4) +
         # prediction all papers in 2018
-        geom_segment(aes(x=2017,
-                         y=38,
-                         xend=2018,
-                         yend=prediction_2018), color="darkgray", linetype=2) +
+        # geom_segment(aes(x=2017,
+        #                  y=38,
+        #                  xend=2018,
+        #                  yend=prediction_2018), color="darkgray", linetype=2) +
         geom_point(aes(color=md_desc), size=6) +
-        labs(title="Distribution top mental disorders per year", 
-             subtitle = paste0("All vs. top mental disorders (", top_lbl,"). Dashed line denotes extrapolation for 2018"),
+        labs(#title="Distribution top mental disorders per year", 
+             #subtitle = paste0("All vs. top mental disorders (", top_lbl,"). Dashed line denotes extrapolation for 2018"),
              x="Year", 
              y="Number of cases", 
              caption="Source: authors") + 
@@ -540,7 +538,7 @@ kp_linechart <-
         theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid"))
 
 kp_linechart
-kp_file_name <- "fig3_linechart.png"
+kp_file_name <- "fig4_linechart.png"
 ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 18, units = "cm", dpi = 600) 
 
