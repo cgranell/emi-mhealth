@@ -469,19 +469,11 @@ Linechart: Distribution of papers (top6 mental disorders) per year.
 
 top <- levels(all_data$md)[1:6]
 
-# data_total_byyear <- 
-#     all_data %>% 
-#     group_by(year) %>%  # first create counts for each group
-#     summarise(number_cases = n()) %>%
-#     mutate(md_desc = c("All"))
-
-
 data_top_byyear <- 
     all_data %>%
       filter(md %in% top) %>%
       group_by(md_desc, year) %>%
       summarise(number_cases = n()) %>%
-      # bind_rows(data_total_byyear) %>%
       ungroup() %>%
       mutate(md_desc = factor(md_desc)) %>%
       arrange(desc(number_cases))
@@ -490,14 +482,16 @@ data_top_byyear <-
 # https://ggplot2.tidyverse.org/reference/position_stack.html
 
 data_top_byyear$md_desc <- fct_relevel(data_top_byyear$md_desc, 
-                                       c(#"All", 
-                                         "Depressive disorders", 
+                                       c("Depressive disorders", 
                                          "Anxiety disorders", 
                                          "Various disorders",
                                          "Trauma and\n stressor-related disorders",
                                          "Substance-related and\n addictive disorders",
                                          "Schizophrenia spectrum and\n other psychotic disorders"))
+
 brks <- levels(data_top_byyear$md_desc) 
+# n_colors = nlevels(data_top_byyear$md_desc)
+# get_palette <- colorRampPalette(brewer.pal(9, "Set2"))
 
 kp_linechart <-
     data_top_byyear %>%
@@ -505,25 +499,16 @@ kp_linechart <-
         geom_vline(aes(xintercept = 2017), color="lightgray", linetype = "dashed", size = 0.5) +
         annotate("rect", xmin = 2017, xmax = 2018, ymin = -Inf, ymax = +Inf, fill = "lightgray", alpha = 0.2) +
         geom_line(aes(color=md_desc), size=1, alpha=.4) +
-        # prediction all papers in 2018
-        # geom_segment(aes(x=2017,
-        #                  y=38,
-        #                  xend=2018,
-        #                  yend=prediction_2018), color="darkgray", linetype=2) +
         geom_point(aes(color=md_desc), size=6) +
+        # scale_color_manual(name="Mental disorders", values = get_palette(n_colors), breaks=brks) +
         labs(#title="Distribution top mental disorders per year", 
              #subtitle = paste0("All vs. top mental disorders (", top_lbl,"). Dashed line denotes extrapolation for 2018"),
              x="Year", 
              y="Number of cases", 
              caption="Source: authors") + 
-        scale_color_brewer(palette="Set2", breaks=brks) +
+        scale_color_brewer(name="Mental disorders", palette="Set2", breaks=brks) +
         geom_text(aes(label = number_cases), color= "white", size=3) +
-        # prediction all papers in 2018
-        # geom_point(x=2018, y=prediction_2018, color="darkgray", size=6) +
-        # annotate("text", x =2018, y = prediction_2018,
-        #          label = prediction_2018, color = "black", size=3) +
         theme_minimal() +
-        theme(legend.title = element_blank()) +
         # Legend: Top-Right Inside the Plot") 
         theme(legend.justification = c('left', 'top'),
               legend.position=c(0.05, 0.95),  
