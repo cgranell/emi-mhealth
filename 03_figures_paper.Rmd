@@ -782,9 +782,9 @@ ggsave(plot = kp_circularbarplot, filename = kp_file_name, device = "png", path 
 
 \newpage
 
-### Figure 5 (IN, PRODUCTION)
+### Figure 5. Distribution of papers per mental disorder vs technology
 
-Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features)
+Bubble plot: Distribution of papers per mental disorder and technology variables (sensor capabilities and features). Technology-related characteristics are ranked in each dimension.
 
 In the following, some exploratory charts are shown on the way to reach the bubble plot, which is the last chart. None of the following charts are in production stage, only drafted. Please, do not pay much attention to the color palette and aesthetics yet.
 
@@ -1082,8 +1082,8 @@ kp_bubblechart <-
     geom_text(aes(label=number_cases), colour="black", size=3, na.rm = TRUE) +
     scale_size_area(max_size=18) +
     coord_flip() +
-    labs(title="Mental disorders vs Technology", 
-         subtitle = "Technology-related characteristics are ranked in each dimension",
+    labs(#title="Mental disorders vs Technology", 
+         #subtitle = "Technology-related characteristics are ranked in each dimension",
          x="Mental disorders", 
          y="Technology-related characteristics", 
          caption="Source: authors") + 
@@ -1092,7 +1092,8 @@ kp_bubblechart <-
     # Which legend to show
     guides(colour="legend",size = "none") +
     theme_minimal()  +
-    theme(axis.text.x=element_text(angle = 60, hjust = 1)) +
+    theme(axis.text.x=element_text(angle = 60, size=10, hjust = 1),
+          axis.text.y=element_text(size=10)) +
     # Legend: Top-Right Inside the Plot") 
     # theme(legend.position = "right") +
     theme(legend.title = element_text(size=9),
@@ -1129,7 +1130,7 @@ for (i in 1:nrow(data_kp_all_n)) {
 kp_bubblechart
 
 
-kp_file_name <- "fig5_bubblechart.png"
+kp_file_name <- "fig5_bubble.png"
 ggsave(plot = kp_bubblechart, filename = kp_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 40, height = 25, units = "cm", dpi = 600)
 
