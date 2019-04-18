@@ -185,8 +185,9 @@ plot_tempdist_stakedbarchart <-
         geom_text(aes(label=number_cases), size=2.5,position=position_stack(vjust = 0.5)) +
         labs(#title="Count of papers per year,, colored by assessment type", 
              x="", 
-             y="Count [#]") +
+             y="# of papers") +
         scale_fill_manual(values = pal) +
+        scale_x_continuous(breaks = seq(2013,2018, by=1)) +
         guides(fill="none") +
         # Prediction 2018
         annotate("rect", alpha = 0.2, 
@@ -209,7 +210,7 @@ plot_tempdist_areachart <-
         geom_area() +
         labs(#title="Temporal distribution of papers per assessment type",
         x="Year", 
-        y="Percentatge of papers [%]", 
+        y="Percentage of papers [%]", 
         caption="Source: authors") + 
         guides(fill=guide_legend(title="Assessment Type", nrow=2)) + # modify legend title
         scale_fill_manual(values = pal) +
@@ -370,7 +371,7 @@ plot_barchart <-
         labs(#title="Distribution per mental disorder and assessment type", 
              #subtitle = "Total percentatge per mental disorder within each point",
              x="Mental disorders", 
-             y="Percentatge of papers [%]", 
+             y="# of papers and total percentage", 
              caption="Source: authors") + 
         # geom_segment(aes(x=md_desc, y=0, xend=md_desc, yend=proportion_sum), color="white") + # grey50
         geom_point(aes(y=proportion_sum), size=6, color="white", show.legend = F) +  # lightgray
@@ -466,10 +467,15 @@ Linechart: Distribution of papers (top6 mental disorders) per year.
 
 
 ```{r fig4_linechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
-
+cols_top <- c("Depressive disorders", 
+              "Anxiety disorders", 
+              "Various disorders",
+              "Trauma and\n stressor-related disorders",
+              "Substance-related and\n addictive disorders",
+              "Schizophrenia spectrum and\n other psychotic disorders")
 top <- levels(all_data$md)[1:6]
 
-data_top_byyear <- 
+data_plot_topmd <- 
     all_data %>%
       filter(md %in% top) %>%
       group_by(md_desc, year) %>%
@@ -478,23 +484,29 @@ data_top_byyear <-
       mutate(md_desc = factor(md_desc)) %>%
       arrange(desc(number_cases))
 
+#' Add mental disorders with zero cases
+for (y in 2013:2018) {
+    md_year <- filter(data_plot_topmd, year==y) %>% select(md_desc)
+    md_dif <- setdiff(cols_top, md_year$md_desc)
+    if (length(md_dif) > 0) {
+        for (md in md_dif) {
+            data_plot_topmd <- add_row(data_plot_topmd, md_desc=md, year=y, number_cases=0)
+        }
+    }
+}
+
+
 # https://www.r-graph-gallery.com/portfolio/ggplot2-package/
 # https://ggplot2.tidyverse.org/reference/position_stack.html
 
-data_top_byyear$md_desc <- fct_relevel(data_top_byyear$md_desc, 
-                                       c("Depressive disorders", 
-                                         "Anxiety disorders", 
-                                         "Various disorders",
-                                         "Trauma and\n stressor-related disorders",
-                                         "Substance-related and\n addictive disorders",
-                                         "Schizophrenia spectrum and\n other psychotic disorders"))
+data_plot_topmd$md_desc <- fct_relevel(data_plot_topmd$md_desc, cols_top)
 
-brks <- levels(data_top_byyear$md_desc) 
+brks <- levels(data_plot_topmd$md_desc) 
 # n_colors = nlevels(data_top_byyear$md_desc)
 # get_palette <- colorRampPalette(brewer.pal(9, "Set2"))
 
-kp_linechart <-
-    data_top_byyear %>%
+plot_topmd <-
+    data_plot_topmd %>%
         ggplot(aes(x=year, y=number_cases, group=md_desc)) +
         geom_vline(aes(xintercept = 2017), color="lightgray", linetype = "dashed", size = 0.5) +
         annotate("rect", xmin = 2017, xmax = 2018, ymin = -Inf, ymax = +Inf, fill = "lightgray", alpha = 0.2) +
@@ -502,12 +514,13 @@ kp_linechart <-
         geom_point(aes(color=md_desc), size=6) +
         # scale_color_manual(name="Mental disorders", values = get_palette(n_colors), breaks=brks) +
         labs(#title="Distribution top mental disorders per year", 
-             #subtitle = paste0("All vs. top mental disorders (", top_lbl,"). Dashed line denotes extrapolation for 2018"),
+             #subtitle = paste0("Top mental disorders (", top_lbl,")"),
              x="Year", 
-             y="Number of cases", 
+             y="# of papers", 
              caption="Source: authors") + 
         scale_color_brewer(name="Mental disorders", palette="Set2", breaks=brks) +
         geom_text(aes(label = number_cases), color= "white", size=3) +
+        scale_y_continuous(breaks=seq(1,10,by=1)) +
         theme_minimal() +
         # Legend: Top-Right Inside the Plot") 
         theme(legend.justification = c('left', 'top'),
@@ -522,9 +535,9 @@ kp_linechart <-
         # Change the line type and color of axis lines
         theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid"))
 
-kp_linechart
-kp_file_name <- "fig4_linechart.png"
-ggsave(plot = kp_linechart, filename = kp_file_name, device = "png", path = here::here("figs"),
+plot_topmd
+plot_file_name <- "fig4_linechart.png"
+ggsave(plot = plot_topmd, filename = plot_file_name, device = "png", path = here::here("figs"),
     scale = 1, width = 20, height = 18, units = "cm", dpi = 600) 
 
 
