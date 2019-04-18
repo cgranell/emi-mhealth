@@ -37,6 +37,7 @@ library(gridExtra)
 #library(treemap)
 library(forcats)
 library(purrr)
+library(cowplot)    # publication-ready theme for ggplot2
 #library(hrbrthemes)  # TODO: see https://stackoverflow.com/questions/14733732/cant-change-fonts-in-ggplot-geom-text to solve font does not find
 
 ```
@@ -84,9 +85,19 @@ all_data$val_asstype <- factor(all_data$val_asstype)
 #' Replace existing factors levels
 levels(all_data$md)[levels(all_data$md)=="23-Duo-comorbid"] <- "23-Comorbid disorders"
 levels(all_data$md)[levels(all_data$md)=="24-Multiple"] <- "24-Various disorders"
+levels(all_data$val_asstype)[levels(all_data$val_asstype)=="NO"] <- "NO ASSESSMENT"
+
 
 # all_data$md <- fct_other(all_data$md, drop=c("23-Duo-comorbid", "24-Multiple"), 
 #                          other_level = c("23-Comorbid disorders","24-Various disorders"))
+
+#' Adjust readibily of long description of mental disorders for production plot
+levels(all_data$md)[levels(all_data$md)=="6-Obsessive-Compulsive and related disorders"] <- "6-Obsessive-Compulsive and\n related disorders"
+levels(all_data$md)[levels(all_data$md)=="25-Suicidal behavior disorder/nonsuicidal self-injury"] <- "25-Suicidal behavior disorder/\nnonsuicidal self-injury"
+levels(all_data$md)[levels(all_data$md)=="2-Schizophrenia spectrum and other psychotic disorders"] <- "2-Schizophrenia spectrum and\n other psychotic disorders"
+levels(all_data$md)[levels(all_data$md)=="16-Substance-related and addictive disorders"] <- "16-Substance-related and\n addictive disorders"
+levels(all_data$md)[levels(all_data$md)=="7-Trauma and stressor-related disorders"] <- "7-Trauma and\n stressor-related disorders"
+
 
 
 #' Sync changes of "md" to other two columns, "md_id"" and "md_desc""
@@ -130,44 +141,74 @@ There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent
 * *IN, DRAFT*: It is a exploratory figure. Aesthetics is not considered yet.
 * *OUT*: It is not included in the paper.
 
-### Figure 1 (IN, PRODUCTION)
+### Figure 2. Temporal distribution of papers per assessment type
 
-Proportional stacked area chart: Temporal distribution of papers colored by assessment type. The sum of each year is always equal to hundred, and the value of each group (assessment type) is in percentages.
+Temporal distribution of papers colored by assessment type. It is a proportional stacked area chart in which the sum of each year is always equal to hundred, and the value of each group (assessment type) is in percentages.
 
 
-```{r key_plot_1_areachart, echo=FALSE, dpi=600, fig.width=12, fig.asp=0.65}
+```{r fig2_tempdist, echo=FALSE, dpi=600, fig.width=10, fig.height=22, fig.asp=1}
 cols <- c("md", "md_id", "md_desc", "val_asstype", "year")
 
-data_kp_areachart <- 
+data_plot_tempdist <- 
     all_data %>%
     select(cols)
 
-data_kp_areachart$val_asstype <- fct_relevel(data_kp_areachart$val_asstype, 
-                                             c("NO", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
+data_plot_tempdist$val_asstype <- fct_relevel(data_plot_tempdist$val_asstype, 
+                                             c("NO ASSESSMENT", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
+                                             # c("EFFECT", "EFFECT AND USABILITY/USER EXPERIENCE", "USABILITY/USER EXPERIENCE", "NO ASSESSMENT"))
 
-data_kp_areachart <- 
-    data_kp_areachart %>%
+data_plot_tempdist <- 
+    data_plot_tempdist %>%
     group_by(year, val_asstype) %>%  # first create counts for each group
     summarise(number_cases = n()) %>%
     mutate(total_cases_per_year = sum(number_cases),
            proportion = number_cases/total_cases_per_year,
            proportion_lbl = paste0(round(proportion*100,1), "%"))
 
-
 # Not run
 # display.brewer.all()
-# display.brewer.pal(n = 6, name = "PRGn")
+#display.brewer.pal(n = 6, name = "PRGn")
 # brewer.pal(n = 6, name = "PRGn")[2:5]
 
 # divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
-pal <- brewer.pal(n = nlevels(data_kp_areachart$val_asstype)+2, name = "PRGn")[2:5]
+#pal <- brewer.pal(n = nlevels(data_plot_tempdist$val_asstype)+2, name = "PRGn")[2:5]
 pal <- c("#762A83", "#D9F0D3", "#7FBF7B", "#1B7837")
+pal <- c("NO ASSESSMENT"="#AF8DC3", "USABILITY/USER EXPERIENCE"="#D9F0D3", "EFFECT AND USABILITY/USER EXPERIENCE"="#7FBF7B", "EFFECT"="#1B7837")
 
-kp_areachart <- 
-    data_kp_areachart %>%
+
+prediction_2018 <- 52
+
+
+plot_tempdist_stakedbarchart <- 
+    data_plot_tempdist %>%
+        ggplot(aes(x=year, y=number_cases, fill=val_asstype)) + 
+        geom_bar(stat="identity") +
+        geom_text(aes(label=number_cases), size=2.5,position=position_stack(vjust = 0.5)) +
+        labs(#title="Count of papers per year,, colored by assessment type", 
+             x="", 
+             y="Count") +
+        scale_fill_manual(values = pal) +
+        guides(fill="none") +
+        # Prediction 2018
+        annotate("rect", alpha = 0.2, 
+            xmin = 2018 - 0.45, xmax = 2018 + 0.45,
+            ymin = 13, ymax = prediction_2018, linetype="dashed") +
+        theme_minimal() +
+        # Change the line type and color of axis lines
+        theme(axis.line = element_line(colour = "darkgray", size = 0.5, linetype = "solid")) +
+        # theme(panel.grid.major = element_blank()) + 
+        theme(panel.grid.minor = element_blank()) +
+        theme(panel.background = element_blank()) +
+        theme(plot.margin=unit(rep(20, 4), "pt"))
+
+# plot_tempdist_stakedbarchart
+
+
+plot_tempdist_areachart <- 
+    data_plot_tempdist %>%
         ggplot(aes(x=year, y=proportion, fill=val_asstype)) + 
         geom_area() +
-        labs(title="Temporal distribution of papers per assessment type",
+        labs(#title="Temporal distribution of papers per assessment type",
         x="Year", 
         y="Percentatge of papers [%]", 
         caption="Source: authors") + 
@@ -186,10 +227,13 @@ kp_areachart <-
         theme(panel.background = element_blank()) +
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
-kp_areachart
-kp_file_name <- "fig1_areachart.png"
-ggsave(plot = kp_areachart, filename = kp_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 20, height = 12, units = "cm", dpi = 600)
+#plot_tempdist_areachart
+
+plot_tempdist <- plot_grid(plot_tempdist_stakedbarchart, plot_tempdist_areachart, labels = c("A", "B"), ncol= 1, align = "v")#, axis = "left")
+
+plot_tempdist_file_name <- "fig2_tempdist.png"
+ggsave(plot = plot_tempdist, filename = plot_tempdist_file_name, device = "png", path = here::here("figs"),
+     scale = 1, width = 20, height = 28, units = "cm", dpi = 600)
 
 ```
 
