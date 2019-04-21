@@ -6,16 +6,20 @@ output:
   html_document:
     df_print: paged
     toc: yes
-  pdf_document:
-    keep_tex: yes
-    #latex_engine: xelatex
-    toc: yes
 urlcolor: blue    
 ---
 
 ## License
 
 This document is licensed under a [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
+
+All contained code is licensed under the [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/).
+
+The data used is licensed under a [Open Data Commons Attribution License](https://opendatacommons.org/licenses/by/).
+
+See the paper's "Author Contributions" section for details on the contributors of data files.
+
+\newpage
 
 
 ## Metadata
@@ -130,6 +134,17 @@ n_no_dsm5 <-
 The final number of papers to analyse is `` `r n_papers` ``.
 
 There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent(n_yes_dsm5/n_papers)` (N=`r n_yes_dsm5`) are categorised according to Section II of [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal behavior disorder/nonsuicidal self-injury. In the following analysis, categories 23 and 24 are merged into a new one: 26-Various. Therefore, dual and multiple disorders are jointly treated.
+
+
+
+```{r save_rda, echo=FALSE}
+
+
+all_data <- 
+    all_data %>%
+    select(-id_loc, -md_mul, -md_sub, -fmw_cbt, -fmw_hum, -fmw_sys, -fmw_psy, -fmw_pos, -fmw_wav, -fmw_tra, -val_ed, -val_ass, -assessmenttypeid,
+           -id_co, -os_ios, -os_and, -type, -md_dsm5)
+```
 
 
 \newpage
@@ -545,12 +560,12 @@ ggsave(plot = plot_topmd, filename = plot_file_name, device = "png", path = here
 
 \newpage
 
-### Figure 4 (OUT)
+### Table 1 (OUT)
 
 Table (Example 1): Distribution of papers (apps) per mental disorder.  _How many apps are related to each mental disorder?_ Per each mental disorder, assessment (yes/no) and year, we show the paper id and appname.
 
 
-```{r key_plot_4_table1, echo=FALSE}
+```{r tab1, echo=FALSE}
 
 # library(formattable)
 
@@ -579,12 +594,12 @@ data_kp_apps %>%
 
 ```
 
-### Figure 4 (IN, DRAFT)
+### Table 1 (IN, PRODUCTION)
 
 Table (Example 2): _Compact_ distribution of papers (apps) per mental disorder, grouping the references per app. The mumber(s) in brackets next to the app name is the reference(s) in which the app is mentioned. 
 
 
-```{r key_plot_4_table2, echo=FALSE}
+```{r tab1_in, echo=FALSE}
 
 kp_file_name <- here::here("figs", "table2.html")
 
@@ -882,8 +897,8 @@ all_data %>%
 ```{r key_plot_5_sens_bubblechart, echo=FALSE, warning=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 cols = c("id", "md_id", "md_desc", 
          "sens_acc", "sens_gyr", "sens_gps", "sens_mic", "sens_cam",
-         "os_ios", "os_and", "app_name",
-         "type", "year")
+         "app_name", "year")
+
 cols_sens <- c("sens_acc", "sens_gyr", "sens_gps", "sens_mic", "sens_cam")
 data_kp_sens <-
     all_data %>%
@@ -930,8 +945,7 @@ data_kp_sens %>%
 cols = c("id", "md_id", "md_desc", 
          "feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn", 
          "feat_prog", "feat_ca", "feat_ass", "feat_vr", "feat_ar", "feat_pers", "feat_game",
-         "os_ios", "os_and", "app_name",
-         "type", "year")
+         "app_name", "year")
 
 cols_feat = c("feat_use", "feat_promp", "feat_soc", "feat_hcp", "feat_learn", 
               "feat_prog", "feat_ca", "feat_ass", "feat_vr", "feat_ar", "feat_pers", "feat_game")
@@ -979,8 +993,7 @@ data_kp_feat %>%
 ```{r key_plot_5_anal_bubblechart, echo=FALSE, dpi=600, fig.width=12, fig.height=14, fig.asp=0.65}
 cols = c("id", "md", "md_id", "md_desc", 
          "anal_ml", "anal_beh", "anal_act", "anal_sp", 
-         "os_ios", "os_and", "app_name",
-         "type", "year")
+         "app_name", "year")
 
 cols_anal = c("anal_ml", "anal_beh", "anal_act", "anal_sp")
 
