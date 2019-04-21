@@ -139,11 +139,14 @@ There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent
 
 ```{r save_rda, echo=FALSE}
 
+# 
+# all_data <- 
+#     all_data %>%
+#     select(-id_loc, -md_mul, -md_sub, -fmw_cbt, -fmw_hum, -fmw_sys, -fmw_psy, -fmw_pos, -fmw_wav, -fmw_tra, -val_ed, -val_ass, -assessmenttypeid,
+#            -id_co, -os_ios, -os_and, -type, -md_dsm5)
 
-all_data <- 
-    all_data %>%
-    select(-id_loc, -md_mul, -md_sub, -fmw_cbt, -fmw_hum, -fmw_sys, -fmw_psy, -fmw_pos, -fmw_wav, -fmw_tra, -val_ed, -val_ass, -assessmenttypeid,
-           -id_co, -os_ios, -os_and, -type, -md_dsm5)
+
+
 ```
 
 
