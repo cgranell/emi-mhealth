@@ -357,6 +357,7 @@ data_plot_barchart <-
                proportion_sum = sum(proportion),
                proportion_lbl = paste0(round(proportion_sum*100,1), "%")) %>% 
         ungroup() %>%
+        mutate(lbl = paste0(round(number_cases/total_cases*100,0), "%")) %>% 
         arrange(desc(proportion_sum), md_id)
 
 # convert to factor to retain sorted order in plot.
@@ -393,6 +394,7 @@ plot_barchart <-
              caption="Source: authors") + 
         # geom_segment(aes(x=md_desc, y=0, xend=md_desc, yend=proportion_sum), color="white") + # grey50
         geom_point(aes(y=proportion_sum), size=6, color="white", show.legend = F) +  # lightgray
+        # geom_text(aes(label=number_cases), size=2.5, position=position_stack(vjust = 0.5)) +
         geom_text(aes(label=number_cases), size=2.5, position=position_stack(vjust = 0.5)) +
         # Percentatge inside point
         annotate("text", x = lbls$md_desc, y = lbls$proportion_sum,
@@ -528,9 +530,9 @@ plot_topmd <-
         ggplot(aes(x=year, y=number_cases, group=md_desc)) +
         geom_vline(aes(xintercept = 2017), color="lightgray", linetype = "dashed", size = 0.5) +
         annotate("rect", xmin = 2017, xmax = 2018, ymin = -Inf, ymax = +Inf, fill = "lightgray", alpha = 0.2) +
-        geom_line(aes(color=md_desc), size=1, alpha=.4) +
+        geom_line(aes(color=md_desc), size=2.5, alpha=.4) +
         # geom_point(aes(color=md_desc), size=6, alpha=.6) +
-        geom_point(shape=21, size=6, color="darkgray", fill="white") +
+        geom_point(shape=21, size=7, color="darkgray", fill="white") +
         # scale_color_manual(name="Mental disorders", values = get_palette(n_colors), breaks=brks) +
         labs(#title="Distribution top mental disorders per year", 
              #subtitle = paste0("Top mental disorders (", top_lbl,")"),
@@ -1093,10 +1095,18 @@ data_kp_all$cat <- factor(data_kp_all$cat)
 data_kp_all$cat <- fct_relevel(data_kp_all$cat, dims_ordered)
 brks <- levels(factor(data_kp_all$cat))
 
+# Color per dimension: 
+# Software features "#FC8D62"; Built-In sensors "#66C2A5"; Types of analyses "#8DA0CB"
+lbls_colors <- 
+    ifelse(unique(data_kp_all$tech_type) %in% c("Learning", "Progress", "Personalization", "Assessment", "Prompting", "Health Care Provider \nCommunication", 
+                   "In-Situ Use", "Social", "Context-Awareness", "Game",  "Virtual Reality", "Augmented Reality"), "#FC8D62",
+           ifelse(unique(data_kp_all$tech_type) %in% c("Microphone", "GPS", "Camera", "Accelerometer", "Gyroscope"), "#66C2A5",
+           "#8DA0CB"))
+               
 kp_bubblechart <- 
     data_kp_all %>%
     ggplot(aes(x=md_desc, y=tech_type, colour=cat)) +
-    geom_point(aes(size=number_cases), alpha=0.8, na.rm = TRUE)+#, show.legend = FALSE) +
+    geom_point(aes(size=number_cases), alpha=1, na.rm = TRUE)+#, show.legend = FALSE) +
     geom_text(aes(label=number_cases), colour="black", size=3, na.rm = TRUE) +
     scale_size_area(max_size=18) +
     coord_flip() +
@@ -1110,8 +1120,8 @@ kp_bubblechart <-
     # Which legend to show
     guides(colour="legend",size = "none") +
     theme_minimal()  +
-    theme(axis.text.x=element_text(angle = 60, size=10, hjust = 1),
-          axis.text.y=element_text(size=10)) +
+    theme(axis.text.x=element_text(angle=60, size=11, hjust=1, color=lbls_colors),
+          axis.text.y=element_text(size=11)) +
     # Legend: Top-Right Inside the Plot") 
     # theme(legend.position = "right") +
     theme(legend.title = element_text(size=9),
@@ -1129,22 +1139,12 @@ kp_bubblechart <-
 
 # Add annotations: total of columns
 for (i in 1:nrow(data_kp_all_n)) {
-    if (i<=12) {
-        color_cat <- "#FC8D62"
-    } else if (i<=17) {
-        color_cat <- "#66C2A5"
-    } else {
-        color_cat <- "#8DA0CB"
-    }
-
-    kp_bubblechart <-
+     kp_bubblechart <-
         kp_bubblechart +
-        annotate("text", x = "Personality disorders", y = data_kp_all_n$tech_label[i], label = data_kp_all_n$n[i],
-             color = color_cat, fontface =2, size=3, hjust = 0.4, vjust = -1.8)
-
+         annotate("text", x = "Personality disorders", y = data_kp_all_n$tech_label[i], label = data_kp_all_n$n[i],
+              color = lbls_colors[i], fontface="bold", size=3, hjust = 0.4, vjust = -1.8)
 }
-    
-    
+
 kp_bubblechart
 
 
