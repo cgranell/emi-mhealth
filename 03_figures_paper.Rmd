@@ -1008,7 +1008,7 @@ data_kp_anal <-
     all_data %>%
     select(cols) %>%
     gather(cols_anal, key="tech_type",value="tech_value") %>%
-    mutate(cat = "Types of analyses") %>%
+    mutate(cat = "Analytics") %>%
     filter(tech_value == "YES") %>%
     group_by(md_desc, tech_type, cat)  %>%
     summarise(number_cases = n())  %>%
@@ -1026,7 +1026,7 @@ md_dif <- setdiff(md_all_ordered, md_anal)
 if (length(md_anal) > 0) {
     for (md in md_dif) {
         # Added "anal_ml" (or any value) to avoid NA in the "tech_type" variable. Nothing is drawn in the plot
-        data_kp_anal <- add_row(data_kp_anal, md_desc=md, tech_type="anal_ml", cat="Types of analyses")
+        data_kp_anal <- add_row(data_kp_anal, md_desc=md, tech_type="anal_ml", cat="Analytics")
     }
 }
 
