@@ -1079,7 +1079,7 @@ cols_ordered <-  c("Learning", "Progress", "Personalization", "Assessment", "Pro
                    "In-Situ Use", "Social", "Context-Awareness", "Game",  "Virtual Reality", "Augmented Reality", 
                    "Microphone", "GPS", "Camera", "Accelerometer", "Gyroscope",  
                    "Machine Learning", "Activity Analysis", "Behavioral Analysis", "Spatial Analysis") 
-dims_ordered <- c("Software features", "Built-In sensors", "Types of analyses")
+dims_ordered <- c("Software features", "Built-In sensors", "Analytics")
 
 data_kp_all$tech_type <- fct_relevel(data_kp_all$tech_type, cols_ordered)
 
@@ -1116,7 +1116,7 @@ kp_bubblechart <-
          y="Technology-related characteristics", 
          caption="Source: authors") + 
     scale_color_manual(name="Technology-related\n dimensions", breaks=brks,
-                       values = c("Software features"="#FC8D62","Built-In sensors"="#66C2A5", "Types of analyses"="#8DA0CB")) +
+                       values = c("Software features"="#FC8D62","Built-In sensors"="#66C2A5", "Analytics"="#8DA0CB")) +
     # Which legend to show
     guides(colour="legend",size = "none") +
     theme_minimal()  +
