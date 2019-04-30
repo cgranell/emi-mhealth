@@ -102,8 +102,6 @@ levels(all_data$md)[levels(all_data$md)=="2-Schizophrenia spectrum and other psy
 levels(all_data$md)[levels(all_data$md)=="16-Substance-related and addictive disorders"] <- "16-Substance-related and\n addictive disorders"
 levels(all_data$md)[levels(all_data$md)=="7-Trauma and stressor-related disorders"] <- "7-Trauma and\n stressor-related disorders"
 
-
-
 #' Sync changes of "md" to other two columns, "md_id"" and "md_desc""
 all_data <- 
     all_data %>% 
@@ -111,16 +109,10 @@ all_data <-
 
 all_data$md <- factor(all_data$md, levels=names(sort(table(all_data$md), decreasing=T)))
 
-n_md <- nlevels(all_data$md)
-n_papers = nrow(all_data)
-
 category_levels <- c("YES","NO")
 all_data <- 
     all_data %>%
     mutate(md_dsm5 = factor(if_else(md_id <= 22, "YES", "NO"), levels=category_levels))
-
-n_dsm5_yes <- nrow(filter(all_data, md_dsm5 == "YES"))
-n_dsm5_no <- nrow(filter(all_data, md_dsm5 == "NO"))
 
 ```
 
@@ -142,6 +134,22 @@ n_assessment_no <- nrow(filter(all_data, val_ass == "NO"))
 n_assessment_effect <- nrow(filter(all_data, val_asstype=="EFFECT"))
 n_assessment_effectux <-nrow(filter(all_data, val_asstype=="EFFECT AND USABILITY/USER EXPERIENCE"))
 n_assessment_ux <-nrow(filter(all_data, val_asstype=="USABILITY/USER EXPERIENCE"))
+
+
+# Keep the order of mental disorder equal for all charts 
+temp_for_order <- 
+    all_data %>% 
+    group_by(md_id, md_desc) %>%
+    summarise(number_cases = n()) %>%
+    mutate(proportion = number_cases/n_papers) %>% 
+    arrange(desc(proportion), md_id) 
+
+# convert to factor to retain sorted order of mendata diorders 
+temp_for_order$md_desc <- factor(temp_for_order$md_desc, levels=unique(temp_for_order$md_desc))  
+
+# Keep MD order equal for all other charts
+md_all_ordered <- levels(temp_for_order$md_desc)
+
 
 ```
 
@@ -359,14 +367,11 @@ data_plot_barchart <-
                proportion_sum = sum(proportion),
                proportion_lbl = paste0(round(proportion_sum*100,1), "%")) %>% 
         ungroup() %>%
-        mutate(lbl = paste0(round(number_cases/total_cases*100,0), "%")) %>% 
+        mutate(lbl = paste0(round(number_cases/total_cases*100,1), "%")) %>% 
         arrange(desc(proportion_sum), md_id)
 
 # convert to factor to retain sorted order in plot.
 data_plot_barchart$md_desc <- factor(data_plot_barchart$md_desc, levels=unique(data_plot_barchart$md_desc))  
-
-# Keep MD order equal for all other charts
-md_all_ordered <- levels(data_plot_barchart$md_desc)
 
 data_plot_barchart$val_asstype <- fct_relevel(data_plot_barchart$val_asstype, 
                                             c("NO ASSESSMENT", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
@@ -440,6 +445,25 @@ ggsave(plot = plot_barchart, filename = plot_file_name, device = "png", path = h
 
 
 ```
+
+
+
+Distribution of types of assessments per mental disorders
+
+```{r stats_assesstype_md, echo=FALSE}
+
+data_plot_barchart %>%
+    # arrange(desc(md_desc)) %>%
+    select(`Mental Disorder` = md_desc,
+           `Type of assessment` = val_asstype,
+           `Percentage`= lbl) %>%
+    kable(formt="html", escape = T, booktabs = TRUE) %>%
+    kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+    column_spec(1, bold = T) %>%
+    collapse_rows(columns = 1, valign = "top")
+```
+
+
 
 
 ```{r echo=FALSE}
