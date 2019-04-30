@@ -401,9 +401,9 @@ plot_barchart <-
              y="# of papers and total percentage", 
              caption="Source: authors") + 
         # geom_segment(aes(x=md_desc, y=0, xend=md_desc, yend=proportion_sum), color="white") + # grey50
-        geom_point(aes(y=proportion_sum), size=6, color="white", show.legend = F) +  # lightgray
+        geom_point(aes(y=proportion_sum), size=6, color="white", show.legend = F) +  
         # geom_text(aes(label=number_cases), size=2.5, position=position_stack(vjust = 0.5)) +
-        geom_text(aes(label=number_cases), size=2.5, position=position_stack(vjust = 0.5)) +
+        geom_text(aes(label=number_cases), size=2.5, position=position_stack(vjust = 0.4)) +
         # Percentatge inside point
         annotate("text", x = lbls$md_desc, y = lbls$proportion_sum,
                  label = lbls$proportion_lbl, color = "black", size=2, hjust = 0.4, vjust = 0.2) +
@@ -425,11 +425,10 @@ plot_barchart <-
         # Which legend to show
         guides(fill=guide_legend(title="Assessment Type", nrow=2)) + # modify legend title
         theme_minimal()  +
-        # Legend: Top-Right Inside the Plot") 
         theme(legend.title = element_text(size=11),
               legend.position = "bottom",
               # legend.justification = c('right', 'top'),
-              #legend.position=c(0.95, 0.95),
+              # legend.position=c(0.95, 0.95),
               legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
               legend.key = element_blank()) +
         # Change the line type and color of axis lines
@@ -439,7 +438,7 @@ plot_barchart <-
         theme(panel.background = element_blank()) +
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
-#plot_barchart
+# plot_barchart
 
 
 data_plot_piechart <-
@@ -458,7 +457,7 @@ plot_piechart <-
     ggplot(aes(x="", y=total_asstype, fill=val_asstype)) +
     geom_bar(width=1, stat = "identity") +
     coord_polar(theta="y", start=0, direction = 1) +
-    geom_text(aes(y=midpoint, label=lbl), size=4, show.legend = F) +
+    geom_text(aes(y=midpoint, label=lbl), size=3, show.legend = F) +
     scale_fill_manual(name="Assessment Type", values = pal) + 
     # Which legend to show
     guides(fill="none") +
@@ -467,7 +466,8 @@ plot_piechart <-
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),
           panel.grid = element_blank()) +
-    labs(x=NULL, y=NULL, title="Acummulated results [%]")
+    theme(panel.border = element_rect(fill=NA, colour = "darkgray", size=0.5)) +
+    labs(x=NULL, y=NULL, title="Accumulated results [%]")
 
 # plot_piechart
 
@@ -1204,20 +1204,33 @@ kp_bubblechart <-
     theme(plot.margin=unit(rep(20, 4), "pt")) 
 
 # Add annotations: total of columns
+
+kp_bubblechart <-
+    kp_bubblechart +
+    annotate("rect", xmin = 14.40, xmax = 14.75, ymin = 0.5, ymax = 12.4, 
+             fill = "#FC8D62", alpha = 0.6) +
+    annotate("rect", xmin = 14.40, xmax = 14.75, ymin = 12.6, ymax = 17.4, 
+             fill = "#66C2A5", alpha = 0.6) +
+    annotate("rect", xmin = 14.40, xmax = 14.75, ymin = 17.6, ymax = 21.5, 
+             fill = "#8DA0CB", alpha = 0.6)
+    
+
 for (i in 1:nrow(data_kp_all_n)) {
      kp_bubblechart <-
         kp_bubblechart +
+         # annotate("text", x = "Personality disorders", y = data_kp_all_n$tech_label[i], label = data_kp_all_n$n[i],
+         #      color = lbls_colors[i], fontface="bold", size=3, hjust = 0.4, vjust = -1.8)
          annotate("text", x = "Personality disorders", y = data_kp_all_n$tech_label[i], label = data_kp_all_n$n[i],
-              color = lbls_colors[i], fontface="bold", size=3, hjust = 0.4, vjust = -1.8)
+              color = "white", fontface="bold", size=3, hjust = 0.4, vjust = -3)
 }
 
-
+# Add rectangles to highlight group of bubbles
 kp_bubblechart <-
     kp_bubblechart +
     annotate("rect", xmin = 0.5, xmax = 11.5, ymin = 0.5, ymax = 7.5, 
              fill = "lightgray", alpha = 0.2, linetype="dashed") +
-       annotate("rect", xmin = 0.5, xmax = 5.5, ymin = 0.5, ymax = 9.5, 
-             fill = "lightgray", alpha = 0.3)
+    annotate("rect", xmin = 0.5, xmax = 5.5, ymin = 0.5, ymax = 9.5, 
+             fill = "lightgray", alpha = 0.2)
 
 
 kp_bubblechart
