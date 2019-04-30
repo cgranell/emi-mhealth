@@ -423,13 +423,13 @@ plot_barchart <-
         scale_fill_manual(name="Assessment Type", values = pal) + 
         scale_y_continuous(expand=c(0,0), labels=scales::percent_format(accuracy = 1), breaks=seq(0, 0.21, by=0.02), limits=c(0, 0.21)) +
         # Which legend to show
-        guides(fill="legend") +
+        guides(fill=guide_legend(title="Assessment Type", nrow=2)) + # modify legend title
         theme_minimal()  +
         # Legend: Top-Right Inside the Plot") 
-        theme(legend.title = element_text(size=11), 
-              legend.justification = c('right', 'top'),
-              legend.position=c(0.95, 0.95),  
-              #legend.background = element_blank(),
+        theme(legend.title = element_text(size=11),
+              legend.position = "bottom",
+              # legend.justification = c('right', 'top'),
+              #legend.position=c(0.95, 0.95),
               legend.background = element_rect(color = "darkgray", size = 0.5, linetype ="solid"),
               legend.key = element_blank()) +
         # Change the line type and color of axis lines
@@ -439,10 +439,50 @@ plot_barchart <-
         theme(panel.background = element_blank()) +
         theme(plot.margin=unit(rep(20, 4), "pt"))
 
-plot_barchart
-plot_file_name <- "fig3_barchart.png"
-ggsave(plot = plot_barchart, filename = plot_file_name, device = "png", path = here::here("figs"),
-    scale = 1, width = 22, height = 18, units = "cm", dpi = 600)
+#plot_barchart
+
+
+data_plot_piechart <-
+    data_plot_barchart %>%
+    group_by(val_asstype) %>%
+    summarise(total_asstype = sum(number_cases)) %>%
+    mutate(lbl = paste0(round(total_asstype/n_papers*100,1), "%"),
+           cumulative= cumsum(total_asstype),
+           midpoint = cumulative-total_asstype/2) %>% 
+    arrange(desc(total_asstype))
+
+data_plot_piechart$val_asstype <-  fct_relevel(data_plot_piechart$val_asstype, 
+                                               c("EFFECT", "USABILITY/UX", "NO ASSESSMENT", "EFFECT AND USABILITY/UX"))
+plot_piechart <- 
+    data_plot_piechart %>%
+    ggplot(aes(x="", y=total_asstype, fill=val_asstype)) +
+    geom_bar(width=1, stat = "identity") +
+    coord_polar(theta="y", start=0, direction = 1) +
+    geom_text(aes(y=midpoint, label=lbl), size=4, show.legend = F) +
+    scale_fill_manual(name="Assessment Type", values = pal) + 
+    # Which legend to show
+    guides(fill="none") +
+    theme_minimal() +
+    theme(legend.title = element_text(size=10)) +
+    theme(axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank()) +
+    labs(x=NULL, y=NULL, title="Cummulated results [%]")
+
+# plot_piechart
+
+
+plot_dist_md <-
+    ggdraw() +
+    draw_plot(plot_barchart) +
+    draw_plot(plot_piechart, 0.55, 0.5, 0.45, 0.45)
+
+plot_dist_md
+
+        
+plot_dist_md_file_name <- "fig3_dist_md.png"
+ggsave(plot = plot_dist_md, filename = plot_dist_md_file_name, device = "png", path = here::here("figs"),
+     scale = 1, width = 22, height = 18, units = "cm", dpi = 600)
 
 
 ```
