@@ -90,7 +90,8 @@ all_data$val_asstype <- factor(all_data$val_asstype)
 levels(all_data$md)[levels(all_data$md)=="23-Duo-comorbid"] <- "23-Comorbid disorders"
 levels(all_data$md)[levels(all_data$md)=="24-Multiple"] <- "24-Various disorders"
 levels(all_data$val_asstype)[levels(all_data$val_asstype)=="NO"] <- "NO ASSESSMENT"
-
+levels(all_data$val_asstype)[levels(all_data$val_asstype)=="EFFECT AND USABILITY/USER EXPERIENCE"] <- "EFFECT AND USABILITY/UX"
+levels(all_data$val_asstype)[levels(all_data$val_asstype)=="USABILITY/USER EXPERIENCE"] <- "USABILITY/UX"
 
 # all_data$md <- fct_other(all_data$md, drop=c("23-Duo-comorbid", "24-Multiple"), 
 #                          other_level = c("23-Comorbid disorders","24-Various disorders"))
@@ -132,8 +133,8 @@ n_assessment_yes <- nrow(filter(all_data, val_ass == "YES"))
 n_assessment_no <- nrow(filter(all_data, val_ass == "NO"))
 
 n_assessment_effect <- nrow(filter(all_data, val_asstype=="EFFECT"))
-n_assessment_effectux <-nrow(filter(all_data, val_asstype=="EFFECT AND USABILITY/USER EXPERIENCE"))
-n_assessment_ux <-nrow(filter(all_data, val_asstype=="USABILITY/USER EXPERIENCE"))
+n_assessment_effectux <-nrow(filter(all_data, val_asstype=="EFFECT AND USABILITY/UX"))
+n_assessment_ux <-nrow(filter(all_data, val_asstype=="USABILITY/UX"))
 
 
 # Keep the order of mental disorder equal for all charts 
@@ -182,7 +183,7 @@ data_plot_tempdist <-
     select(cols)
 
 data_plot_tempdist$val_asstype <- fct_relevel(data_plot_tempdist$val_asstype, 
-                                             c("NO ASSESSMENT", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
+                                             c("NO ASSESSMENT", "USABILITY/UX", "EFFECT AND USABILITY/UX", "EFFECT"))
 
 data_plot_tempdist <- 
     data_plot_tempdist %>%
@@ -200,7 +201,7 @@ data_plot_tempdist <-
 # divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
 #pal <- brewer.pal(n = nlevels(data_plot_tempdist$val_asstype)+2, name = "PRGn")[2:5]
 #pal <- c("#762A83", "#D9F0D3", "#7FBF7B", "#1B7837")
-pal <- c("NO ASSESSMENT"="#AF8DC3", "USABILITY/USER EXPERIENCE"="#D9F0D3", "EFFECT AND USABILITY/USER EXPERIENCE"="#7FBF7B", "EFFECT"="#1B7837")
+pal <- c("NO ASSESSMENT"="#AF8DC3", "USABILITY/UX"="#D9F0D3", "EFFECT AND USABILITY/UX"="#7FBF7B", "EFFECT"="#1B7837")
 
 
 prediction_2018 <- 52
@@ -297,7 +298,7 @@ data_kp_barchart <-
 data_kp_barchart$md_desc <- factor(data_kp_barchart$md_desc, levels=unique(data_kp_barchart$md_desc))  
 
 data_kp_barchart$val_asstype <- fct_relevel(data_kp_barchart$val_asstype, 
-                                            c("NO", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
+                                            c("NO", "USABILITY/UX", "EFFECT AND USABILITY/UX", "EFFECT"))
                                             
 # Not run
 # display.brewer.all()
@@ -374,7 +375,7 @@ data_plot_barchart <-
 data_plot_barchart$md_desc <- factor(data_plot_barchart$md_desc, levels=unique(data_plot_barchart$md_desc))  
 
 data_plot_barchart$val_asstype <- fct_relevel(data_plot_barchart$val_asstype, 
-                                            c("NO ASSESSMENT", "USABILITY/USER EXPERIENCE", "EFFECT AND USABILITY/USER EXPERIENCE", "EFFECT"))
+                                            c("NO ASSESSMENT", "USABILITY/UX", "EFFECT AND USABILITY/UX", "EFFECT"))
                                             
 
 # Not run
@@ -383,7 +384,7 @@ data_plot_barchart$val_asstype <- fct_relevel(data_plot_barchart$val_asstype,
 # brewer.pal(n = 7, name = "PRGn")
 # divergent palette instead of categorical (Set2). Get rid of edge values to avoid sharp contrast
 #pal <- brewer.pal(n = nlevels(data_plot3_barchart$val_asstype), name = "PRGn")
-pal <- c("NO ASSESSMENT"="#AF8DC3", "USABILITY/USER EXPERIENCE"="#D9F0D3", "EFFECT AND USABILITY/USER EXPERIENCE"="#7FBF7B", "EFFECT"="#1B7837")
+pal <- c("NO ASSESSMENT"="#AF8DC3", "USABILITY/UX"="#D9F0D3", "EFFECT AND USABILITY/UX"="#7FBF7B", "EFFECT"="#1B7837")
 
 lbls <- distinct(data_plot_barchart, md_desc, proportion_sum, proportion_lbl)
 
@@ -1124,8 +1125,7 @@ brks <- levels(factor(data_kp_all$cat))
 # Color per dimension: 
 # Software features "#FC8D62"; Built-In sensors "#66C2A5"; Types of analyses "#8DA0CB"
 lbls_colors <- 
-    ifelse(unique(data_kp_all$tech_type) %in% c("Learning", "Progress", "Personalization", "Assessment", "Prompting", "Health Care Provider \nCommunication", 
-                   "In-Situ Use", "Social", "Context-Awareness", "Game",  "Virtual Reality", "Augmented Reality"), "#FC8D62",
+    ifelse(unique(data_kp_all$tech_type) %in% c("Learning", "Progress", "Personalization", "Assessment", "Prompting", "Health Care Provider \nCommunication", "In-Situ Use", "Social", "Context-Awareness", "Game",  "Virtual Reality", "Augmented Reality"), "#FC8D62",
            ifelse(unique(data_kp_all$tech_type) %in% c("Microphone", "GPS", "Camera", "Accelerometer", "Gyroscope"), "#66C2A5",
            "#8DA0CB"))
                
@@ -1141,7 +1141,7 @@ kp_bubblechart <-
          x="Mental disorders", 
          y="Technology-related characteristics", 
          caption="Source: authors") + 
-    scale_color_manual(name="Technology-related\n dimensions", breaks=brks,
+    scale_color_manual(name="Dimensions", breaks=brks,
                        values = c("Software features"="#FC8D62","Built-In sensors"="#66C2A5", "Analytics"="#8DA0CB")) +
     # Which legend to show
     guides(colour="legend",size = "none") +
