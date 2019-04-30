@@ -157,7 +157,7 @@ The final number of papers to analyse is `r n_papers`.
 
 There are `r n_md` distinct mental disorders (out of 25). About `r percent(n_dsm5_yes/n_papers)` (N=`r n_dsm5_yes`) are categorised according to Section II of [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_dsm5_no/n_papers)` (N=`r n_dsm5_no`) are _23-Comorbid disorders_, _24-Various disorders_ or _25-Suicidal behavior disorder/nonsuicidal self-injury_.
 
-About `r percent(n_assessment_yes/n_papers)` (N=`r n_assessment_yes`) of papers reported some kind of assessment, whereas `r percent(n_assessment_no/n_papers)` (N=`r n_assessment_no`) reported no assessment at all. Looking closer at the type of assessment: `r percent(n_assessment_effect/n_papers)` (N=`r n_assessment_effect`) focus on the effect of intervention on clinical symptomology; `r percent(n_assessment_effectux/n_papers)` (N=`r n_assessment_effectux`) report a mix of effect and usability / UX assessment; `r percent(n_assessement_ux/n_papers)` (N=`r n_assessment_ux`) focus solely on usability / UX.
+About `r percent(n_assessment_yes/n_papers)` (N=`r n_assessment_yes`) of papers reported some kind of assessment, whereas `r percent(n_assessment_no/n_papers)` (N=`r n_assessment_no`) reported no assessment at all. Looking closer at the type of assessment: `r percent(n_assessment_effect/n_papers)` (N=`r n_assessment_effect`) focus on the effect of intervention on clinical symptomology; `r percent(n_assessment_effectux/n_papers)` (N=`r n_assessment_effectux`) report a mix of effect and usability / UX assessment; `r percent(n_assessment_ux/n_papers)` (N=`r n_assessment_ux`) focus solely on usability / UX.
 
 
 \newpage
