@@ -119,35 +119,37 @@ all_data <-
     all_data %>%
     mutate(md_dsm5 = factor(if_else(md_id <= 22, "YES", "NO"), levels=category_levels))
 
-n_yes_dsm5 <- 
-    all_data %>%
-        filter(md_dsm5 == "YES") %>%
-        nrow()
-
-n_no_dsm5 <- 
-    all_data %>%
-        filter(md_dsm5 == "NO") %>%
-        nrow()
+n_dsm5_yes <- nrow(filter(all_data, md_dsm5 == "YES"))
+n_dsm5_no <- nrow(filter(all_data, md_dsm5 == "NO"))
 
 ```
 
-The final number of papers to analyse is `` `r n_papers` ``.
-
-There are `` `r n_md` `` distinct mental disorders (out of 25). About `r percent(n_yes_dsm5/n_papers)` (N=`r n_yes_dsm5`) are categorised according to Section II of [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_no_dsm5/n_papers)` (N=`r n_no_dsm5`) are 23-Dual, 24-Multiple or 25-Suicidal behavior disorder/nonsuicidal self-injury. In the following analysis, categories 23 and 24 are merged into a new one: 26-Various. Therefore, dual and multiple disorders are jointly treated.
+\newpage
 
 
+## Descriptive statistics
 
-```{r save_rda, echo=FALSE}
+```{r stats, echo=FALSE}
 
-# 
-# all_data <- 
-#     all_data %>%
-#     select(-id_loc, -md_mul, -md_sub, -fmw_cbt, -fmw_hum, -fmw_sys, -fmw_psy, -fmw_pos, -fmw_wav, -fmw_tra, -val_ed, -val_ass, -assessmenttypeid,
-#            -id_co, -os_ios, -os_and, -type, -md_dsm5)
+n_md <- nlevels(all_data$md)
+n_papers = nrow(all_data)
+n_dsm5_yes <- nrow(filter(all_data, md_dsm5 == "YES"))
+n_dsm5_no <- nrow(filter(all_data, md_dsm5 == "NO"))
 
+n_assessment_yes <- nrow(filter(all_data, val_ass == "YES"))
+n_assessment_no <- nrow(filter(all_data, val_ass == "NO"))
 
+n_assessment_effect <- nrow(filter(all_data, val_asstype=="EFFECT"))
+n_assessment_effectux <-nrow(filter(all_data, val_asstype=="EFFECT AND USABILITY/USER EXPERIENCE"))
+n_assessment_ux <-nrow(filter(all_data, val_asstype=="USABILITY/USER EXPERIENCE"))
 
 ```
+
+The final number of papers to analyse is `r n_papers`.
+
+There are `r n_md` distinct mental disorders (out of 25). About `r percent(n_dsm5_yes/n_papers)` (N=`r n_dsm5_yes`) are categorised according to Section II of [DSM-5 manual](https://dsm.psychiatryonline.org/doi/book/10.1176/appi.books.9780890425596). About `r percent(n_dsm5_no/n_papers)` (N=`r n_dsm5_no`) are _23-Comorbid disorders_, _24-Various disorders_ or _25-Suicidal behavior disorder/nonsuicidal self-injury_.
+
+About `r percent(n_assessment_yes/n_papers)` (N=`r n_assessment_yes`) of papers reported some kind of assessment, whereas `r percent(n_assessment_no/n_papers)` (N=`r n_assessment_no`) reported no assessment at all. Looking closer at the type of assessment: `r percent(n_assessment_effect/n_papers)` (N=`r n_assessment_effect`) focus on the effect of intervention on clinical symptomology; `r percent(n_assessment_effectux/n_papers)` (N=`r n_assessment_effectux`) report a mix of effect and usability / UX assessment; `r percent(n_assessement_ux/n_papers)` (N=`r n_assessment_ux`) focus solely on usability / UX.
 
 
 \newpage
