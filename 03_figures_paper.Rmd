@@ -463,11 +463,11 @@ plot_piechart <-
     # Which legend to show
     guides(fill="none") +
     theme_minimal() +
-    theme(legend.title = element_text(size=10)) +
+    theme(legend.title = element_text(size=9)) +
     theme(axis.text = element_blank(),
           axis.ticks = element_blank(),
           panel.grid = element_blank()) +
-    labs(x=NULL, y=NULL, title="Cummulated results [%]")
+    labs(x=NULL, y=NULL, title="Acummulated results [%]")
 
 # plot_piechart
 
@@ -475,7 +475,7 @@ plot_piechart <-
 plot_dist_md <-
     ggdraw() +
     draw_plot(plot_barchart) +
-    draw_plot(plot_piechart, 0.55, 0.5, 0.45, 0.45)
+    draw_plot(plot_piechart, 0.55, 0.55, 0.40, 0.40)
 
 plot_dist_md
 
