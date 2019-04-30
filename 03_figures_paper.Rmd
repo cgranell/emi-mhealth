@@ -1211,6 +1211,15 @@ for (i in 1:nrow(data_kp_all_n)) {
               color = lbls_colors[i], fontface="bold", size=3, hjust = 0.4, vjust = -1.8)
 }
 
+
+kp_bubblechart <-
+    kp_bubblechart +
+    annotate("rect", xmin = 0.5, xmax = 11.5, ymin = 0.5, ymax = 7.5, 
+             fill = "lightgray", alpha = 0.2, linetype="dashed") +
+       annotate("rect", xmin = 0.5, xmax = 5.5, ymin = 0.5, ymax = 9.5, 
+             fill = "lightgray", alpha = 0.3)
+
+
 kp_bubblechart
 
 
