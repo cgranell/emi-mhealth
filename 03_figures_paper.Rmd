@@ -258,7 +258,7 @@ plot_tempdist_areachart <-
 
 #plot_tempdist_areachart
 
-plot_tempdist <- plot_grid(plot_tempdist_stakedbarchart, plot_tempdist_areachart, labels = c("A", "B"), ncol= 1, align = "v")#, axis = "left")
+plot_tempdist <- plot_grid(plot_tempdist_stakedbarchart, plot_tempdist_areachart, labels = NULL, ncol= 1, align = "v") # Put labels = C("A", "B") to identify subfigures 
 plot_tempdist
 
 plot_tempdist_file_name <- "fig2_tempdist.png"
