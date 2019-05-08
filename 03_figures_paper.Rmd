@@ -137,7 +137,7 @@ n_assessment_effectux <-nrow(filter(all_data, val_asstype=="EFFECT AND USABILITY
 n_assessment_ux <-nrow(filter(all_data, val_asstype=="USABILITY/UX"))
 
 
-# Keep the order of mental disorder equal for all charts 
+# Keep the same order of mental disorder for all charts 
 temp_for_order <- 
     all_data %>% 
     group_by(md_id, md_desc) %>%
